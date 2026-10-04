@@ -1,4 +1,7 @@
 import { test, expect } from "@playwright/test";
+const origin = new URL(
+  process.env.SWITCHYARD_WEB_URL ?? "http://localhost:3000",
+).origin;
 test("reviewer creates an unequal A/B run, controls lifecycle and inspects empty cohorts", async ({
   page,
 }) => {
@@ -199,7 +202,7 @@ test("reviewer creates an unequal A/B run, controls lifecycle and inspects empty
     (
       await page.request.post("/api/backend/v1/evaluate", {
         headers: {
-          Origin: "http://localhost:3000",
+          Origin: origin,
           Authorization: `Bearer ${application.token}`,
         },
         data: {

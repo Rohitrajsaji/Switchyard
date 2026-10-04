@@ -8,7 +8,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M2 Identity, scope, audit | Complete | 5 Oct 2026: `make check race build`, race-enabled PostgreSQL integration, rebuilt Docker API, live management smoke and seed idempotence passed. |
 | M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
 | M4 Experiments and measurement | Complete | 5 Oct 2026: lifecycle/ingestion/SQL attribution/statistics gates, race-enabled PostgreSQL fixtures, final Docker measurement journey and API contracts passed. |
-| M5 Dashboard / MVP | In progress | Dashboard/experiment/listing browser journeys verified; seed dataset and clean Docker gates pending. |
+| M5 Dashboard / MVP | Complete | 5 Oct 2026: Go/check/race/API/frontend checks, race-enabled PostgreSQL integration, ARM64 dashboard image, fresh-volume seed idempotence, all production browser journeys and restart persistence passed; local `v0.1.0-mvp` release. |
 | M6 Redis snapshots | Pending | — |
 | M7 Durable worker | Pending | — |
 | M8 gRPC / Go SDK | Pending | — |
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M5: reproducible marketplace seed dataset, Docker dashboard and fresh-volume setup gates before the MVP tag. No V2 milestones are complete yet.
+M6: versioned compiled snapshots, bounded in-memory refresh and Redis reconciliation. No V2 milestones are complete yet.
 
 ## M5 verified checkpoints
 
@@ -67,6 +67,10 @@ M5: reproducible marketplace seed dataset, Docker dashboard and fresh-volume set
 - The marketplace renders classic two-step and simplified one-step forms. An effect submits an explicit exposure after DOM commit; only a randomized decision for the selected run is measured. Outcome/completion events copy that decision context and reuse stable IDs/timestamps across retries. A small synthetic Next submission endpoint validates at most 4 KiB, stores no real listing, and gives an actual HTTP duration for product-request metrics.
 - Demo keys have only evaluate/events-write permissions and stay in browser memory. Normal tab/project/environment navigation and logout await revocation; browser exit/reload cleanup is best effort. The browser is a trusted local operator demo, not a public production SDK or a claim of durable offline client delivery. PostgreSQL still guarantees durability once Go acknowledges a batch.
 - Chromium passed all three current browser journeys against the actual Go API, including an 80%-traffic, 30/70 A/B run; both listing flows; lost acknowledgement after commit then duplicate receipts; exact exposure counts and one completion/request per variant; finalized zero for fresh users; revoked-key denial; lifecycle audit; viewer results and HTTP 403 for viewer transitions. Final `make web-check` passed formatting, type generation/TypeScript, ten frontend unit tests and the production build. Final `make e2e` passed all three journeys after the cleanup/context changes; the full M5 Docker/seed gate remains pending.
+- Final MVP gate: pinned Node 22.23.2 slim image built the standalone Next server on ARM64, including its static assets, and ran as non-root under a 384 MiB limit. `make up` started PostgreSQL/API/web healthy; host development remains supported by stopping the Docker dashboard first.
+- Opt-in marketplace seed uses Go's management/event APIs, stable imported identities, a bounded loopback-only target, an exclusive local file lock and an ID-only ignored marker. It creates project memberships, development/staging flag configurations, a synthetic A/B fixture with 100 exposures/50 completions and a 10% JSON rollout example. Imported events are labelled synthetic and provide no fabricated request latency. The transient import credential is revoked. Existing human configurations/run state are preserved.
+- `make mvp-drill` passed against a newly created isolated Compose volume/ports: all migrations, health, two opt-in seeds with identical authoritative fact/configuration/key/audit counts, all three Chromium journeys against the Docker production build, and stop/start persistence with identical counts after another bootstrap. Only the drill's unique volume/project was removed; the existing development database stayed intact. This is a fresh-volume runtime rehearsal, not a claim of an uncached build or blank host.
+- Final source passed `make check race api-check`, `make web-check` (ten unit tests/TypeScript/format/production build), and full `go test -race -tags=integration -count=1 ./...`. Idle observed container memory was API 7.0 MiB, PostgreSQL 61.6 MiB, web 38.8 MiB; this excludes Docker Desktop/build overhead and is not a load benchmark. GitHub CI has not run remotely. M5 is complete; V2 acceptance criteria remain pending.
 
 ## M4 verified evidence
 

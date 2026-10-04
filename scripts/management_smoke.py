@@ -7,7 +7,7 @@ import urllib.request
 import uuid
 
 password = os.environ["SWITCHYARD_DEMO_PASSWORD"]
-base = "http://localhost:8080"
+base = os.environ.get("SWITCHYARD_URL", "http://localhost:8080")
 origin = os.environ.get("SWITCHYARD_ORIGIN", "http://localhost:3000")
 
 

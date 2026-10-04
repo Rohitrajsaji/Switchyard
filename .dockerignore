@@ -1,6 +1,8 @@
 .git
 .env
 .env.*
+**/.env
+**/.env.*
 .cache
 bin
 node_modules
@@ -9,3 +11,7 @@ web/.next
 agent/.venv
 coverage.out
 test-results
+web/test-results
+web/playwright-report
+web/next-env.d.ts
+**/*.tsbuildinfo

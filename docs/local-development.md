@@ -1,6 +1,6 @@
 # Local development
 
-Run `make up` then `make smoke`. PostgreSQL binds only to localhost:54329 and the API to localhost:8080. PostgreSQL uses 17.11, the current PostgreSQL 17 minor release checked against the [official version policy](https://www.postgresql.org/support/versioning/) during setup. Go and distroless images are additionally pinned to manifest digests observed in the verified build. Runtime runs as non-root. No credentials, cached dependencies or generated binaries are tracked.
+Run `make up` then `make smoke`. PostgreSQL binds only to localhost:54329, the API to localhost:8080 and the dashboard to localhost:3000. PostgreSQL uses 17.11, the supported PostgreSQL 17 minor release checked against the [official version policy](https://www.postgresql.org/support/versioning/) during setup. Go, distroless and Node images are additionally pinned to manifest digests observed in the verified build. API and dashboard runtimes run as non-root. No credentials, cached dependencies or generated binaries are tracked.
 
 The Go module pins the installed toolchain (1.27.1) and pgx 5.11.0. `make` uses ignored project-local Go build/module caches. For direct `go` commands set `GOCACHE="$PWD/.cache/go-build"` and `GOMODCACHE="$PWD/.cache/go-mod"` where the filesystem restricts global caches.
 
@@ -16,7 +16,7 @@ If it already exists, use it without recreating it. Integration tests require a 
 
 Read-header/read/write/idle timeouts and body/header limits bound HTTP resource use. SIGTERM/SIGINT drains requests for up to ten seconds before force-close, then closes the pool. Compose normal shutdown preserves named volumes.
 
-The dashboard, Redis, NATS, SDKs and telemetry containers arrive only at their approved milestones.
+The MVP runs three services: PostgreSQL (768 MiB limit), API (256 MiB) and dashboard (384 MiB, with a 256 MiB Node heap limit). These are runtime ceilings, not reserved memory or total Docker Desktop usage. Image builds can use more memory. Redis, NATS, SDKs and optional telemetry arrive at their V2 milestones.
 
 ## M2 accounts and management API
 
@@ -84,13 +84,24 @@ Request metrics count listing operations linked to valid exposures. Histograms c
 
 `SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make measurement-smoke` verifies pending outcomes become counted after exposure, extra completion IDs remain one conversion, request histograms/intervals are returned, and a fresh demo stays provisional. Finalization, A/A and SRM fixtures run in PostgreSQL integration tests with an injected clock.
 
-## M5 dashboard development (milestone in progress)
+## M5 dashboard and marketplace fixture
 
-The dashboard supports login, project/environment selection, boolean/JSON flags, targeting/rollout editing, preview, kill switch, audit history, A/B lifecycle/results and the marketplace demo. Docker still starts the Go API and PostgreSQL only; the dashboard runs on the host during this checkpoint. The reproducible product seed and Docker/fresh-volume MVP gates remain pending.
+The dashboard supports login, project/environment selection, boolean/JSON flags, targeting/rollout editing, preview, kill switch, audit history, A/B lifecycle/results and the marketplace demo. `make up` builds the production Next standalone server and starts all three MVP services. No host Node installation is required to use the Docker dashboard.
 
-Use Node 22.23.2 (the pinned CI version), with the API running and demo accounts explicitly seeded:
+Bootstrap the full opt-in fixture through the Go API:
 
 ```sh
+SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make seed-demo
+```
+
+This includes the four demo accounts and grants each membership in **Marketplace demo**, which has development/staging/production environments. Development has `listing_flow` with a running 50/50 boolean A/B experiment and `listing_config` with a 10% JSON rollout. Staging has a separate baseline configuration for `listing_flow`; production remains read-only and unconfigured. The fixture imports 100 synthetic exposures and 50 completions at the run start time. Its name, attributes and audit reasons identify it as synthetic. It supplies no fake request-outcome samples or latency. Actual Listing demo submissions add separately measured facts.
+
+Repeated seeding preserves existing flags, run state, events, keys and audit history. Only the explicitly enabled account seed writes user credentials; it does not reset existing passwords. The dataset script uses session/CSRF management endpoints and a short-lived event-write credential which it revokes after importing. Its ignored `.cache/demo-seed-*.json` marker contains IDs only; an exclusive local file lock prevents concurrent bootstraps. Removing the marker allows stable event-ID replay within the 24-hour late-event window; an older incomplete/missing-marker fixture fails rather than fabricating fresh timestamps. Human-paused/completed/killed runs are not restarted or reset. Start with a new, deliberately isolated database if a fixture has become incompatible.
+
+For hot-reload development use Node 22.23.2 (the pinned CI version), with the API running and demo accounts explicitly seeded. Free the dashboard port first:
+
+```sh
+docker compose stop web
 make web-install
 make web-dev
 ```
@@ -109,7 +120,19 @@ cd ..
 SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make e2e
 ```
 
-Browser tests start a host Next server if needed, use existing seeded users and create unique projects in the local database. They preserve recorded audit history. Test reports, browser binaries and screenshots stay ignored. `make e2e` exercises the dashboard and listing journey; M5 still needs the seeded dataset and fresh Docker setup rehearsal.
+Browser tests start a host Next server if needed, use existing seeded users and create unique projects in the local database. They preserve recorded audit history. Test reports, browser binaries and screenshots stay ignored. To test the running Docker production dashboard explicitly, use `SWITCHYARD_E2E_EXTERNAL=true SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make e2e`. `SWITCHYARD_WEB_URL` may select an alternate local dashboard URL; its origin must match both the Go API and Next server configuration.
+
+### Fresh-volume MVP gate
+
+After `make up`, `make web-install` and the Chromium installation above:
+
+```sh
+SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make mvp-drill
+```
+
+The drill creates a unique Compose project on available loopback ports using the already built images, applies all migrations to a fresh volume, runs health checks, seeds twice and compares durable row/audit counts. It runs the browser journeys against the production Docker dashboard, stops/restarts the three services, checks health and verifies unchanged data/results after another bootstrap. It finally removes only its own temporary Compose project/volume and seed marker. The normal `switchyard_postgres_data` volume is preserved. This verifies a fresh database and container runtime; it does not claim a blank host, uncached image build, remote CI or enterprise availability.
+
+Local ports are configurable with `POSTGRES_PORT`, `API_PORT` and `WEB_PORT`. When changing the browser port, set `SWITCHYARD_ORIGIN` to the exact new URL for both servers and `SWITCHYARD_URL` for host smoke/seed scripts. Host Go database settings must also use the changed PostgreSQL port.
 
 ### Experiment and listing journey
 

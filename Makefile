@@ -24,7 +24,7 @@ integration:
 	go test -tags=integration -count=1 ./...
 up:
 	@test -f .env || cp .env.example .env
-	docker compose build api
+	docker compose build api web
 	docker compose up --no-build -d --wait
 down:
 	docker compose down
@@ -39,6 +39,11 @@ foundation-drill:
 seed:
 	@test -n "$(SWITCHYARD_DEMO_PASSWORD)" || (echo 'Set SWITCHYARD_DEMO_PASSWORD explicitly'; exit 1)
 	docker compose run --rm --no-deps -e SWITCHYARD_SEED_DEMO=true -e SWITCHYARD_DEMO_PASSWORD --entrypoint /app/seed migrate
+.PHONY: seed-demo mvp-drill
+seed-demo: seed
+	python3 scripts/seed_demo.py
+mvp-drill:
+	python3 scripts/mvp_drill.py
 management-smoke:
 	python3 scripts/management_smoke.py
 fuzz-smoke:

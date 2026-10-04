@@ -1,4 +1,7 @@
 import { test, expect } from "@playwright/test";
+const origin = new URL(
+  process.env.SWITCHYARD_WEB_URL ?? "http://localhost:3000",
+).origin;
 test("admin signs in, creates a project, selects environments and reloads the session", async ({
   page,
 }) => {
@@ -158,13 +161,13 @@ test("viewer reads a member project's flags and audit but cannot mutate", async 
   if (!password) throw new Error("Set SWITCHYARD_DEMO_PASSWORD first.");
   // Arrange an independent project using the existing authoritative API.
   const login = await page.request.post("/api/backend/v1/session", {
-    headers: { Origin: "http://localhost:3000" },
+    headers: { Origin: origin },
     data: { email: "admin@example.test", password },
   });
   expect(login.status()).toBe(200);
   const adminSession = await login.json();
   const headers = {
-    Origin: "http://localhost:3000",
+    Origin: origin,
     "X-CSRF-Token": adminSession.csrf_token,
   };
   const name = `Viewer workspace ${Date.now()}`;
@@ -274,7 +277,7 @@ test("viewer reads a member project's flags and audit but cannot mutate", async 
     `/api/backend/v1/projects/${project.id}/flags`,
     {
       headers: {
-        Origin: "http://localhost:3000",
+        Origin: origin,
         "X-CSRF-Token": viewerSession.csrf_token,
         "X-Role": "admin",
       },
@@ -300,7 +303,7 @@ test("viewer reads a member project's flags and audit but cannot mutate", async 
         `/api/backend/v1/projects/${project.id}/experiments/${runID}/transitions`,
         {
           headers: {
-            Origin: "http://localhost:3000",
+            Origin: origin,
             "X-CSRF-Token": viewerSession.csrf_token,
           },
           data: {
