@@ -7,7 +7,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M1 Foundation | Complete | 5 Oct 2026: `make check race build`, ARM64 Docker build/start, Compose validation, `make smoke foundation-drill`, and real PostgreSQL 17.11 integration tests passed. |
 | M2 Identity, scope, audit | Complete | 5 Oct 2026: `make check race build`, race-enabled PostgreSQL integration, rebuilt Docker API, live management smoke and seed idempotence passed. |
 | M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
-| M4 Experiments and measurement | In progress | Run lifecycle, HTTP contracts and configuration freezing implemented and tested; events and results remain pending. |
+| M4 Experiments and measurement | In progress | Lifecycle, HTTP contracts and transactional event ingestion verified; attribution and results remain pending. |
 | M5 Dashboard / MVP | Pending | — |
 | M6 Redis snapshots | Pending | — |
 | M7 Durable worker | Pending | — |
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M4: persist A/B experiment runs and immutable variants; then explicit exposure/conversion/request events, duplicate protection, event-time attribution, SQL results, confidence intervals, significance and data-quality checks. Follow M4's gate before building the M5 dashboard. No V2 milestones are complete yet.
+M4: implement SQL attribution/results from the committed event facts, then confidence intervals, significance, sample-ratio checks and known measurement fixtures. Follow M4's full gate before building the M5 dashboard. No V2 milestones are complete yet.
 
 ## M4 partial checkpoint
 
@@ -64,4 +64,8 @@ M4: persist A/B experiment runs and immutable variants; then explicit exposure/c
 - HTTP lifecycle checkpoint: create/list/get/transition endpoints share the existing human session and CSRF boundary. Responses separate frozen `definition.revision` from the current `configuration_revision`; historical runs remain readable by viewers. Invalid control IDs, production writes, unknown treatment fields, application-key management and stale transitions are rejected.
 - `make check api-check` and full race-enabled PostgreSQL integration passed for the HTTP checkpoint. Docker rebuilt and applied migration 0004; the live lifecycle checks unequal 30/70 Python buckets, targeting exclusion, pause/resume stability and history before commit.
 - A new large-JSON regression first failed: a valid run could not be killed because full-definition comparison incorrectly applied a single-value size cap. Configuration equality now uses validated PostgreSQL jsonb equality; the regression is included in the final verification.
-- Event ingestion, attribution, statistics and M4 completion remain pending. Next: explicit exposure/completion/request schemas, bounded ingestion and payload identity conflicts, then SQL measurement.
+- Event ingestion checkpoint: exposure/listing_completion/request_outcome schemas, at most 100 events per batch, scoped `events:write` authorization inside the transaction, immutable raw facts, ordered durable receipts and project/environment event-ID uniqueness. Equivalent timestamp zones/object order/numeric spellings are duplicates; altered identities conflict and roll back the batch.
+- Reported historical flag revision validates run assignment after pause/completion. Wrong variants, targeting/nonrandomized flows, unknown revisions, events older than 24 hours and events more than five minutes ahead are quarantined. Unknown runs/malformed schemas reject the batch. Completion/request facts can arrive before exposure; business attribution is still pending.
+- `make check`, OpenAPI reference checks and full race-enabled PostgreSQL integration passed. Tests cover concurrent reversed batches, identical/different payload retries, historical receipt replay, wrong permissions/scope/revocation, timezone/numeric equivalence, quarantine boundaries, insert failure and an actual deferred COMMIT failure with no acknowledgement/partial facts.
+- Docker rebuilt and applied migration 0005. Live `make events-smoke experiments-smoke smoke` verified all three fact types, retry receipts, atomic conflict, quarantine, scope and lifecycle. No event throughput or aggregate correctness is claimed yet.
+- Attribution, statistics and M4 completion remain pending. Next: earliest event-time exposure, referenced exposure validation, user/run conversion deduplication, pending reconciliation, provisional/final cohorts and statistics.

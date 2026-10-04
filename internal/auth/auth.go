@@ -146,11 +146,16 @@ func (s *Service) Current(ctx context.Context, token string) (Session, error) {
 	return Session{Actor: actor, CSRF: csrfFor(token), ExpiresAt: expiry}, nil
 }
 func (s *Service) AuthenticateApplication(ctx context.Context, token, projectID, environmentID, permission string) (Application, error) {
+	return AuthorizeApplication(ctx, s.pool, token, projectID, environmentID, permission)
+}
+
+// AuthorizeApplication allows ingestion to check scope inside its write transaction.
+func AuthorizeApplication(ctx context.Context, db Queryer, token, projectID, environmentID, permission string) (Application, error) {
 	if len(token) != 68 || !strings.HasPrefix(token, "swk_") {
 		return Application{}, ErrUnauthorized
 	}
 	var a Application
-	err := s.pool.QueryRow(ctx, `SELECT id,project_id,environment_id,permissions FROM application_keys WHERE token_hash=$1 AND revoked_at IS NULL`, identity.Hash(token)).Scan(&a.ID, &a.ProjectID, &a.EnvironmentID, &a.Permissions)
+	err := db.QueryRow(ctx, `SELECT id,project_id,environment_id,permissions FROM application_keys WHERE token_hash=$1 AND revoked_at IS NULL`, identity.Hash(token)).Scan(&a.ID, &a.ProjectID, &a.EnvironmentID, &a.Permissions)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Application{}, ErrUnauthorized
 	}

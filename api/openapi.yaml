@@ -458,6 +458,44 @@ paths:
         '403': {$ref: '#/components/responses/Forbidden'}
         '404': {description: Run not found in this project}
         '409': {description: Stale revision, invalid state transition or disabled flag}
+  /v1/events:
+    post:
+      security:
+        - application: []
+      summary: Commit a bounded batch of explicit measurement facts
+      description: >-
+        Requires a project/environment application key with events:write permission.
+        Up to 100 events and 1 MiB per batch, with each normalized event at most 16 KiB.
+        The entire batch commits before any receipt is returned. A conflicting reused ID
+        returns 409 and rolls back new facts in that batch. Equivalent retries return the
+        original receipt with duplicate=true. Event IDs are scoped to project/environment.
+        Timestamp zones normalize to UTC and precision to microseconds; JSON object order
+        and equivalent decimal numbers do not change identity. Events more than 24 hours
+        late or 5 minutes in the future are stored in quarantine, as are assignment errors
+        and nonrandomized decisions. Unknown run IDs and malformed schemas reject the batch.
+        Historical flag revision determines assignment, rather than current configuration.
+        Outcomes may arrive before their referenced exposure; accepted does not mean counted
+        as a conversion. Attribution waits for a valid matching exposure.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/EventBatch'}
+      responses:
+        '200':
+          description: Durable per-event receipts in original input order
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [receipts]
+                properties:
+                  receipts: {type: array, items: {$ref: '#/components/schemas/EventReceipt'}}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {description: Existing event identity has a different payload; no new batch facts commit}
+        '500': {description: Transaction failed; no successful acceptance is claimed; retry with stable IDs}
 components:
   securitySchemes:
     session: {type: apiKey, in: cookie, name: switchyard_session}
@@ -470,6 +508,76 @@ components:
     FlagKey: {name: key, in: path, required: true, schema: {type: string}}
     Run: {name: run, in: path, required: true, schema: {type: string}}
   schemas:
+    EventBatch:
+      type: object
+      additionalProperties: false
+      required: [project_id, environment_id, events]
+      properties:
+        project_id: {type: string}
+        environment_id: {type: string}
+        events: {type: array, minItems: 1, maxItems: 100, items: {$ref: '#/components/schemas/MeasurementEvent'}}
+    MeasurementEvent:
+      type: object
+      additionalProperties: false
+      required: [event_id, kind, run_id, user_id, revision, decision_reason, occurred_at]
+      properties:
+        event_id: {type: string, pattern: '^[a-zA-Z0-9_-]{1,128}$'}
+        kind: {type: string, enum: [exposure, listing_completion, request_outcome]}
+        run_id: {type: string, minLength: 1, maxLength: 128}
+        user_id: {type: string, minLength: 1, maxLength: 256, description: Stable synthetic user ID; byte length is enforced}
+        variant_id: {type: string, maxLength: 128}
+        revision: {type: integer, minimum: 1}
+        decision_id: {type: string, pattern: '^[a-zA-Z0-9_-]{1,128}$', description: Evaluation correlation ID, not public assignment proof}
+        decision_reason: {type: string, enum: [experiment, targeting, default, kill_switch]}
+        exposure_id: {type: string, pattern: '^[a-zA-Z0-9_-]{1,128}$', description: Event ID of the rendered exposure; it may arrive later}
+        occurred_at: {type: string, format: date-time, description: Event time, normalized to UTC microsecond precision}
+        attributes:
+          type: [object, 'null']
+          maxProperties: 100
+          additionalProperties: {}
+          description: Copy non-sensitive evaluation attributes; each serialized value is at most 1 KiB, with bounded JSON numbers
+        is_error: {type: boolean, description: Listing-operation error, not platform API error}
+        latency_ms: {type: number, minimum: 0, maximum: 60000, description: Listing-operation duration in milliseconds}
+      allOf:
+        - if:
+            properties:
+              kind: {const: exposure}
+          then:
+            required: [decision_id]
+            properties:
+              exposure_id: false
+              is_error: false
+              latency_ms: false
+          else:
+            required: [exposure_id]
+            properties:
+              decision_id: false
+        - if:
+            properties:
+              kind: {const: request_outcome}
+          then:
+            required: [is_error, latency_ms]
+          else:
+            properties:
+              is_error: false
+              latency_ms: false
+        - if:
+            properties:
+              decision_reason: {const: experiment}
+          then:
+            required: [variant_id]
+            properties:
+              variant_id: {minLength: 1}
+    EventReceipt:
+      type: object
+      required: [event_id, status, duplicate]
+      properties:
+        event_id: {type: string}
+        status: {type: string, enum: [accepted, quarantined]}
+        reason:
+          type: string
+          enum: [too_late, future_timestamp, unknown_revision, revision_run_mismatch, invalid_configuration, invalid_context, non_randomized_exposure, assignment_mismatch]
+        duplicate: {type: boolean}
     Variant:
       type: object
       additionalProperties: false

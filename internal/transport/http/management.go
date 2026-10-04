@@ -68,6 +68,7 @@ func (m *Management) Register(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /v1/projects/{project}/flags/{key}", m.human(true, m.updateFlag))
 	mux.HandleFunc("POST /v1/projects/{project}/flags/{key}/preview", m.human(false, m.previewFlag))
 	mux.HandleFunc("POST /v1/evaluate", m.evaluate)
+	mux.HandleFunc("POST /v1/events", m.ingestEvents)
 	mux.HandleFunc("GET /v1/projects/{project}/experiments", m.human(false, m.listExperiments))
 	mux.HandleFunc("POST /v1/projects/{project}/experiments", m.human(true, m.createExperiment))
 	mux.HandleFunc("GET /v1/projects/{project}/experiments/{run}", m.human(false, m.getExperiment))

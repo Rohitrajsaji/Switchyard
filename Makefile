@@ -50,6 +50,9 @@ flags-smoke:
 .PHONY: experiments-smoke
 experiments-smoke:
 	python3 scripts/experiments_smoke.py
+.PHONY: events-smoke
+events-smoke:
+	python3 scripts/events_smoke.py
 .cache/check-tools/.ready: scripts/check-requirements.txt
 	python3 -m venv .cache/check-tools
 	PIP_CACHE_DIR="$(CURDIR)/.cache/pip" .cache/check-tools/bin/python -m pip install -r scripts/check-requirements.txt

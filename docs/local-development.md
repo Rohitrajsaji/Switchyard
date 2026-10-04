@@ -62,4 +62,14 @@ Create a baseline flag without a standalone rollout, then `POST /v1/projects/{pr
 
 Draft/running/paused runs freeze ordinary configuration changes. An emergency flag update may set `killed=true` with every other field unchanged, returning the existing safe value ahead of targeting/experiment. Starting/resuming a killed flag fails. Production remains read-only; application keys cannot manage runs. Session mutation rules and revision conflicts are the same as for flags.
 
-`SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make experiments-smoke` runs the lifecycle against Docker, independently checks 30/70 variant assignment in Python, verifies targeting exclusion and confirms pause/resume preserves assignment. Event ingestion and measured results are the remaining M4 work; evaluation alone still records no exposure.
+`SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make experiments-smoke` runs the lifecycle against Docker, independently checks 30/70 variant assignment in Python, verifies targeting exclusion and confirms pause/resume preserves assignment. Evaluation alone still records no exposure; use explicit event ingestion below. Measured results remain the next M4 checkpoint.
+
+### Explicit measurement events
+
+Use a scoped application key with `events:write` to call `POST /v1/events`. Send `project_id`, `environment_id` and up to 100 `events`. Exposure includes a stable `event_id`, `kind: exposure`, `run_id`, synthetic `user_id`, decision `variant_id`/`revision`/`decision_id`/`decision_reason`, event-time `occurred_at` and any non-sensitive evaluation attributes. Emit it only after rendering the selected flow.
+
+Completion uses `kind: listing_completion`, its own stable event ID, the same run/user/variant/revision/reason/attributes and `exposure_id`, omitting `decision_id`. Request outcome uses `kind: request_outcome` with the same context and explicit `is_error` plus `latency_ms` (0–60,000). These represent product listing operations, not Switchyard's API performance. Keep stable IDs across retries.
+
+The response contains ordered `receipts` with `accepted` or `quarantined`, a quarantine `reason` when applicable and a `duplicate` boolean. The response is returned after transaction commit. An altered payload under an existing ID returns 409 and rolls back new batch facts. Equivalent timestamps/JSON numeric spellings preserve identity. Structurally invalid events reject the batch; wrong assignments, nonrandomized flows, timestamps older than 24 hours or more than five minutes ahead are quarantined. Outcomes can be accepted before their exposure; accepted storage does not imply a counted conversion. SQL measurement remains the next M4 checkpoint.
+
+`SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make events-smoke` exercises three event types, retries, atomic identity conflict, quarantine and scope against the local Docker API. Full schemas and limits are in OpenAPI; transaction and retention boundaries are in ADR 0004.
