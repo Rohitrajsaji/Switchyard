@@ -47,6 +47,9 @@ benchmark-evaluator:
 	go test ./pkg/evaluation -run '^$$' -bench BenchmarkEvaluate -benchmem -count=3
 flags-smoke:
 	python3 scripts/flags_smoke.py
+.PHONY: experiments-smoke
+experiments-smoke:
+	python3 scripts/experiments_smoke.py
 .cache/check-tools/.ready: scripts/check-requirements.txt
 	python3 -m venv .cache/check-tools
 	PIP_CACHE_DIR="$(CURDIR)/.cache/pip" .cache/check-tools/bin/python -m pip install -r scripts/check-requirements.txt

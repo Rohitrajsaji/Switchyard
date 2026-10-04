@@ -18,6 +18,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"switchyard/internal/audit"
 	"switchyard/internal/auth"
+	"switchyard/internal/experiments"
 	"switchyard/internal/flags"
 	"switchyard/internal/platform/identity"
 	"switchyard/internal/projects"
@@ -67,6 +68,10 @@ func (m *Management) Register(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /v1/projects/{project}/flags/{key}", m.human(true, m.updateFlag))
 	mux.HandleFunc("POST /v1/projects/{project}/flags/{key}/preview", m.human(false, m.previewFlag))
 	mux.HandleFunc("POST /v1/evaluate", m.evaluate)
+	mux.HandleFunc("GET /v1/projects/{project}/experiments", m.human(false, m.listExperiments))
+	mux.HandleFunc("POST /v1/projects/{project}/experiments", m.human(true, m.createExperiment))
+	mux.HandleFunc("GET /v1/projects/{project}/experiments/{run}", m.human(false, m.getExperiment))
+	mux.HandleFunc("POST /v1/projects/{project}/experiments/{run}/transitions", m.human(true, m.transitionExperiment))
 }
 func (m *Management) login(w http.ResponseWriter, r *http.Request) {
 	if !m.limit(w, r, m.loginLimit) {
@@ -278,7 +283,7 @@ func (m *Management) fail(w http.ResponseWriter, r *http.Request, err error) {
 		status, code = 400, "invalid_input"
 	case errors.Is(err, auth.ErrConflict):
 		status, code = 409, "conflict"
-	case errors.Is(err, flags.ErrNotFound):
+	case errors.Is(err, flags.ErrNotFound), errors.Is(err, experiments.ErrNotFound):
 		status, code = 404, "not_found"
 	}
 	if status == 500 {

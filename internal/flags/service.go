@@ -144,7 +144,13 @@ func (s *Service) Update(ctx context.Context, actor auth.Actor, projectID, key s
 			if err != nil {
 				return evaluation.Definition{}, err
 			}
-			if !evaluation.Equal(evaluation.Value{Type: "json", Data: candidateBody}, evaluation.Value{Type: "json", Data: body}) {
+			// Compare complete configurations as jsonb, not as a single flag
+			// value: the definition may legitimately exceed a value's 16 KiB cap.
+			var unchanged bool
+			if err := tx.QueryRow(ctx, `SELECT $1::jsonb = $2::jsonb`, candidateBody, body).Scan(&unchanged); err != nil {
+				return evaluation.Definition{}, err
+			}
+			if !unchanged {
 				return evaluation.Definition{}, auth.ErrConflict
 			}
 		}

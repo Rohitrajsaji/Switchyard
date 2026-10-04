@@ -19,14 +19,15 @@ import (
 var ErrNotFound = errors.New("experiment not found")
 
 type Run struct {
-	ID               string                `json:"id"`
-	Name             string                `json:"name"`
-	State            string                `json:"state"`
-	ControlVariantID string                `json:"control_variant_id"`
-	Definition       evaluation.Definition `json:"definition"`
-	CreatedAt        time.Time             `json:"created_at"`
-	StartedAt        *time.Time            `json:"started_at,omitempty"`
-	CompletedAt      *time.Time            `json:"completed_at,omitempty"`
+	ID                    string                `json:"id"`
+	Name                  string                `json:"name"`
+	State                 string                `json:"state"`
+	ControlVariantID      string                `json:"control_variant_id"`
+	Definition            evaluation.Definition `json:"definition"`
+	CreatedAt             time.Time             `json:"created_at"`
+	StartedAt             *time.Time            `json:"started_at,omitempty"`
+	CompletedAt           *time.Time            `json:"completed_at,omitempty"`
+	ConfigurationRevision int64                 `json:"configuration_revision"`
 }
 type CreateInput struct {
 	EnvironmentID    string               `json:"environment_id"`
@@ -114,15 +115,16 @@ func (s *Service) Create(ctx context.Context, actor auth.Actor, projectID string
 	if err = tx.Commit(ctx); err != nil {
 		return Run{}, err
 	}
-	return Run{ID: id, Name: in.Name, State: "draft", ControlVariantID: in.ControlVariantID, Definition: d, CreatedAt: created}, nil
+	return Run{ID: id, Name: in.Name, State: "draft", ControlVariantID: in.ControlVariantID, Definition: d, CreatedAt: created, ConfigurationRevision: d.Revision}, nil
 }
 
-func readRun(ctx context.Context, q interface {
-	QueryRow(context.Context, string, ...any) pgx.Row
-}, projectID, id string) (Run, error) {
+const runColumns = `r.id,r.name,r.state,r.control_variant_id,r.definition,r.created_at,r.started_at,r.completed_at,s.current_revision`
+const runTables = `experiment_runs r JOIN environment_flag_state s ON s.flag_id=r.flag_id AND s.environment_id=r.environment_id`
+
+func scanRun(row interface{ Scan(...any) error }) (Run, error) {
 	var r Run
 	var body []byte
-	err := q.QueryRow(ctx, `SELECT id,name,state,control_variant_id,definition,created_at,started_at,completed_at FROM experiment_runs WHERE project_id=$1 AND id=$2`, projectID, id).Scan(&r.ID, &r.Name, &r.State, &r.ControlVariantID, &body, &r.CreatedAt, &r.StartedAt, &r.CompletedAt)
+	err := row.Scan(&r.ID, &r.Name, &r.State, &r.ControlVariantID, &body, &r.CreatedAt, &r.StartedAt, &r.CompletedAt, &r.ConfigurationRevision)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Run{}, ErrNotFound
 	}
@@ -131,6 +133,35 @@ func readRun(ctx context.Context, q interface {
 	}
 	err = json.Unmarshal(body, &r.Definition)
 	return r, err
+}
+
+func readRun(ctx context.Context, q interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, projectID, id string) (Run, error) {
+	return scanRun(q.QueryRow(ctx, `SELECT `+runColumns+` FROM `+runTables+` WHERE r.project_id=$1 AND r.id=$2`, projectID, id))
+}
+
+func (s *Service) List(ctx context.Context, actor auth.Actor, projectID, environmentID string) ([]Run, error) {
+	if environmentID == "" {
+		return nil, auth.ErrInvalid
+	}
+	if err := auth.Authorize(ctx, s.pool, actor, projectID, environmentID, false); err != nil {
+		return nil, err
+	}
+	rows, err := s.pool.Query(ctx, `SELECT `+runColumns+` FROM `+runTables+` WHERE r.project_id=$1 AND r.environment_id=$2 ORDER BY r.created_at DESC,r.id DESC LIMIT 100`, projectID, environmentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	result := make([]Run, 0)
+	for rows.Next() {
+		r, err := scanRun(rows)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, r)
+	}
+	return result, rows.Err()
 }
 func (s *Service) Get(ctx context.Context, actor auth.Actor, projectID, id string) (Run, error) {
 	// Authorize project membership before looking up a scoped run.

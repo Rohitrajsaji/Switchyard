@@ -7,7 +7,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M1 Foundation | Complete | 5 Oct 2026: `make check race build`, ARM64 Docker build/start, Compose validation, `make smoke foundation-drill`, and real PostgreSQL 17.11 integration tests passed. |
 | M2 Identity, scope, audit | Complete | 5 Oct 2026: `make check race build`, race-enabled PostgreSQL integration, rebuilt Docker API, live management smoke and seed idempotence passed. |
 | M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
-| M4 Experiments and measurement | In progress | Run lifecycle and configuration freezing implemented and tested; HTTP, events and results remain pending. |
+| M4 Experiments and measurement | In progress | Run lifecycle, HTTP contracts and configuration freezing implemented and tested; events and results remain pending. |
 | M5 Dashboard / MVP | Pending | — |
 | M6 Redis snapshots | Pending | — |
 | M7 Durable worker | Pending | — |
@@ -61,4 +61,7 @@ M4: persist A/B experiment runs and immutable variants; then explicit exposure/c
 - Lifecycle and ordinary flag mutation share the same PostgreSQL flag-row lock. Transitions compare revisions, create a flag revision and append audit in one transaction. Failed audit insertion rolls everything back.
 - Reserved flags reject population edits while allowing an emergency kill with all other configuration unchanged. A killed run cannot start/resume. Production remains read-only pending M9.
 - Unit lifecycle tests and real PostgreSQL tests cover concurrent starts, role/scope checks, freezing, audit atomicity, pause/resume assignment stability, historical definitions and successive runs. `make check` and full race-enabled integration passed for the initial lifecycle checkpoint; the strengthened active-run kill regression is also verified before commit.
-- This is a domain-layer checkpoint only. No experiment HTTP endpoints, event ingestion, results, M4 completion or runtime Docker migration is claimed yet. Next: HTTP lifecycle contracts, then measurement events and SQL attribution.
+- HTTP lifecycle checkpoint: create/list/get/transition endpoints share the existing human session and CSRF boundary. Responses separate frozen `definition.revision` from the current `configuration_revision`; historical runs remain readable by viewers. Invalid control IDs, production writes, unknown treatment fields, application-key management and stale transitions are rejected.
+- `make check api-check` and full race-enabled PostgreSQL integration passed for the HTTP checkpoint. Docker rebuilt and applied migration 0004; the live lifecycle checks unequal 30/70 Python buckets, targeting exclusion, pause/resume stability and history before commit.
+- A new large-JSON regression first failed: a valid run could not be killed because full-definition comparison incorrectly applied a single-value size cap. Configuration equality now uses validated PostgreSQL jsonb equality; the regression is included in the final verification.
+- Event ingestion, attribution, statistics and M4 completion remain pending. Next: explicit exposure/completion/request schemas, bounded ingestion and payload identity conflicts, then SQL measurement.

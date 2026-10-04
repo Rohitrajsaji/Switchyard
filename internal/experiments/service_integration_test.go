@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"sync"
 	"testing"
 
@@ -189,5 +190,27 @@ func TestRunLifecycleFreezesPopulationAndCommitsAtomically(t *testing.T) {
 	}
 	if _, err = s.Transition(ctx, actor, p.ID, next.ID, experiments.TransitionInput{ExpectedRevision: 9, Action: "start", Reason: "unsafe restart"}, "restart"); !errors.Is(err, auth.ErrConflict) {
 		t.Fatalf("killed run started: %v", err)
+	}
+	// Each value is under its 16 KiB limit even though a full definition is larger.
+	largeBody, _ := json.Marshal(strings.Repeat("x", 8000))
+	largeValue := evaluation.Value{Type: "json", Data: largeBody}
+	largeCfg := flags.Configuration{Default: largeValue, Safe: largeValue}
+	if _, err = fs.Create(ctx, actor, p.ID, flags.CreateInput{EnvironmentID: env, Key: "large_json", Type: "json", Configuration: largeCfg, Reason: "large JSON config"}, "large-flag"); err != nil {
+		t.Fatal(err)
+	}
+	largeInput := input
+	largeInput.FlagKey = "large_json"
+	largeInput.ExpectedRevision = 1
+	largeInput.Variants = []evaluation.Variant{{ID: "control", Ordinal: 0, WeightBP: 5000, Value: largeValue}, {ID: "treatment", Ordinal: 1, WeightBP: 5000, Value: largeValue}}
+	largeRun, err := s.Create(ctx, actor, p.ID, largeInput, "large-run")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Transition(ctx, actor, p.ID, largeRun.ID, experiments.TransitionInput{ExpectedRevision: 1, Action: "start", Reason: "large run"}, "large-start"); err != nil {
+		t.Fatal(err)
+	}
+	largeCfg.Killed = true
+	if _, err = fs.Update(ctx, actor, p.ID, "large_json", flags.UpdateInput{EnvironmentID: env, ExpectedRevision: 2, Configuration: largeCfg, Reason: "disable large run"}, "large-kill"); err != nil {
+		t.Fatalf("valid large definition could not be killed: %v", err)
 	}
 }

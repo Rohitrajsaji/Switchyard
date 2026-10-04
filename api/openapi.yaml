@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Switchyard API
-  version: 0.0.3
+  version: 0.0.4
   description: >-
     Modular Go experimentation platform. Management requires human sessions.
     Production configuration is read-only until the approval milestone.
@@ -361,6 +361,103 @@ paths:
         '400': {$ref: '#/components/responses/Invalid'}
         '401': {$ref: '#/components/responses/Unauthorized'}
         '403': {$ref: '#/components/responses/Forbidden'}
+  /v1/projects/{project}/experiments:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+    get:
+      summary: List the 100 most recent runs in an environment
+      parameters:
+        - $ref: '#/components/parameters/EnvironmentQuery'
+      responses:
+        '200':
+          description: Runs ordered by creation time descending
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/ExperimentRun'}}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    post:
+      summary: Create a draft experiment with immutable population and treatments
+      description: >-
+        Developer/admin project members only, development/staging only in MVP.
+        Requires an existing enabled flag configuration without a standalone rollout.
+        Draft and paused runs reserve the flag/environment until completed.
+        Creation does not start evaluation or change the flag revision.
+        Request body is limited to 64 KiB.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ExperimentCreate'}
+      responses:
+        '201':
+          description: Draft created and audited atomically
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ExperimentRun'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: Flag configuration not found}
+        '409': {description: Revision conflict or flag already reserved, killed or in standalone rollout}
+  /v1/projects/{project}/experiments/{run}:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - $ref: '#/components/parameters/Run'
+    get:
+      summary: Inspect a current or historical run
+      responses:
+        '200':
+          description: Frozen run definition and current flag configuration revision
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ExperimentRun'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: Run not found in this project}
+  /v1/projects/{project}/experiments/{run}/transitions:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - $ref: '#/components/parameters/Run'
+    post:
+      summary: Start, pause, resume or complete a run
+      description: >-
+        Use action start to resume a paused run. No treatment edits are accepted.
+        Start/resume attaches the immutable experiment; pause/complete detaches it.
+        Every successful transition creates a flag revision and audit record in one transaction.
+        Completed runs cannot restart; killed flags cannot start/resume.
+        Send configuration_revision as expected_revision, rather than definition.revision.
+        Request body is limited to 4 KiB.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [expected_revision, action, reason]
+              properties:
+                expected_revision: {type: integer, minimum: 1}
+                action: {type: string, enum: [start, pause, complete]}
+                reason: {type: string, minLength: 1, maxLength: 512}
+      responses:
+        '200':
+          description: Updated lifecycle and current configuration revision
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ExperimentRun'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: Run not found in this project}
+        '409': {description: Stale revision, invalid state transition or disabled flag}
 components:
   securitySchemes:
     session: {type: apiKey, in: cookie, name: switchyard_session}
@@ -371,7 +468,54 @@ components:
     CSRF: {name: X-CSRF-Token, in: header, required: true, schema: {type: string}, description: Token from current session response}
     EnvironmentQuery: {name: environment_id, in: query, required: true, schema: {type: string}}
     FlagKey: {name: key, in: path, required: true, schema: {type: string}}
+    Run: {name: run, in: path, required: true, schema: {type: string}}
   schemas:
+    Variant:
+      type: object
+      additionalProperties: false
+      required: [id, ordinal, weight_bp, value]
+      properties:
+        id: {type: string, minLength: 1, maxLength: 128}
+        ordinal: {type: integer, minimum: 0}
+        weight_bp: {type: integer, minimum: 1, maximum: 10000}
+        value: {$ref: '#/components/schemas/FlagValue'}
+      description: Unique IDs and ordinals; all weights must sum to 10000; values match the flag type
+    ExperimentAssignment:
+      type: object
+      required: [run_id, eligibility_salt, variant_salt, traffic_bp, variants]
+      properties:
+        run_id: {type: string}
+        eligibility_salt: {type: string}
+        variant_salt: {type: string}
+        traffic_bp: {type: integer, minimum: 0, maximum: 10000}
+        variants: {type: array, minItems: 2, maxItems: 10, items: {$ref: '#/components/schemas/Variant'}}
+    ExperimentCreate:
+      type: object
+      additionalProperties: false
+      required: [environment_id, flag_key, expected_revision, name, control_variant_id, traffic_bp, variants, reason]
+      properties:
+        environment_id: {type: string}
+        flag_key: {type: string}
+        expected_revision: {type: integer, minimum: 1}
+        name: {type: string, minLength: 1, maxLength: 128}
+        control_variant_id: {type: string, description: Must identify one supplied variant}
+        traffic_bp: {type: integer, minimum: 0, maximum: 10000}
+        variants: {type: array, minItems: 2, maxItems: 10, items: {$ref: '#/components/schemas/Variant'}}
+        reason: {type: string, minLength: 1, maxLength: 512}
+    ExperimentRun:
+      type: object
+      required: [id, name, state, control_variant_id, definition, configuration_revision, created_at]
+      properties:
+        id: {type: string}
+        name: {type: string}
+        state: {type: string, enum: [draft, running, paused, completed]}
+        control_variant_id: {type: string}
+        definition: {$ref: '#/components/schemas/FlagDefinition'}
+        configuration_revision: {type: integer, minimum: 1, description: Current flag revision to send in a lifecycle mutation}
+        created_at: {type: string, format: date-time}
+        started_at: {type: string, format: date-time}
+        completed_at: {type: string, format: date-time}
+      description: Definition is immutable and includes the run assignment; its revision is the original creation revision
     FlagValue:
       oneOf:
         - type: object
@@ -454,6 +598,7 @@ components:
             key: {type: string}
             type: {type: string, enum: [boolean, json]}
             revision: {type: integer, minimum: 1}
+            experiment: {$ref: '#/components/schemas/ExperimentAssignment'}
     EvaluationInput:
       type: object
       additionalProperties: false
