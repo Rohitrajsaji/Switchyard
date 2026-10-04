@@ -113,6 +113,10 @@ func (s *Service) Update(ctx context.Context, actor auth.Actor, projectID, key s
 	if before != in.ExpectedRevision {
 		return evaluation.Definition{}, auth.ErrConflict
 	}
+	var reserved bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM experiment_runs WHERE flag_id=$1 AND environment_id=$2 AND state<>'completed')`, flagID, in.EnvironmentID).Scan(&reserved); err != nil {
+		return evaluation.Definition{}, err
+	}
 	d := definition(projectID, in.EnvironmentID, flagID, key, kind, before+1, in.Configuration)
 	if before > 0 {
 		var body []byte
@@ -123,9 +127,27 @@ func (s *Service) Update(ctx context.Context, actor auth.Actor, projectID, key s
 		if err := json.Unmarshal(body, &old); err != nil {
 			return evaluation.Definition{}, err
 		}
-		if old.Experiment != nil {
-			return evaluation.Definition{}, auth.ErrConflict
-		} // Experiment-aware mutations arrive in M4/M9.
+		if reserved || old.Experiment != nil {
+			// A frozen population permits only an emergency disable, with every
+			// other field unchanged. Preserve attached run metadata for history.
+			if old.Killed || !d.Killed {
+				return evaluation.Definition{}, auth.ErrConflict
+			}
+			d.Experiment = old.Experiment
+			candidate := d
+			candidate.Revision, candidate.Killed = old.Revision, old.Killed
+			compiled, err := evaluation.Compile(candidate)
+			if err != nil {
+				return evaluation.Definition{}, auth.ErrInvalid
+			}
+			candidateBody, err := json.Marshal(compiled)
+			if err != nil {
+				return evaluation.Definition{}, err
+			}
+			if !evaluation.Equal(evaluation.Value{Type: "json", Data: candidateBody}, evaluation.Value{Type: "json", Data: body}) {
+				return evaluation.Definition{}, auth.ErrConflict
+			}
+		}
 		// Salt changes would reshuffle users; changing the population requires a new flag/run.
 		if old.Rollout != nil && d.Rollout != nil && old.Rollout.Salt != d.Rollout.Salt {
 			return evaluation.Definition{}, auth.ErrInvalid
@@ -207,6 +229,40 @@ func saveRevision(ctx context.Context, tx pgx.Tx, actor auth.Actor, d *evaluatio
 	}
 	_, err = tx.Exec(ctx, `INSERT INTO environment_flag_state(project_id,environment_id,flag_id,current_revision) VALUES($1,$2,$3,$4) ON CONFLICT(flag_id,environment_id) DO UPDATE SET current_revision=excluded.current_revision`, d.ProjectID, d.EnvironmentID, d.FlagID, d.Revision)
 	return err
+}
+
+// LockCurrent serializes configuration mutations with experiment lifecycle operations.
+// The caller must authorize the actor in the same transaction before calling it.
+func LockCurrent(ctx context.Context, tx pgx.Tx, projectID, environmentID, key string) (evaluation.Definition, error) {
+	var flagID string
+	err := tx.QueryRow(ctx, `SELECT id FROM flags WHERE project_id=$1 AND key=$2 FOR UPDATE`, projectID, key).Scan(&flagID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return evaluation.Definition{}, ErrNotFound
+	}
+	if err != nil {
+		return evaluation.Definition{}, err
+	}
+	var body []byte
+	err = tx.QueryRow(ctx, `SELECT r.definition FROM environment_flag_state s JOIN flag_revisions r ON r.flag_id=s.flag_id AND r.environment_id=s.environment_id AND r.revision=s.current_revision WHERE s.flag_id=$1 AND s.environment_id=$2`, flagID, environmentID).Scan(&body)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return evaluation.Definition{}, ErrNotFound
+	}
+	if err != nil {
+		return evaluation.Definition{}, err
+	}
+	var d evaluation.Definition
+	err = json.Unmarshal(body, &d)
+	return d, err
+}
+
+// AppendRevision validates and persists a definition inside an already locked transaction.
+// The caller owns authorization, expected-revision checks, audit and commit.
+func AppendRevision(ctx context.Context, tx pgx.Tx, actor auth.Actor, d *evaluation.Definition) error {
+	c, err := evaluation.Compile(*d)
+	if err != nil {
+		return auth.ErrInvalid
+	}
+	return saveRevision(ctx, tx, actor, d, c)
 }
 func keyDetails(key string) json.RawMessage {
 	b, err := json.Marshal(map[string]string{"flag_key": key})

@@ -7,7 +7,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M1 Foundation | Complete | 5 Oct 2026: `make check race build`, ARM64 Docker build/start, Compose validation, `make smoke foundation-drill`, and real PostgreSQL 17.11 integration tests passed. |
 | M2 Identity, scope, audit | Complete | 5 Oct 2026: `make check race build`, race-enabled PostgreSQL integration, rebuilt Docker API, live management smoke and seed idempotence passed. |
 | M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
-| M4 Experiments and measurement | Pending | — |
+| M4 Experiments and measurement | In progress | Run lifecycle and configuration freezing implemented and tested; HTTP, events and results remain pending. |
 | M5 Dashboard / MVP | Pending | — |
 | M6 Redis snapshots | Pending | — |
 | M7 Durable worker | Pending | — |
@@ -54,3 +54,11 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 ## Next implementation checkpoint
 
 M4: persist A/B experiment runs and immutable variants; then explicit exposure/conversion/request events, duplicate protection, event-time attribution, SQL results, confidence intervals, significance and data-quality checks. Follow M4's gate before building the M5 dashboard. No V2 milestones are complete yet.
+
+## M4 partial checkpoint
+
+- Added experiment runs with draft/running/paused/completed lifecycle, immutable population/treatment snapshots, generated independent salts and an explicit control variant. Draft and paused runs reserve their flag/environment; completed runs retain historical definitions.
+- Lifecycle and ordinary flag mutation share the same PostgreSQL flag-row lock. Transitions compare revisions, create a flag revision and append audit in one transaction. Failed audit insertion rolls everything back.
+- Reserved flags reject population edits while allowing an emergency kill with all other configuration unchanged. A killed run cannot start/resume. Production remains read-only pending M9.
+- Unit lifecycle tests and real PostgreSQL tests cover concurrent starts, role/scope checks, freezing, audit atomicity, pause/resume assignment stability, historical definitions and successive runs. `make check` and full race-enabled integration passed for the initial lifecycle checkpoint; the strengthened active-run kill regression is also verified before commit.
+- This is a domain-layer checkpoint only. No experiment HTTP endpoints, event ingestion, results, M4 completion or runtime Docker migration is claimed yet. Next: HTTP lifecycle contracts, then measurement events and SQL attribution.
