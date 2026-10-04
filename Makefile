@@ -17,13 +17,15 @@ build:
 	mkdir -p bin
 	go build -o bin/api ./cmd/api
 	go build -o bin/migrate ./cmd/migrate
+	go build -o bin/seed ./cmd/seed
 check: fmt-check vet test
 integration:
 	@test -n "$(TEST_DATABASE_URL)" || (echo 'Set TEST_DATABASE_URL to an isolated test database'; exit 1)
 	go test -tags=integration -count=1 ./...
 up:
 	@test -f .env || cp .env.example .env
-	docker compose up --build -d --wait
+	docker compose build api
+	docker compose up --no-build -d --wait
 down:
 	docker compose down
 migrate:
@@ -34,3 +36,8 @@ logs:
 	docker compose logs --tail=100
 foundation-drill:
 	python3 scripts/foundation_drill.py
+seed:
+	@test -n "$(SWITCHYARD_DEMO_PASSWORD)" || (echo 'Set SWITCHYARD_DEMO_PASSWORD explicitly'; exit 1)
+	docker compose run --rm --no-deps -e SWITCHYARD_SEED_DEMO=true -e SWITCHYARD_DEMO_PASSWORD --entrypoint /app/seed migrate
+management-smoke:
+	python3 scripts/management_smoke.py

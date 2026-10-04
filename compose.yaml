@@ -18,10 +18,8 @@ services:
       retries: 30
     restart: unless-stopped
   migrate:
-    build:
-      context: .
-      dockerfile: deploy/docker/api.Dockerfile
     image: switchyard-api:local
+    pull_policy: never
     entrypoint: ["/app/migrate"]
     environment:
       DATABASE_URL: postgres://switchyard:${POSTGRES_PASSWORD:?required}@postgres:5432/switchyard?sslmode=disable
@@ -38,6 +36,8 @@ services:
       DATABASE_URL: postgres://switchyard:${POSTGRES_PASSWORD:?required}@postgres:5432/switchyard?sslmode=disable
       HTTP_ADDR: 0.0.0.0:8080
       DB_MAX_CONNS: "10"
+      SWITCHYARD_ORIGIN: ${SWITCHYARD_ORIGIN:-http://localhost:3000}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:

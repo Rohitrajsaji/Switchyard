@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"switchyard/migrations"
 )
 
 func Open(ctx context.Context, url string, maxConns int32) (*pgxpool.Pool, error) {
@@ -25,7 +26,7 @@ func Ready(ctx context.Context, pool *pgxpool.Pool) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var exists bool
-	if err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM service_metadata WHERE key='service' AND value='switchyard')`).Scan(&exists); err != nil {
+	if err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM service_metadata WHERE key='service' AND value='switchyard') AND (SELECT max(version) FROM schema_migrations)=$1`, migrations.Latest()).Scan(&exists); err != nil {
 		return err
 	}
 	if !exists {

@@ -17,3 +17,17 @@ If it already exists, use it without recreating it. Integration tests require a 
 Read-header/read/write/idle timeouts and body/header limits bound HTTP resource use. SIGTERM/SIGINT drains requests for up to ten seconds before force-close, then closes the pool. Compose normal shutdown preserves named volumes.
 
 The dashboard, Redis, NATS, SDKs and telemetry containers arrive only at their approved milestones.
+
+## M2 accounts and management API
+
+Explicitly create local demo accounts after migrations:
+
+```sh
+SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make seed
+```
+
+This local-only example creates `admin@example.test`, `reviewer@example.test`, `developer@example.test` and `viewer@example.test`. Re-running seed does not change existing credentials or duplicate creation audit entries. Login sends `POST /v1/session` with JSON email/password and `Origin: http://localhost:3000`, matching `SWITCHYARD_ORIGIN`. Keep the Set-Cookie cookie and returned `csrf_token`; mutations also send `X-CSRF-Token`. The current-session GET reissues that token after reload. No account is created unless seed is explicitly enabled.
+
+Management endpoints and permission details are in [OpenAPI](../api/openapi.yaml). `make seed` does not automatically grant project memberships: the admin creates a project and grants others membership explicitly. Each project automatically gets development/staging/production. Production configuration is read-only until M9. Application credentials do not grant management access.
+
+Cookie Secure is disabled only for local HTTP. A hosted deployment would need HTTPS, `COOKIE_SECURE=true`, an exact trusted origin, non-demo credentials and a separately approved deployment plan.

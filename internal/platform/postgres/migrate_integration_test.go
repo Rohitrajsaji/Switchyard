@@ -38,7 +38,11 @@ func TestMigrationFreshSchemaIdempotenceAndConcurrentStartup(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil {
 		t.Fatal(err)
 	}
-	if count != 1 {
+	entries, err := migrations.Files.ReadDir(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != len(entries) {
 		t.Fatalf("migration count=%d", count)
 	}
 }

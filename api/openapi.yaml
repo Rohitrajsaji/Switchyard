@@ -1,0 +1,315 @@
+openapi: 3.1.0
+info:
+  title: Switchyard API
+  version: 0.0.2
+  description: >-
+    Modular Go experimentation platform. Management requires human sessions.
+    Production configuration is read-only until the approval milestone.
+    Application keys cannot authorize management operations.
+servers:
+  - url: http://localhost:8080
+security:
+  - session: []
+paths:
+  /health/live:
+    get:
+      security: []
+      summary: Process liveness
+      responses:
+        '200': {description: Process alive}
+  /health/ready:
+    get:
+      security: []
+      summary: Database and release schema readiness
+      responses:
+        '200': {description: Ready}
+        '503': {description: Database or schema unavailable}
+  /v1/session:
+    post:
+      security: []
+      summary: Log in and create a 24-hour opaque session
+      description: >-
+        Requires configured Origin. Sets an HttpOnly SameSite=Strict cookie.
+        Returns a CSRF token for subsequent session mutations.
+        Ten login attempts per minute per direct peer IP; no forwarded IP trust.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [email, password]
+              properties:
+                email: {type: string, format: email, maxLength: 254}
+                password: {type: string, maxLength: 72}
+      responses:
+        '200':
+          description: Authenticated; session token is only in Set-Cookie
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Session'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {description: Rate limited; respect Retry-After}
+    get:
+      summary: Current user and CSRF token after reload
+      responses:
+        '200':
+          description: Current session; never cache
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Session'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    delete:
+      summary: Revoke current session
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204': {description: Session revoked and cookie expired}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /v1/projects:
+    get:
+      summary: List up to 100 projects the current human belongs to
+      responses:
+        '200':
+          description: Visible projects
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/Project'}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      summary: Create a project and its three environments
+      description: Developer/admin only; creator becomes a member. Audited atomically.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name]
+              properties:
+                name: {type: string, minLength: 1, maxLength: 120}
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Project'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /v1/users:
+    post:
+      summary: Create an organization user (admin only)
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [email, password, role]
+              properties:
+                email: {type: string, format: email, maxLength: 254}
+                password: {type: string, minLength: 12, maxLength: 72, description: Limits apply to UTF-8 byte length for bcrypt}
+                role: {type: string, enum: [viewer, developer, admin]}
+      responses:
+        '201':
+          description: Created user; password never returned
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Actor'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {description: Email already exists}
+  /v1/projects/{project}/environments:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+    get:
+      summary: List development, staging and production identifiers
+      responses:
+        '200':
+          description: Environments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [id, name]
+                  properties:
+                    id: {type: string}
+                    name: {type: string, enum: [development, staging, production]}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /v1/projects/{project}/members:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+    post:
+      summary: Grant project membership (admin member only)
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [user_id]
+              properties:
+                user_id: {type: string}
+      responses:
+        '204': {description: Membership created and audited}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {description: Membership already exists}
+  /v1/projects/{project}/application-keys:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+    post:
+      summary: Create a scoped application key (development/staging only in MVP)
+      description: Token is returned once, stored only as a SHA-256 hash, and excluded from audit details.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name, environment_id, permissions]
+              properties:
+                name: {type: string, minLength: 1, maxLength: 120}
+                environment_id: {type: string}
+                permissions:
+                  type: array
+                  minItems: 1
+                  maxItems: 3
+                  uniqueItems: true
+                  items: {type: string, enum: [evaluate, 'events:write', 'config:read']}
+      responses:
+        '201':
+          description: One-time key response
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, token, permissions]
+                properties:
+                  id: {type: string}
+                  token: {type: string}
+                  permissions: {type: array, items: {type: string}}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /v1/projects/{project}/application-keys/{key}:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - name: key
+        in: path
+        required: true
+        schema: {type: string}
+    delete:
+      summary: Revoke an application key (developer/admin member)
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204': {description: Revoked and audited}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {description: Unknown or already revoked key}
+  /v1/projects/{project}/audit:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+    get:
+      summary: List up to 100 audit records in descending ID order
+      parameters:
+        - name: before_id
+          in: query
+          schema: {type: integer, minimum: 1}
+      responses:
+        '200':
+          description: Append-only application history
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/AuditEntry'}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+components:
+  securitySchemes:
+    session: {type: apiKey, in: cookie, name: switchyard_session}
+  parameters:
+    Project: {name: project, in: path, required: true, schema: {type: string}}
+    Origin: {name: Origin, in: header, required: true, schema: {type: string}, description: Must equal configured SWITCHYARD_ORIGIN}
+    CSRF: {name: X-CSRF-Token, in: header, required: true, schema: {type: string}, description: Token from current session response}
+  schemas:
+    Actor:
+      type: object
+      required: [id, email, role]
+      properties:
+        id: {type: string}
+        email: {type: string, format: email}
+        role: {type: string, enum: [viewer, developer, admin]}
+    Session:
+      type: object
+      required: [user, csrf_token, expires_at]
+      properties:
+        user: {$ref: '#/components/schemas/Actor'}
+        csrf_token: {type: string}
+        expires_at: {type: string, format: date-time}
+    Project:
+      type: object
+      required: [id, name]
+      properties:
+        id: {type: string}
+        name: {type: string}
+    AuditEntry:
+      type: object
+      required: [id, actor_id, source, project_id, action, request_id, reason, details, created_at]
+      properties:
+        id: {type: integer}
+        actor_id: {type: string}
+        source: {type: string, enum: [human, application, system, agent]}
+        project_id: {type: string}
+        environment_id: {type: string}
+        action: {type: string}
+        request_id: {type: string}
+        reason: {type: string}
+        before_revision: {type: integer}
+        after_revision: {type: integer}
+        details: {type: object}
+        created_at: {type: string, format: date-time}
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: {type: string}
+        request_id: {type: string}
+  responses:
+    Unauthorized:
+      description: Invalid, expired or revoked session
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    Forbidden:
+      description: Permission, origin, CSRF or scope denied
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    Invalid:
+      description: Invalid input; unknown JSON fields, multiple documents and null bodies are rejected
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}

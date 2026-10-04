@@ -13,7 +13,7 @@ import (
 
 var requestIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,64}$`)
 
-func New(logger *slog.Logger, ready func(context.Context) error) http.Handler {
+func New(logger *slog.Logger, ready func(context.Context) error, register ...func(*http.ServeMux)) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { JSON(w, 200, map[string]string{"status": "alive"}) })
 	mux.HandleFunc("GET /health/ready", func(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +23,9 @@ func New(logger *slog.Logger, ready func(context.Context) error) http.Handler {
 		}
 		JSON(w, 200, map[string]string{"status": "ready"})
 	})
+	for _, r := range register {
+		r(mux)
+	}
 	return Middleware(logger, mux)
 }
 

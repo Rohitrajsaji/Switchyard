@@ -52,7 +52,15 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer pool.Close()
-	h := httpapi.New(logger, func(ctx context.Context) error { return postgres.Ready(ctx, pool) })
+	origin := os.Getenv("SWITCHYARD_ORIGIN")
+	if origin == "" {
+		origin = "http://localhost:3000"
+	}
+	management, err := httpapi.NewManagement(pool, logger, origin, os.Getenv("COOKIE_SECURE") == "true")
+	if err != nil {
+		return err
+	}
+	h := httpapi.New(logger, func(ctx context.Context) error { return postgres.Ready(ctx, pool) }, management.Register)
 	server := &http.Server{Addr: cfg.HTTPAddr, Handler: h, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 16}
 	listener, err := net.Listen("tcp", cfg.HTTPAddr)
 	if err != nil {
