@@ -1,0 +1,11 @@
+.git
+.env
+.env.*
+.cache
+bin
+node_modules
+web/node_modules
+web/.next
+agent/.venv
+coverage.out
+test-results

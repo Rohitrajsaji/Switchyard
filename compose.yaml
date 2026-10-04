@@ -1,0 +1,54 @@
+name: switchyard
+services:
+  postgres:
+    image: postgres:17.11-bookworm
+    environment:
+      POSTGRES_DB: switchyard
+      POSTGRES_USER: switchyard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env first}
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    mem_limit: 768m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U switchyard -d switchyard"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  migrate:
+    build:
+      context: .
+      dockerfile: deploy/docker/api.Dockerfile
+    image: switchyard-api:local
+    entrypoint: ["/app/migrate"]
+    environment:
+      DATABASE_URL: postgres://switchyard:${POSTGRES_PASSWORD:?required}@postgres:5432/switchyard?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    mem_limit: 128m
+  api:
+    build:
+      context: .
+      dockerfile: deploy/docker/api.Dockerfile
+    image: switchyard-api:local
+    environment:
+      DATABASE_URL: postgres://switchyard:${POSTGRES_PASSWORD:?required}@postgres:5432/switchyard?sslmode=disable
+      HTTP_ADDR: 0.0.0.0:8080
+      DB_MAX_CONNS: "10"
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD", "/app/api", "healthcheck"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+volumes:
+  postgres_data:
