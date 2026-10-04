@@ -18,7 +18,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"switchyard/internal/audit"
 	"switchyard/internal/auth"
+	"switchyard/internal/flags"
+	"switchyard/internal/platform/identity"
 	"switchyard/internal/projects"
+	"switchyard/pkg/evaluation"
 )
 
 const SessionCookie = "switchyard_session"
@@ -58,6 +61,12 @@ func (m *Management) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/projects/{project}/application-keys", m.human(true, m.createKey))
 	mux.HandleFunc("DELETE /v1/projects/{project}/application-keys/{key}", m.human(true, m.revokeKey))
 	mux.HandleFunc("GET /v1/projects/{project}/audit", m.human(false, m.audit))
+	mux.HandleFunc("GET /v1/projects/{project}/flags", m.human(false, m.listFlags))
+	mux.HandleFunc("POST /v1/projects/{project}/flags", m.human(true, m.createFlag))
+	mux.HandleFunc("GET /v1/projects/{project}/flags/{key}", m.human(false, m.getFlag))
+	mux.HandleFunc("PUT /v1/projects/{project}/flags/{key}", m.human(true, m.updateFlag))
+	mux.HandleFunc("POST /v1/projects/{project}/flags/{key}/preview", m.human(false, m.previewFlag))
+	mux.HandleFunc("POST /v1/evaluate", m.evaluate)
 }
 func (m *Management) login(w http.ResponseWriter, r *http.Request) {
 	if !m.limit(w, r, m.loginLimit) {
@@ -269,11 +278,137 @@ func (m *Management) fail(w http.ResponseWriter, r *http.Request, err error) {
 		status, code = 400, "invalid_input"
 	case errors.Is(err, auth.ErrConflict):
 		status, code = 409, "conflict"
+	case errors.Is(err, flags.ErrNotFound):
+		status, code = 404, "not_found"
 	}
 	if status == 500 {
 		m.logger.Error("management operation failed", "route", r.Pattern, "request_id", w.Header().Get("X-Request-ID"))
 	}
 	JSON(w, status, map[string]string{"error": code, "request_id": w.Header().Get("X-Request-ID")})
+}
+
+func (m *Management) listFlags(w http.ResponseWriter, r *http.Request, actor auth.Actor) {
+	items, err := flags.New(m.pool).List(r.Context(), actor, r.PathValue("project"), r.URL.Query().Get("environment_id"))
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	JSON(w, 200, items)
+}
+func (m *Management) createFlag(w http.ResponseWriter, r *http.Request, actor auth.Actor) {
+	var in flags.CreateInput
+	if err := DecodeJSON(w, r, &in, 65536); err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	d, err := flags.New(m.pool).Create(r.Context(), actor, r.PathValue("project"), in, w.Header().Get("X-Request-ID"))
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	JSON(w, 201, d)
+}
+func (m *Management) updateFlag(w http.ResponseWriter, r *http.Request, actor auth.Actor) {
+	var in flags.UpdateInput
+	if err := DecodeJSON(w, r, &in, 65536); err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	d, err := flags.New(m.pool).Update(r.Context(), actor, r.PathValue("project"), r.PathValue("key"), in, w.Header().Get("X-Request-ID"))
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	JSON(w, 200, d)
+}
+func (m *Management) getFlag(w http.ResponseWriter, r *http.Request, actor auth.Actor) {
+	project, env := r.PathValue("project"), r.URL.Query().Get("environment_id")
+	if err := auth.Authorize(r.Context(), m.pool, actor, project, env, false); err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	d, err := flags.New(m.pool).Get(r.Context(), project, env, r.PathValue("key"))
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	JSON(w, 200, d)
+}
+
+type evaluationInput struct {
+	ProjectID     string                     `json:"project_id"`
+	EnvironmentID string                     `json:"environment_id"`
+	Key           string                     `json:"key"`
+	UserID        string                     `json:"user_id"`
+	Attributes    map[string]json.RawMessage `json:"attributes"`
+	Fallback      evaluation.Value           `json:"fallback"`
+}
+type evaluationResponse struct {
+	evaluation.Result
+	DecisionID string `json:"decision_id"`
+}
+
+func (m *Management) evaluate(w http.ResponseWriter, r *http.Request) {
+	var in evaluationInput
+	if err := DecodeJSON(w, r, &in, 65536); err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	token, ok := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if !ok {
+		m.fail(w, r, auth.ErrUnauthorized)
+		return
+	}
+	if _, err := m.auth.AuthenticateApplication(r.Context(), token, in.ProjectID, in.EnvironmentID, "evaluate"); err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	m.evaluateInput(w, r, in)
+}
+func (m *Management) previewFlag(w http.ResponseWriter, r *http.Request, actor auth.Actor) {
+	var in evaluationInput
+	if err := DecodeJSON(w, r, &in, 65536); err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	in.ProjectID = r.PathValue("project")
+	in.Key = r.PathValue("key")
+	if err := auth.Authorize(r.Context(), m.pool, actor, in.ProjectID, in.EnvironmentID, false); err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	m.evaluateInput(w, r, in)
+}
+func (m *Management) evaluateInput(w http.ResponseWriter, r *http.Request, in evaluationInput) {
+	if evaluation.ValidateContext(in.UserID, in.Attributes) != nil || in.Fallback.Validate(in.Fallback.Type) != nil {
+		m.fail(w, r, auth.ErrInvalid)
+		return
+	}
+	d, err := flags.New(m.pool).Get(r.Context(), in.ProjectID, in.EnvironmentID, in.Key)
+	if errors.Is(err, flags.ErrNotFound) {
+		JSON(w, 200, evaluationResponse{Result: evaluation.Result{Value: in.Fallback, Reason: "flag_not_found"}, DecisionID: identity.New("dec_")})
+		return
+	}
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	if !evaluation.Equal(in.Fallback, d.Safe) {
+		m.fail(w, r, auth.ErrInvalid)
+		return
+	}
+	c, err := evaluation.Compile(d)
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	result, err := c.Evaluate(in.UserID, in.Attributes)
+	if err != nil {
+		m.fail(w, r, auth.ErrInvalid)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	JSON(w, 200, evaluationResponse{Result: result, DecisionID: identity.New("dec_")})
 }
 func DecodeJSON(w http.ResponseWriter, r *http.Request, target any, limit int64) error {
 	media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))

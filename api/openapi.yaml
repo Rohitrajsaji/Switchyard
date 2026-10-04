@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Switchyard API
-  version: 0.0.2
+  version: 0.0.3
   description: >-
     Modular Go experimentation platform. Management requires human sessions.
     Production configuration is read-only until the approval milestone.
@@ -247,14 +247,239 @@ paths:
             application/json:
               schema: {type: array, items: {$ref: '#/components/schemas/AuditEntry'}}
         '403': {$ref: '#/components/responses/Forbidden'}
+  /v1/projects/{project}/flags:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+    get:
+      summary: List up to 100 configured flags in an environment
+      parameters:
+        - $ref: '#/components/parameters/EnvironmentQuery'
+      responses:
+        '200':
+          description: Current immutable definitions
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/components/schemas/FlagDefinition'}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    post:
+      summary: Create a boolean or JSON flag and its initial environment revision
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FlagCreate'}
+      responses:
+        '201':
+          description: Created immutable revision
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FlagDefinition'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {description: Flag key already exists in project}
+  /v1/projects/{project}/flags/{key}:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - $ref: '#/components/parameters/FlagKey'
+    get:
+      summary: Read the current flag definition
+      parameters:
+        - $ref: '#/components/parameters/EnvironmentQuery'
+      responses:
+        '200':
+          description: Definition
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FlagDefinition'}
+        '404': {description: Flag is not configured in this environment}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    put:
+      summary: Append a revision with optimistic concurrency
+      description: >-
+        Full configuration replacement. expected_revision=0 initializes another
+        development/staging environment for an existing project flag.
+        Salt is server-fixed; production writes are denied in MVP.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FlagUpdate'}
+      responses:
+        '200':
+          description: New immutable revision
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FlagDefinition'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {description: Stale revision or incompatible active experiment}
+  /v1/projects/{project}/flags/{key}/preview:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - $ref: '#/components/parameters/FlagKey'
+    post:
+      summary: Read-only human evaluation preview; never creates exposure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/EvaluationInput'}
+      responses:
+        '200':
+          description: Evaluated decision; path determines project/key
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EvaluationResult'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /v1/evaluate:
+    post:
+      security:
+        - application: []
+      summary: Evaluate a flag using an environment-scoped application key
+      description: >-
+        No exposure or per-user database write. A known flag requires fallback
+        to match its emergency safe value; unknown flags return the declared
+        typed fallback. decision_id is correlation context, not proof of exposure.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ApplicationEvaluationInput'}
+      responses:
+        '200':
+          description: Typed decision or explicit missing-flag fallback
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EvaluationResult'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
 components:
   securitySchemes:
     session: {type: apiKey, in: cookie, name: switchyard_session}
+    application: {type: http, scheme: bearer, bearerFormat: opaque-scoped-application-key}
   parameters:
     Project: {name: project, in: path, required: true, schema: {type: string}}
     Origin: {name: Origin, in: header, required: true, schema: {type: string}, description: Must equal configured SWITCHYARD_ORIGIN}
     CSRF: {name: X-CSRF-Token, in: header, required: true, schema: {type: string}, description: Token from current session response}
+    EnvironmentQuery: {name: environment_id, in: query, required: true, schema: {type: string}}
+    FlagKey: {name: key, in: path, required: true, schema: {type: string}}
   schemas:
+    FlagValue:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [type, data]
+          properties:
+            type: {const: boolean}
+            data: {type: boolean}
+        - type: object
+          additionalProperties: false
+          required: [type, data]
+          properties:
+            type: {const: json}
+            data: {}
+      description: Explicit typed value; at most 16 KiB of serialized JSON data
+    TargetRule:
+      type: object
+      additionalProperties: false
+      required: [attribute, operator, values, value]
+      properties:
+        attribute: {type: string, maxLength: 64}
+        operator: {type: string, enum: [eq, in, gt, gte, lt, lte]}
+        values:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items: {type: [string, boolean, number]}
+        value: {$ref: '#/components/schemas/FlagValue'}
+      description: Ordered primitive targeting; sensitive attribute names are denied
+    Rollout:
+      type: object
+      additionalProperties: false
+      required: [traffic_bp, value]
+      properties:
+        traffic_bp: {type: integer, minimum: 0, maximum: 10000}
+        salt: {type: string, description: Omit or use standalone-v1; server fixes this across revisions}
+        value: {$ref: '#/components/schemas/FlagValue'}
+    FlagConfiguration:
+      type: object
+      required: [default, safe]
+      properties:
+        default: {$ref: '#/components/schemas/FlagValue'}
+        safe: {$ref: '#/components/schemas/FlagValue'}
+        killed: {type: boolean, default: false}
+        rules: {type: [array, 'null'], maxItems: 50, items: {$ref: '#/components/schemas/TargetRule'}}
+        rollout:
+          anyOf:
+            - $ref: '#/components/schemas/Rollout'
+            - type: 'null'
+    FlagCreate:
+      allOf:
+        - $ref: '#/components/schemas/FlagConfiguration'
+        - type: object
+          required: [environment_id, key, type, reason]
+          properties:
+            environment_id: {type: string}
+            key: {type: string, pattern: '^[a-z][a-z0-9_-]{0,63}$'}
+            type: {type: string, enum: [boolean, json]}
+            reason: {type: string, minLength: 1, maxLength: 512}
+      unevaluatedProperties: false
+    FlagUpdate:
+      allOf:
+        - $ref: '#/components/schemas/FlagConfiguration'
+        - type: object
+          required: [environment_id, expected_revision, reason]
+          properties:
+            environment_id: {type: string}
+            expected_revision: {type: integer, minimum: 0}
+            reason: {type: string, minLength: 1, maxLength: 512}
+      unevaluatedProperties: false
+    FlagDefinition:
+      allOf:
+        - $ref: '#/components/schemas/FlagConfiguration'
+        - type: object
+          required: [project_id, environment_id, flag_id, key, type, revision]
+          properties:
+            project_id: {type: string}
+            environment_id: {type: string}
+            flag_id: {type: string}
+            key: {type: string}
+            type: {type: string, enum: [boolean, json]}
+            revision: {type: integer, minimum: 1}
+    EvaluationInput:
+      type: object
+      additionalProperties: false
+      required: [environment_id, user_id, fallback]
+      properties:
+        project_id: {type: string, description: Required for application evaluation; preview uses path}
+        key: {type: string, description: Required for application evaluation; preview uses path}
+        environment_id: {type: string}
+        user_id: {type: string, minLength: 1, maxLength: 256}
+        attributes: {type: [object, 'null'], maxProperties: 100, additionalProperties: {}}
+        fallback: {$ref: '#/components/schemas/FlagValue'}
+    EvaluationResult:
+      type: object
+      required: [value, reason, revision, decision_id]
+      properties:
+        value: {$ref: '#/components/schemas/FlagValue'}
+        reason: {type: string, enum: [kill_switch, targeting, experiment, rollout, default, flag_not_found]}
+        revision: {type: integer, minimum: 0}
+        decision_id: {type: string}
+        run_id: {type: string}
+        variant_id: {type: string}
+    ApplicationEvaluationInput:
+      allOf:
+        - $ref: '#/components/schemas/EvaluationInput'
+        - type: object
+          required: [project_id, key]
     Actor:
       type: object
       required: [id, email, role]

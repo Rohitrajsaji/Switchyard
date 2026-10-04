@@ -41,3 +41,15 @@ seed:
 	docker compose run --rm --no-deps -e SWITCHYARD_SEED_DEMO=true -e SWITCHYARD_DEMO_PASSWORD --entrypoint /app/seed migrate
 management-smoke:
 	python3 scripts/management_smoke.py
+fuzz-smoke:
+	go test ./pkg/evaluation -run '^$$' -fuzz FuzzCompile -fuzztime=10s
+benchmark-evaluator:
+	go test ./pkg/evaluation -run '^$$' -bench BenchmarkEvaluate -benchmem -count=3
+flags-smoke:
+	python3 scripts/flags_smoke.py
+.cache/check-tools/.ready: scripts/check-requirements.txt
+	python3 -m venv .cache/check-tools
+	PIP_CACHE_DIR="$(CURDIR)/.cache/pip" .cache/check-tools/bin/python -m pip install -r scripts/check-requirements.txt
+	touch .cache/check-tools/.ready
+api-check: .cache/check-tools/.ready
+	.cache/check-tools/bin/python scripts/check_api.py

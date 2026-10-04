@@ -1,0 +1,17 @@
+# ADR 0003: deterministic buckets and immutable flag revisions
+
+Status: accepted implementation of the M3 contract; experiment persistence follows in M4.
+
+The evaluator is a pure Go package with immutable compiled definitions. It performs no networking, random assignment, clock reads, logging or persistence. Outputs carry a typed value, reason, configuration revision and optional run/variant. Compilation and result creation copy JSON slices to prevent callers mutating live configuration.
+
+Evaluation order is kill switch, ordered explicit targeting, experiment, standalone rollout, default. Target overrides carry no experiment assignment metadata. Missing/type-mismatched attributes do not match. Numeric targeting uses bounded finite IEEE-754 numbers (absolute value at most 10^15), suitable for demo attributes rather than arbitrary-precision financial comparison. Object/array/null targets are unsupported; missing/type-mismatched context does not match.
+
+Hash eight UTF-8 fields, each preceded by its unsigned 32-bit big-endian byte length: `v1`, project ID, environment ID, flag ID, run ID, purpose, fixed salt, stable user ID. Take the first unsigned 64-bit big-endian integer from SHA-256, modulo 10,000. Never include traffic or revision. Go golden vectors were independently calculated with Python's hashlib/struct: the demo tuple gives eligibility=8811 and variant=3818.
+
+Experiment eligibility and variant purpose/salt are independent. Variants sort by immutable ordinal and weights total 10,000. Growing traffic adds users without reassigning existing ones; shrinking removes only users outside the new threshold. Experiment weights/treatments are immutable once active (M4 enforces lifecycle persistence). Standalone rollout salt is fixed to `standalone-v1`, while project/environment/flag IDs already separate populations; removing/re-adding the rollout cannot sneak in a reshuffle.
+
+Flags have a project identity/type and separate immutable environment revisions. A flag-level PostgreSQL row lock serializes writes, including first configuration in another environment. Expected revision checks prevent lost updates. Audit and new configuration commit together. Historical revisions cannot be updated/deleted. This deliberately favors straightforward control-plane correctness over complex lock partitioning.
+
+Known-flag callers must supply a fallback matching the emergency safe value. JSON comparison ignores object order and compares bounded decimal numbers exactly, so `100.0` and `1e2` match without floating-point rounding. JSON numbers are bounded to finite magnitude at most 10^15, nonzero magnitude at least 10^-308, at most 512 token bytes and exponent range ±308. These bounds keep comparison and PostgreSQL normalization resource-conscious; identifiers needing larger precision should be strings. The PostgreSQL-normalized representation is validated before a revision is written and is also returned to the caller. A missing flag returns the application's declared typed fallback with an explicit reason. Type/consistency checks cannot infer business safety.
+
+MVP HTTP evaluation authenticates a scoped application key, reads PostgreSQL and compiles the current definition; there is no per-user write or automatic exposure. A decision ID is correlation metadata, not an authentication proof. Redis/in-memory compiled snapshots are introduced in M6 after behavior is established. This baseline intentionally makes no high-throughput claim about the database-backed HTTP path.

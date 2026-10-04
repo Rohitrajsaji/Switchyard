@@ -1,0 +1,10 @@
+go test ./pkg/evaluation -run '^$' -bench BenchmarkEvaluate -benchmem -count=3
+goos: darwin
+goarch: arm64
+pkg: switchyard/pkg/evaluation
+cpu: Apple M1
+BenchmarkEvaluate-8   	 5386591	       205.8 ns/op	      40 B/op	       2 allocs/op
+BenchmarkEvaluate-8   	 6009987	       200.7 ns/op	      40 B/op	       2 allocs/op
+BenchmarkEvaluate-8   	 6016365	       200.2 ns/op	      40 B/op	       2 allocs/op
+PASS
+ok  	switchyard/pkg/evaluation	3.676s

@@ -6,7 +6,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 |---|---|---|
 | M1 Foundation | Complete | 5 Oct 2026: `make check race build`, ARM64 Docker build/start, Compose validation, `make smoke foundation-drill`, and real PostgreSQL 17.11 integration tests passed. |
 | M2 Identity, scope, audit | Complete | 5 Oct 2026: `make check race build`, race-enabled PostgreSQL integration, rebuilt Docker API, live management smoke and seed idempotence passed. |
-| M3 Flags and evaluator | In progress | Starting with the pure evaluator and golden/property tests. |
+| M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
 | M4 Experiments and measurement | Pending | — |
 | M5 Dashboard / MVP | Pending | — |
 | M6 Redis snapshots | Pending | — |
@@ -39,3 +39,18 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 - Rebuilt local Docker API and current migrations passed real HTTP smoke. The management journey used admin/developer/viewer, granted memberships, denied production key creation, created/revoked a development key, checked audit entries and logged out.
 - Opt-in seed ran twice: authoritative database counts remained four users and four demo-creation audits. Running seed without opt-in correctly failed.
 - OpenAPI contracts, local bootstrap instructions and identity/audit ADR are saved. No remote CI run or external publication is claimed.
+
+## M3 verified evidence
+
+- Independent Python golden buckets: eligibility 8811, variant 3818 for the published demo tuple. Unit/property tests exercise 10,000 synthetic users, growth/shrink membership, stable variants across traffic/revision changes, immutable compiled input/results, ordered targeting, invalid weights/variant identity and boolean/JSON safe values.
+- A new JSON safety regression failed before its fix and now passes: equivalent decimal spellings compare exactly and huge exponents are rejected. PostgreSQL-normalized definitions are validated before committing.
+- Flag creation/update and environment revisions are persisted with audit. Concurrent expected-revision updates yield exactly one success and one conflict; failed audit insertion leaves revision/history unchanged; history rewrite is denied.
+- Evaluation scope, missing-flag fallback, unsafe fallback rejection and absence of evaluation audit writes are tested against PostgreSQL. Production writes remain denied.
+- Final source passed `make check race`; full integration passed `go test -race -tags=integration -count=1 ./...`. Ten-second fuzz smoke passed with a valid seeded definition and malformed inputs.
+- Final Docker build/migrations and `make flags-smoke smoke` passed. The live script independently recomputed all 100 user buckets in Python at 10% and 20% traffic, verified targeting, conflict, boolean/JSON kill safety and revoked-key denial.
+- `make api-check` validates YAML, internal references, path parameters and security references; it does not claim full OpenAPI schema conformance testing. Contracts and ADR document actual behavior.
+- Exploratory local rollout evaluator baseline: 205.8/200.7/200.2 ns/op, 40 B/op, two allocations/op. Raw output and measurement limits are in `docs/benchmark-report.md` and `docs/benchmarks/m3-evaluator.txt`. Network/load/ingestion results remain unmeasured until M10.
+
+## Next implementation checkpoint
+
+M4: persist A/B experiment runs and immutable variants; then explicit exposure/conversion/request events, duplicate protection, event-time attribution, SQL results, confidence intervals, significance and data-quality checks. Follow M4's gate before building the M5 dashboard. No V2 milestones are complete yet.
