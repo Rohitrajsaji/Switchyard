@@ -61,3 +61,12 @@ measurement-smoke: events-smoke
 	touch .cache/check-tools/.ready
 api-check: .cache/check-tools/.ready
 	.cache/check-tools/bin/python scripts/check_api.py
+.PHONY: web-install web-dev web-check e2e
+web-install:
+	cd web && npm ci --cache ../.cache/npm
+web-dev:
+	cd web && npm run dev
+web-check:
+	cd web && npm run format-check && npm run typecheck && npm test && npm run build
+e2e:
+	cd web && PLAYWRIGHT_BROWSERS_PATH="$(CURDIR)/.cache/playwright" npm run e2e

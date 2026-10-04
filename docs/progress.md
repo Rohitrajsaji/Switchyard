@@ -8,7 +8,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M2 Identity, scope, audit | Complete | 5 Oct 2026: `make check race build`, race-enabled PostgreSQL integration, rebuilt Docker API, live management smoke and seed idempotence passed. |
 | M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
 | M4 Experiments and measurement | Complete | 5 Oct 2026: lifecycle/ingestion/SQL attribution/statistics gates, race-enabled PostgreSQL fixtures, final Docker measurement journey and API contracts passed. |
-| M5 Dashboard / MVP | Pending | — |
+| M5 Dashboard / MVP | In progress | Login/scope, flag editor/preview/kill and audit browser checkpoint verified; experiment/demo and clean Docker gates pending. |
 | M6 Redis snapshots | Pending | — |
 | M7 Durable worker | Pending | — |
 | M8 gRPC / Go SDK | Pending | — |
@@ -53,7 +53,15 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M5: minimal Next.js dashboard and marketplace listing demo, starting with login/project/environment navigation, then flags/preview/audit, experiment lifecycle/results and explicit demo events. Follow its browser and clean-setup gates before the MVP tag. No V2 milestones are complete yet.
+M5: experiment lifecycle/results screens and explicit marketplace demo events, followed by seed/clean Docker setup gates before the MVP tag. No V2 milestones are complete yet.
+
+## M5 verified checkpoints
+
+- Added pinned Next.js 16.3.8 / React 19.3.0 / TypeScript 7.0.2 dashboard, with host Node 22.23.2. Login/session reload/logout and project/environment navigation call the existing Go API through a restricted same-origin proxy. Go remains authoritative for all roles, membership, CSRF, validation and revisions.
+- Proxy unit tests cover cross-site/missing Origin denial, path/method allowlisting, exact body relay, credential isolation, body bounds, redirect denial and backend outage. Dashboard sessions never use application bearer credentials; unrelated browser cookies/role headers are stripped.
+- Boolean/JSON flag creation/editing, ordered targeting and gradual-rollout JSON fields, evaluation preview, immediate kill, audit pagination and visible production/viewer read-only states are implemented. Lossless JSON parsing/serialization preserves decimal tokens in values/rule operands; unsafe integer response metadata fails explicitly rather than rounding.
+- Browser Chromium journey passed against the real Docker Go API: seeded admin login, project creation, targeted flag, kill-safe preview, high-precision JSON create/edit/preview, explicit JSON null safe-value preservation, audit reasons, production write-control absence, reload and logout. A separate viewer project fixture proves member flag/preview/audit reads, absence of write controls and HTTP 403 for a forged-role write. Results screens and the full M5 experiment journey remain pending.
+- Source formatting, TypeScript, six proxy/JSON unit tests and production Next build are checked by `make web-check`; browser tests use `make e2e`. `make check api-check` also passed. No dashboard Docker container, fresh-volume MVP rehearsal, complete M5 gate or release tag is claimed at this checkpoint. GitHub frontend CI is defined but has not run remotely.
 
 ## M4 verified evidence
 

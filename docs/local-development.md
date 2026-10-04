@@ -62,7 +62,7 @@ Create a baseline flag without a standalone rollout, then `POST /v1/projects/{pr
 
 Draft/running/paused runs freeze ordinary configuration changes. An emergency flag update may set `killed=true` with every other field unchanged, returning the existing safe value ahead of targeting/experiment. Starting/resuming a killed flag fails. Production remains read-only; application keys cannot manage runs. Session mutation rules and revision conflicts are the same as for flags.
 
-`SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make experiments-smoke` runs the lifecycle against Docker, independently checks 30/70 variant assignment in Python, verifies targeting exclusion and confirms pause/resume preserves assignment. Evaluation alone still records no exposure; use explicit event ingestion below. Measured results remain the next M4 checkpoint.
+`SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make experiments-smoke` runs the lifecycle against Docker, independently checks 30/70 variant assignment in Python, verifies targeting exclusion and confirms pause/resume preserves assignment. Evaluation alone still records no exposure; use explicit event ingestion below. Explicit events and measured results are described below.
 
 ### Explicit measurement events
 
@@ -83,3 +83,30 @@ Human project members call `GET /v1/projects/{project}/experiments/{run}/results
 Request metrics count listing operations linked to valid exposures. Histograms contain noncumulative bin counts; `p95_upper_bound_ms` is an approximate upper bound. They do not measure the platform API. MVP reads raw SQL; durable aggregates/retention and automatic guardrails arrive at their V2 milestones.
 
 `SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make measurement-smoke` verifies pending outcomes become counted after exposure, extra completion IDs remain one conversion, request histograms/intervals are returned, and a fresh demo stays provisional. Finalization, A/A and SRM fixtures run in PostgreSQL integration tests with an injected clock.
+
+## M5 dashboard development (milestone in progress)
+
+The dashboard currently supports login, project/environment selection, boolean/JSON flags, targeting/rollout editing, preview, kill switch and audit history. Experiment/results screens and the marketplace demo are the next checkpoint. Docker still starts the Go API and PostgreSQL only; the dashboard runs on the host during this checkpoint.
+
+Use Node 22.23.2 (the pinned CI version), with the API running and demo accounts explicitly seeded:
+
+```sh
+make web-install
+make web-dev
+```
+
+Open `http://localhost:3000` and sign in with a seeded account. Use localhost rather than the numeric loopback address: browser mutation Origin must match Go's `SWITCHYARD_ORIGIN` exactly. `SWITCHYARD_API_URL` defaults to `http://127.0.0.1:8080` on the Next server; it is never a browser-supplied upstream URL. Neither setting is a public Next environment variable.
+
+The proxy forwards the existing HttpOnly session cookie and real Origin/CSRF headers. It performs transport restrictions, not domain authorization. Go's per-peer limits currently see the Next process as one peer; the small local demo shares that login/request allowance. A future approved hosted setup would need a deliberate trusted-proxy/client-identity design.
+
+Flag updates send the displayed revision; a stale update returns a conflict and requires reloading. Targeting and rollout editors use explicit JSON examples. Their validation and the experiment freeze rules are enforced in Go. JSON values/target operands retain decimal tokens using the pinned `lossless-json` parser; native browser number conversion cannot silently change a safe value. Preview returns the Go decision and records no exposure. Production configuration controls remain hidden until M9.
+
+```sh
+make web-check
+cd web
+PLAYWRIGHT_BROWSERS_PATH='../.cache/playwright' npx playwright install chromium
+cd ..
+SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make e2e
+```
+
+Browser tests start a host Next server if needed, use existing seeded users and create unique projects in the local database. They preserve recorded audit history. Test reports, browser binaries and screenshots stay ignored. `make e2e` is still a partial-M5 journey until the experiment and listing demo gates are added.

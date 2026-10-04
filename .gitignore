@@ -12,3 +12,5 @@ __pycache__/
 .DS_Store
 test-results/
 playwright-report/
+*.tsbuildinfo
+web/next-env.d.ts

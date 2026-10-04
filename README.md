@@ -23,4 +23,6 @@ make race
 TEST_DATABASE_URL='postgres://switchyard:switchyard-local-only@127.0.0.1:54329/switchyard_test?sslmode=disable' make integration
 ```
 
-Integration tests require an isolated test database and create/drop their own schema. See [local development](docs/local-development.md). No performance results have been claimed yet.
+Integration tests require an isolated test database and create/drop their own schema. See [local development](docs/local-development.md). Local evaluator microbenchmarks are recorded in [the benchmark report](docs/benchmark-report.md); end-to-end load results remain unmeasured.
+
+The M5 dashboard checkpoint runs on the host with Node 22.23.2: `make web-install web-dev`, then open `http://localhost:3000`. Seed demo accounts explicitly as described in the local guide. Login, project/environment selection, flags, preview, kill and audit are available; experiment screens and the listing demo are being built. Docker dashboard setup follows before the MVP release.
