@@ -26,7 +26,10 @@ function failure(status: number, error: string): Response {
     { status, headers: { "Cache-Control": "no-store" } },
   );
 }
-async function boundedBody(request: Request): Promise<Uint8Array | undefined> {
+export async function boundedBody(
+  request: Request,
+  limit = maxBody,
+): Promise<Uint8Array | undefined> {
   if (!request.body) return undefined;
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -36,7 +39,7 @@ async function boundedBody(request: Request): Promise<Uint8Array | undefined> {
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > maxBody) {
+      if (size > limit) {
         await reader.cancel();
         throw new Error("too_large");
       }

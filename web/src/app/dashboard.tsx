@@ -1,10 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { api, APIError, errorMessage } from "@/lib/api";
 import type { Session, Project, Environment } from "@/lib/api";
 import FlagsPanel from "./flags-panel";
 import AuditPanel from "./audit-panel";
+import ExperimentsPanel from "./experiments-panel";
+import DemoPanel from "./demo-panel";
+import type { DemoHandle } from "./demo-panel";
 
 function Brand() {
   return (
@@ -107,7 +110,22 @@ function Workspace({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [refresh, setRefresh] = useState(0);
-  const [tab, setTab] = useState<"flags" | "audit">("flags");
+  const [tab, setTab] = useState<"flags" | "experiments" | "demo" | "audit">(
+    "flags",
+  );
+  const demoRef = useRef<DemoHandle | null>(null);
+  async function navigate(change: () => void) {
+    setBusy(true);
+    setError("");
+    try {
+      await demoRef.current?.stop();
+      change();
+    } catch (error) {
+      setError(errorMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  }
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -154,12 +172,15 @@ function Workspace({
     setBusy(true);
     setError("");
     try {
+      await demoRef.current?.stop();
       const project = await api<Project>("/v1/projects", {
         method: "POST",
         csrf: session.csrf_token,
         body: { name: new FormData(form).get("name") },
       });
       setProjects((items) => [...items, project]);
+      setEnvironments([]);
+      setEnvironmentID("");
       setProjectID(project.id);
       form.reset();
     } catch (error) {
@@ -172,6 +193,7 @@ function Workspace({
     setBusy(true);
     setError("");
     try {
+      await demoRef.current?.stop();
       await api<void>("/v1/session", {
         method: "DELETE",
         csrf: session.csrf_token,
@@ -208,7 +230,8 @@ function Workspace({
           </div>
           <button
             className="secondary"
-            onClick={() => setRefresh((n) => n + 1)}
+            disabled={busy}
+            onClick={() => void navigate(() => setRefresh((n) => n + 1))}
           >
             Reload projects
           </button>
@@ -221,10 +244,14 @@ function Workspace({
               <select
                 value={projectID}
                 onChange={(e) => {
-                  setProjectID(e.target.value);
-                  setError("");
+                  const next = e.target.value;
+                  void navigate(() => {
+                    setEnvironments([]);
+                    setEnvironmentID("");
+                    setProjectID(next);
+                  });
                 }}
-                disabled={loading || !projects.length}
+                disabled={busy || loading || !projects.length}
               >
                 <option value="">
                   {loading ? "Loading projects…" : "Select a project"}
@@ -240,8 +267,11 @@ function Workspace({
               Environment
               <select
                 value={environmentID}
-                onChange={(e) => setEnvironmentID(e.target.value)}
-                disabled={!environments.length}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  void navigate(() => setEnvironmentID(next));
+                }}
+                disabled={busy || !environments.length}
               >
                 <option value="">Select an environment</option>
                 {environments.map((e) => (
@@ -290,16 +320,34 @@ function Workspace({
               <button
                 className={tab === "flags" ? "active" : ""}
                 aria-current={tab === "flags" ? "page" : undefined}
-                onClick={() => setTab("flags")}
+                disabled={busy}
+                onClick={() => void navigate(() => setTab("flags"))}
               >
                 Flags
               </button>
               <button
                 className={tab === "audit" ? "active" : ""}
                 aria-current={tab === "audit" ? "page" : undefined}
-                onClick={() => setTab("audit")}
+                disabled={busy}
+                onClick={() => void navigate(() => setTab("audit"))}
               >
                 Audit
+              </button>
+              <button
+                className={tab === "experiments" ? "active" : ""}
+                aria-current={tab === "experiments" ? "page" : undefined}
+                disabled={busy}
+                onClick={() => void navigate(() => setTab("experiments"))}
+              >
+                Experiments
+              </button>
+              <button
+                className={tab === "demo" ? "active" : ""}
+                aria-current={tab === "demo" ? "page" : undefined}
+                disabled={busy}
+                onClick={() => void navigate(() => setTab("demo"))}
+              >
+                Listing demo
               </button>
             </nav>
             {tab === "flags" ? (
@@ -307,6 +355,19 @@ function Workspace({
                 projectID={projectID}
                 environment={environment}
                 session={session}
+              />
+            ) : tab === "experiments" ? (
+              <ExperimentsPanel
+                projectID={projectID}
+                environment={environment}
+                session={session}
+              />
+            ) : tab === "demo" ? (
+              <DemoPanel
+                projectID={projectID}
+                environment={environment}
+                session={session}
+                cleanupRef={demoRef}
               />
             ) : (
               <AuditPanel projectID={projectID} />

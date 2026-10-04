@@ -36,12 +36,15 @@ export async function api<T>(
     method?: string;
     body?: unknown;
     csrf?: string;
+    bearer?: string;
+    keepalive?: boolean;
     signal?: AbortSignal;
   } = {},
 ): Promise<T> {
   const headers: Record<string, string> = {};
   if (options.body !== undefined) headers["Content-Type"] = "application/json";
   if (options.csrf) headers["X-CSRF-Token"] = options.csrf;
+  if (options.bearer) headers["Authorization"] = `Bearer ${options.bearer}`;
   const response = await fetch(`/api/backend${path}`, {
     method: options.method ?? "GET",
     headers,
@@ -49,6 +52,7 @@ export async function api<T>(
     signal: options.signal,
     credentials: "same-origin",
     cache: "no-store",
+    keepalive: options.keepalive,
   });
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));

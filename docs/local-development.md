@@ -86,7 +86,7 @@ Request metrics count listing operations linked to valid exposures. Histograms c
 
 ## M5 dashboard development (milestone in progress)
 
-The dashboard currently supports login, project/environment selection, boolean/JSON flags, targeting/rollout editing, preview, kill switch and audit history. Experiment/results screens and the marketplace demo are the next checkpoint. Docker still starts the Go API and PostgreSQL only; the dashboard runs on the host during this checkpoint.
+The dashboard supports login, project/environment selection, boolean/JSON flags, targeting/rollout editing, preview, kill switch, audit history, A/B lifecycle/results and the marketplace demo. Docker still starts the Go API and PostgreSQL only; the dashboard runs on the host during this checkpoint. The reproducible product seed and Docker/fresh-volume MVP gates remain pending.
 
 Use Node 22.23.2 (the pinned CI version), with the API running and demo accounts explicitly seeded:
 
@@ -109,4 +109,17 @@ cd ..
 SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make e2e
 ```
 
-Browser tests start a host Next server if needed, use existing seeded users and create unique projects in the local database. They preserve recorded audit history. Test reports, browser binaries and screenshots stay ignored. `make e2e` is still a partial-M5 journey until the experiment and listing demo gates are added.
+Browser tests start a host Next server if needed, use existing seeded users and create unique projects in the local database. They preserve recorded audit history. Test reports, browser binaries and screenshots stay ignored. `make e2e` exercises the dashboard and listing journey; M5 still needs the seeded dataset and fresh Docker setup rehearsal.
+
+### Experiment and listing journey
+
+1. Sign in as a seeded developer/admin, create a project and choose development or staging.
+2. Create a boolean flag such as `listing_flow` with default/safe false, no standalone rollout and an audit reason. False renders the classic two-step listing; true renders a simplified single-step listing.
+3. Open Experiments, create an A/B draft with control false/treatment true, and choose traffic and control allocation. Traffic is eligibility; allocation divides eligible users. Start the draft with a lifecycle reason. Go freezes the population and treatment values; pause/resume uses the same assignment salts.
+4. Open Listing demo, enable its scoped credential, choose the running experiment and render a synthetic user. Outside-traffic/targeted/killed decisions are reported without an experiment exposure. Change the user/attributes to find a randomized participant. JSON variants are supported when their value has `flow: "classic"` or `flow: "simple"`.
+5. Wait for explicit exposure acknowledgement, then complete the form. The Next product endpoint acknowledges validated synthetic input without storing a marketplace listing. Request duration is measured around that actual HTTP submission, including response parsing; it is separate from Switchyard platform API latency.
+6. A lost measurement acknowledgement exposes Retry measurement delivery. It resends identical event IDs/timestamps/context, rather than redoing the listing operation. Until the acknowledgement arrives, the interface says delivery is pending. Browser memory does not provide offline persistence; reload can lose unacknowledged client batches.
+7. Open Experiments for provisional counts, intervals, quality and product-request metrics. Reads refresh every five seconds. Fresh users have zero finalized exposure until the 30-minute attribution window plus 24-hour lateness allowance expires. Empty/insufficient-data statistics stay unavailable; descriptive p-values are not an automatic stopping rule.
+8. Inspect Audit, pause/resume/complete the run with reasons, or use the flag kill switch. The demo key is revoked before ordinary navigation, project/environment changes, or logout. It is never placed in local storage, URLs or rendered output. Browser close/reload revocation is best effort; an interrupted cleanup can leave an application key active. An admin can identify its key ID in creation audit details and revoke it through the existing application-key API. This is a local trusted-operator sample; a public integration uses server-held credentials.
+
+Viewers can inspect flags, previews, runs and results but cannot create runs, transition them or enable a demo key. Production configuration remains read-only until M9. All authorization, experiment policy, historical assignment and event receipt decisions come from Go.

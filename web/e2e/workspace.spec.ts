@@ -191,6 +191,7 @@ test("viewer reads a member project's flags and audit but cannot mutate", async 
     safe: value,
     reason: "Viewer read-only fixture",
   };
+  let runID = "";
   expect(
     (
       await page.request.post(`/api/backend/v1/projects/${project.id}/flags`, {
@@ -199,6 +200,32 @@ test("viewer reads a member project's flags and audit but cannot mutate", async 
       })
     ).status(),
   ).toBe(201);
+  const runResponse = await page.request.post(
+    `/api/backend/v1/projects/${project.id}/experiments`,
+    {
+      headers,
+      data: {
+        environment_id: environment.id,
+        flag_key: "viewer_flag",
+        expected_revision: 1,
+        name: "Viewer experiment",
+        control_variant_id: "control",
+        traffic_bp: 10000,
+        variants: [
+          { id: "control", ordinal: 0, weight_bp: 5000, value },
+          {
+            id: "treatment",
+            ordinal: 1,
+            weight_bp: 5000,
+            value: { type: "boolean", data: true },
+          },
+        ],
+        reason: "Read-only experiment fixture",
+      },
+    },
+  );
+  expect(runResponse.status()).toBe(201);
+  runID = (await runResponse.json()).id;
   expect(
     (
       await page.request.post(
@@ -255,6 +282,36 @@ test("viewer reads a member project's flags and audit but cannot mutate", async 
     },
   );
   expect(denied.status()).toBe(403);
+  await page.getByRole("button", { name: "Experiments", exact: true }).click();
+  await expect(
+    page
+      .getByRole("table", { name: "Variant conversion results" })
+      .locator("tbody tr"),
+  ).toHaveCount(2);
+  await expect(
+    page.getByRole("button", { name: "Create experiment", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Start experiment", exact: true }),
+  ).toHaveCount(0);
+  expect(
+    (
+      await page.request.post(
+        `/api/backend/v1/projects/${project.id}/experiments/${runID}/transitions`,
+        {
+          headers: {
+            Origin: "http://localhost:3000",
+            "X-CSRF-Token": viewerSession.csrf_token,
+          },
+          data: {
+            action: "start",
+            expected_revision: 1,
+            reason: "Forbidden viewer transition",
+          },
+        },
+      )
+    ).status(),
+  ).toBe(403);
   await page.getByRole("button", { name: "Audit", exact: true }).click();
   await expect(
     page.getByText("Viewer read-only fixture", { exact: true }),

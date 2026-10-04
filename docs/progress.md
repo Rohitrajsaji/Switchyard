@@ -8,7 +8,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M2 Identity, scope, audit | Complete | 5 Oct 2026: `make check race build`, race-enabled PostgreSQL integration, rebuilt Docker API, live management smoke and seed idempotence passed. |
 | M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
 | M4 Experiments and measurement | Complete | 5 Oct 2026: lifecycle/ingestion/SQL attribution/statistics gates, race-enabled PostgreSQL fixtures, final Docker measurement journey and API contracts passed. |
-| M5 Dashboard / MVP | In progress | Login/scope, flag editor/preview/kill and audit browser checkpoint verified; experiment/demo and clean Docker gates pending. |
+| M5 Dashboard / MVP | In progress | Dashboard/experiment/listing browser journeys verified; seed dataset and clean Docker gates pending. |
 | M6 Redis snapshots | Pending | — |
 | M7 Durable worker | Pending | — |
 | M8 gRPC / Go SDK | Pending | — |
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M5: experiment lifecycle/results screens and explicit marketplace demo events, followed by seed/clean Docker setup gates before the MVP tag. No V2 milestones are complete yet.
+M5: reproducible marketplace seed dataset, Docker dashboard and fresh-volume setup gates before the MVP tag. No V2 milestones are complete yet.
 
 ## M5 verified checkpoints
 
@@ -62,6 +62,11 @@ M5: experiment lifecycle/results screens and explicit marketplace demo events, f
 - Boolean/JSON flag creation/editing, ordered targeting and gradual-rollout JSON fields, evaluation preview, immediate kill, audit pagination and visible production/viewer read-only states are implemented. Lossless JSON parsing/serialization preserves decimal tokens in values/rule operands; unsafe integer response metadata fails explicitly rather than rounding.
 - Browser Chromium journey passed against the real Docker Go API: seeded admin login, project creation, targeted flag, kill-safe preview, high-precision JSON create/edit/preview, explicit JSON null safe-value preservation, audit reasons, production write-control absence, reload and logout. A separate viewer project fixture proves member flag/preview/audit reads, absence of write controls and HTTP 403 for a forged-role write. Results screens and the full M5 experiment journey remain pending.
 - Source formatting, TypeScript, six proxy/JSON unit tests and production Next build are checked by `make web-check`; browser tests use `make e2e`. `make check api-check` also passed. No dashboard Docker container, fresh-volume MVP rehearsal, complete M5 gate or release tag is claimed at this checkpoint. GitHub frontend CI is defined but has not run remotely.
+- Experiment/demo checkpoint: A/B creation supports unequal control allocation and explicit eligible traffic, converts percentages to exact basis points, and sends the current `configuration_revision` for start/pause/resume/complete. Boolean/JSON treatment values remain precise; multiple variants are displayed when returned by Go, while creating more than two from the dashboard remains the planned M9 addition.
+- Results fetch Go snapshots every five seconds without overlapping requests. Cohort counts/rates, Wilson intervals, control comparisons, SRM status, measurement quality and product-request metrics are shown. Empty rates/p-values remain unavailable, and finalized cohorts are distinct from provisional measurements. A stale read error retains and labels the last successful snapshot.
+- The marketplace renders classic two-step and simplified one-step forms. An effect submits an explicit exposure after DOM commit; only a randomized decision for the selected run is measured. Outcome/completion events copy that decision context and reuse stable IDs/timestamps across retries. A small synthetic Next submission endpoint validates at most 4 KiB, stores no real listing, and gives an actual HTTP duration for product-request metrics.
+- Demo keys have only evaluate/events-write permissions and stay in browser memory. Normal tab/project/environment navigation and logout await revocation; browser exit/reload cleanup is best effort. The browser is a trusted local operator demo, not a public production SDK or a claim of durable offline client delivery. PostgreSQL still guarantees durability once Go acknowledges a batch.
+- Chromium passed all three current browser journeys against the actual Go API, including an 80%-traffic, 30/70 A/B run; both listing flows; lost acknowledgement after commit then duplicate receipts; exact exposure counts and one completion/request per variant; finalized zero for fresh users; revoked-key denial; lifecycle audit; viewer results and HTTP 403 for viewer transitions. Final `make web-check` passed formatting, type generation/TypeScript, ten frontend unit tests and the production build. Final `make e2e` passed all three journeys after the cleanup/context changes; the full M5 Docker/seed gate remains pending.
 
 ## M4 verified evidence
 
