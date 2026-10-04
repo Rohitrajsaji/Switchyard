@@ -56,6 +56,11 @@ def main():
         return application("/v1/events", {"project_id": project["id"],
             "environment_id": environment or env["development"], "events": items})
 
+    def results():
+        status, data = admin.call("GET", path + "/experiments/" + run["id"] + "/results")
+        assert status == 200 and data["run_id"] == run["id"]
+        return data
+
     status, decision = application("/v1/evaluate", {"project_id": project["id"],
         "environment_id": env["development"], "key": "listing", "user_id": "synthetic-user", "fallback": safe})
     assert status == 200 and decision["reason"] == "experiment"
@@ -72,8 +77,23 @@ def main():
     for items in [[completion, request], [exposure]]:
         status, response = ingest(items)
         assert status == 200 and all(item["status"] == "accepted" and not item["duplicate"] for item in response["receipts"])
+        measured = results()
+        if items[0]["kind"] == "listing_completion":
+            assert measured["quality"]["pending_outcomes"] == 2
+            assert sum(v["total"]["exposed"] for v in measured["variants"]) == 0
+        else:
+            assert measured["quality"]["pending_outcomes"] == 0
+            counted = next(v for v in measured["variants"] if v["id"] == decision["variant_id"])
+            assert counted["provisional"] == {"exposed": 1, "converted": 1}
+            assert counted["finalized"] == {"exposed": 0, "converted": 0}
+            assert counted["requests"]["count"] == 1 and counted["requests"]["p95_upper_bound_ms"] == 250
+            assert counted["total_rate"]["confidence_interval"]["method"] == "wilson"
     status, response = ingest([request, exposure, completion])
     assert status == 200 and all(item["duplicate"] for item in response["receipts"])
+    assert ingest([{**completion, "event_id": "completion_new_id"}])[0] == 200
+    measured = results()
+    assert sum(v["total"]["converted"] for v in measured["variants"]) == 1
+    assert measured["quality"]["duplicate_attributed_completions"] == 1
     changed = {**exposure, "user_id": "changed-user"}
     atomic = {**exposure, "event_id": "a_atomic"}
     assert ingest([atomic, changed])[0] == 409
@@ -88,12 +108,16 @@ def main():
     assert status == 200
     assert [item["reason"] for item in response["receipts"]] == ["assignment_mismatch", "too_late", "non_randomized_exposure"]
     assert all(item["status"] == "quarantined" for item in response["receipts"])
+    measured = results()
+    assert measured["quality"]["quarantined_events"] == 3
+    assert sum(v["total"]["exposed"] for v in measured["variants"]) == 1
+    assert measured["comparisons"][0]["total"]["status"] == "insufficient_data"
     assert ingest([exposure], env["staging"])[0] == 403
     assert ingest([exposure] * 101)[0] == 400
     assert admin.call("DELETE", path + "/application-keys/" + key["id"])[0] == 204
     assert ingest([exposure])[0] == 401
     assert admin.call("DELETE", "/v1/session")[0] == 204
-    print("Live events passed: out-of-order facts, duplicate receipts, atomic conflict, quarantine, scope, batch bound and revoked key")
+    print("Live measurement passed: pending reconciliation, unique conversion, Wilson interval, product histogram, provisional labels, conflict and quarantine")
 
 
 if __name__ == "__main__":

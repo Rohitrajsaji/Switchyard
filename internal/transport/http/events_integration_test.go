@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"log/slog"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -16,6 +17,8 @@ import (
 	"switchyard/internal/events"
 	"switchyard/internal/experiments"
 	"switchyard/internal/flags"
+	"switchyard/internal/metrics"
+	"switchyard/internal/platform/identity"
 	"switchyard/internal/platform/postgres"
 	"switchyard/internal/projects"
 	"switchyard/internal/testutil"
@@ -151,5 +154,72 @@ func TestEventHTTPIdentityAndPermissionBoundary(t *testing.T) {
 	var count int
 	if err = pool.QueryRow(ctx, `SELECT count(*) FROM raw_events`).Scan(&count); err != nil || count != 2 {
 		t.Fatalf("raw count %d %v", count, err)
+	}
+	// Results expose committed attribution to scoped human viewers, never app keys.
+	if _, err = pool.Exec(ctx, `INSERT INTO users(id,email,password_hash,role) VALUES('viewer','viewer@example.test','unused','viewer')`); err != nil {
+		t.Fatal(err)
+	}
+	if err = ps.AddMember(ctx, actor, project.ID, "viewer", "viewer-member"); err != nil {
+		t.Fatal(err)
+	}
+	token := identity.New("sws_")
+	if _, err = pool.Exec(ctx, `INSERT INTO sessions(token_hash,user_id,csrf_hash,expires_at) VALUES($1,'viewer',$2,now()+interval '1 hour')`, identity.Hash(token), identity.Hash("fixture-csrf")); err != nil {
+		t.Fatal(err)
+	}
+	get := func(path string, withSession bool) *httptest.ResponseRecorder {
+		r := httptest.NewRequest("GET", path, nil)
+		if withSession {
+			r.AddCookie(&http.Cookie{Name: httpapi.SessionCookie, Value: token})
+		} else {
+			r.Header.Set("Authorization", "Bearer "+key.Token)
+		}
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		return w
+	}
+	resultPath := "/v1/projects/" + project.ID + "/experiments/" + run.ID + "/results"
+	if w = get(resultPath, false); w.Code != 401 {
+		t.Fatal("app key authorized results")
+	}
+	if w = get("/v1/projects/other/experiments/"+run.ID+"/results", true); w.Code != 403 {
+		t.Fatal("cross-project results leaked")
+	}
+	if w = get("/v1/projects/"+project.ID+"/experiments/missing/results", true); w.Code != 404 {
+		t.Fatal("missing result mapping")
+	}
+	completion := event
+	completion.ID = "completed"
+	completion.Kind = "listing_completion"
+	completion.ExposureID = event.ID
+	completion.DecisionID = ""
+	completion.OccurredAt = event.OccurredAt.Add(30 * time.Second)
+	second := completion
+	second.ID = "completed_retry_new_id"
+	batch.Events = []events.Event{completion, second}
+	if w = send(batch, key.Token); w.Code != 200 {
+		t.Fatalf("completion %d", w.Code)
+	}
+	w = get(resultPath, true)
+	if w.Code != 200 || w.Header().Get("Cache-Control") != "no-store" {
+		t.Fatalf("viewer result %d %s", w.Code, w.Body.String())
+	}
+	var results metrics.Results
+	if err = json.Unmarshal(w.Body.Bytes(), &results); err != nil {
+		t.Fatal(err)
+	}
+	if results.Quality.QuarantinedEvents != 1 || results.Quality.DuplicateAttributedCompletions != 1 || results.RunID != run.ID {
+		t.Fatalf("result diagnostics %+v", results)
+	}
+	found := false
+	for _, v := range results.Variants {
+		if v.ID == decision.VariantID {
+			found = true
+			if v.Provisional.Exposed != 1 || v.Provisional.Converted != 1 || v.Finalized.Exposed != 0 || v.TotalRate.Rate == nil || *v.TotalRate.Rate != 1 {
+				t.Fatal("HTTP attribution counts incorrect")
+			}
+		}
+	}
+	if !found || results.Comparisons[0].Total.Status != "insufficient_data" {
+		t.Fatal("small HTTP fixture claimed significance")
 	}
 }

@@ -7,7 +7,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M1 Foundation | Complete | 5 Oct 2026: `make check race build`, ARM64 Docker build/start, Compose validation, `make smoke foundation-drill`, and real PostgreSQL 17.11 integration tests passed. |
 | M2 Identity, scope, audit | Complete | 5 Oct 2026: `make check race build`, race-enabled PostgreSQL integration, rebuilt Docker API, live management smoke and seed idempotence passed. |
 | M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
-| M4 Experiments and measurement | In progress | Lifecycle, HTTP contracts and transactional event ingestion verified; attribution and results remain pending. |
+| M4 Experiments and measurement | Complete | 5 Oct 2026: lifecycle/ingestion/SQL attribution/statistics gates, race-enabled PostgreSQL fixtures, final Docker measurement journey and API contracts passed. |
 | M5 Dashboard / MVP | Pending | — |
 | M6 Redis snapshots | Pending | — |
 | M7 Durable worker | Pending | — |
@@ -53,9 +53,9 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M4: implement SQL attribution/results from the committed event facts, then confidence intervals, significance, sample-ratio checks and known measurement fixtures. Follow M4's full gate before building the M5 dashboard. No V2 milestones are complete yet.
+M5: minimal Next.js dashboard and marketplace listing demo, starting with login/project/environment navigation, then flags/preview/audit, experiment lifecycle/results and explicit demo events. Follow its browser and clean-setup gates before the MVP tag. No V2 milestones are complete yet.
 
-## M4 partial checkpoint
+## M4 verified evidence
 
 - Added experiment runs with draft/running/paused/completed lifecycle, immutable population/treatment snapshots, generated independent salts and an explicit control variant. Draft and paused runs reserve their flag/environment; completed runs retain historical definitions.
 - Lifecycle and ordinary flag mutation share the same PostgreSQL flag-row lock. Transitions compare revisions, create a flag revision and append audit in one transaction. Failed audit insertion rolls everything back.
@@ -68,4 +68,9 @@ M4: implement SQL attribution/results from the committed event facts, then confi
 - Reported historical flag revision validates run assignment after pause/completion. Wrong variants, targeting/nonrandomized flows, unknown revisions, events older than 24 hours and events more than five minutes ahead are quarantined. Unknown runs/malformed schemas reject the batch. Completion/request facts can arrive before exposure; business attribution is still pending.
 - `make check`, OpenAPI reference checks and full race-enabled PostgreSQL integration passed. Tests cover concurrent reversed batches, identical/different payload retries, historical receipt replay, wrong permissions/scope/revocation, timezone/numeric equivalence, quarantine boundaries, insert failure and an actual deferred COMMIT failure with no acknowledgement/partial facts.
 - Docker rebuilt and applied migration 0005. Live `make events-smoke experiments-smoke smoke` verified all three fact types, retry receipts, atomic conflict, quarantine, scope and lifecycle. No event throughput or aggregate correctness is claimed yet.
-- Attribution, statistics and M4 completion remain pending. Next: earliest event-time exposure, referenced exposure validation, user/run conversion deduplication, pending reconciliation, provisional/final cohorts and statistics.
+- SQL attribution uses a repeatable-read snapshot and set-based joins. Earliest valid event-time exposure anchors each user/run, with event-ID byte order breaking ties. Outcome references must match a valid exposure's run/user/variant and temporal order. Existence of an attributed completion deduplicates the business numerator; a late earlier exposure can subtract a previously counted conversion.
+- PostgreSQL fixtures verify missing exposure then reconciliation, both earlier-exposure arrival orders, new-ID completion deduplication, exact thirty-minute bounds, invalid references, future facts, targeting/quarantine exclusion and provisional/final classification at the inclusive late deadline. Successor runs/changed flag revisions cannot move historical results.
+- Wilson 95% intervals, absolute/relative lift, pooled two-proportion tests, insufficient-data states and multi-variant/unequal-allocation SRM checks are implemented. Tests match NIST examples/critical values and independently bisected score-test roots. Endpoint coverage at zero/100% conversion was corrected after a failing floating-point regression. A/A fixtures return zero lift/p=1; severe sample-ratio mismatch suppresses inference. No sequential/multiple-comparison validity is claimed.
+- Product-request samples require valid exposure references and return error rate, fixed-bin histograms and an explicitly approximate p95 upper bound. Empty rates/percentiles remain null. These do not represent platform API latency.
+- Final source passed `make check race api-check`, `make integration`, and race-enabled measurement integration after the set-based SQL refinement. Full race-enabled PostgreSQL integration also passed for the results API; HTTP tests verify scoped human/viewer reads, app-key denial, no-store responses and exact counts.
+- Final Docker rebuild applied migration 0006 and passed `make measurement-smoke smoke`. The live journey verifies pending outcomes become one conversion, extra completion IDs cannot inflate counts, histograms/intervals are returned, quarantine is excluded and a fresh cohort remains provisional. No load target or V2 aggregation/retention behavior is claimed.

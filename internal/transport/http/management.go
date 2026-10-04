@@ -72,6 +72,7 @@ func (m *Management) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/projects/{project}/experiments", m.human(false, m.listExperiments))
 	mux.HandleFunc("POST /v1/projects/{project}/experiments", m.human(true, m.createExperiment))
 	mux.HandleFunc("GET /v1/projects/{project}/experiments/{run}", m.human(false, m.getExperiment))
+	mux.HandleFunc("GET /v1/projects/{project}/experiments/{run}/results", m.human(false, m.getResults))
 	mux.HandleFunc("POST /v1/projects/{project}/experiments/{run}/transitions", m.human(true, m.transitionExperiment))
 }
 func (m *Management) login(w http.ResponseWriter, r *http.Request) {

@@ -458,6 +458,33 @@ paths:
         '403': {$ref: '#/components/responses/Forbidden'}
         '404': {description: Run not found in this project}
         '409': {description: Stale revision, invalid state transition or disabled flag}
+  /v1/projects/{project}/experiments/{run}/results:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - $ref: '#/components/parameters/Run'
+    get:
+      summary: Read exposure-attributed conversion results and product-request metrics
+      description: >-
+        Human project members, including viewers, may read current/historical runs.
+        Earliest accepted event-time exposure per user/run anchors the 30-minute window;
+        ties use event ID byte order. Outcomes require a valid matching referenced exposure.
+        New completion IDs cannot increase a user's conversion count. Provisional cohorts
+        mature only after the attribution window and 24-hour late allowance have elapsed.
+        Future-dated accepted facts do not count before their event time. SQL reads one
+        repeatable-read snapshot; no evaluation automatically becomes exposure.
+        Product-request p95 is a histogram upper bound, not exact latency or API latency.
+        Wilson 95% intervals describe each conversion rate. Two-proportion p-values require
+        sufficient cell counts; sample-ratio mismatches suppress inference. These are
+        descriptive fixed-analysis outputs, with no sequential stopping or multiplicity correction.
+      responses:
+        '200':
+          description: Results from committed raw facts; never cache
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ExperimentResults'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: Run not found in this project}
   /v1/events:
     post:
       security:
@@ -508,6 +535,118 @@ components:
     FlagKey: {name: key, in: path, required: true, schema: {type: string}}
     Run: {name: run, in: path, required: true, schema: {type: string}}
   schemas:
+    ConversionCounts:
+      type: object
+      required: [exposed, converted]
+      properties:
+        exposed: {type: integer, minimum: 0}
+        converted: {type: integer, minimum: 0, description: Unique converted users, never greater than exposed}
+    ConversionRate:
+      type: object
+      required: [status, rate, confidence_interval]
+      properties:
+        status: {type: string, enum: [available, insufficient_data, invalid_counts]}
+        rate: {type: [number, 'null'], minimum: 0, maximum: 1}
+        confidence_interval:
+          anyOf:
+            - type: 'null'
+            - type: object
+              required: [method, level, lower, upper]
+              properties:
+                method: {const: wilson}
+                level: {const: 0.95}
+                lower: {type: number, minimum: 0, maximum: 1}
+                upper: {type: number, minimum: 0, maximum: 1}
+    RequestMetrics:
+      type: object
+      required: [count, errors, error_rate, p95_upper_bound_ms, histogram]
+      properties:
+        count: {type: integer, minimum: 0}
+        errors: {type: integer, minimum: 0}
+        error_rate: {type: [number, 'null'], minimum: 0, maximum: 1}
+        p95_upper_bound_ms: {type: [integer, 'null'], description: Nearest-rank p95 enclosed by a fixed histogram bucket}
+        histogram:
+          type: array
+          items:
+            type: object
+            required: [upper_bound_ms, count]
+            properties:
+              upper_bound_ms: {type: integer, enum: [50, 100, 250, 500, 1000, 2500, 5000, 10000, 60000]}
+              count: {type: integer, minimum: 0, description: Per-bin count; not cumulative}
+    SampleRatio:
+      type: object
+      required: [status, statistic, degrees_of_freedom, p_value, warning_threshold]
+      properties:
+        status: {type: string, enum: [balanced, mismatch, insufficient_data]}
+        statistic: {type: [number, 'null'], minimum: 0}
+        degrees_of_freedom: {type: integer, minimum: 1, maximum: 9}
+        p_value: {type: [number, 'null'], minimum: 0, maximum: 1}
+        warning_threshold: {const: 0.0005}
+    ConversionComparison:
+      type: object
+      required: [status, absolute_lift, relative_lift, z_statistic, p_value]
+      properties:
+        status: {type: string, enum: [available, insufficient_data, data_quality_warning, invalid_counts]}
+        reason: {type: string}
+        absolute_lift: {type: [number, 'null'], description: Treatment rate minus control rate, in rate units}
+        relative_lift: {type: [number, 'null'], description: Absolute lift divided by control rate; null when control rate is zero}
+        relative_lift_reason: {type: string}
+        z_statistic: {type: [number, 'null']}
+        p_value: {type: [number, 'null'], minimum: 0, maximum: 1}
+    ExperimentResults:
+      type: object
+      required: [run_id, environment_id, control_variant_id, as_of, attribution_window_seconds, late_allowance_seconds, variants, quality, sample_ratio, comparisons, inference_notes]
+      properties:
+        run_id: {type: string}
+        environment_id: {type: string}
+        control_variant_id: {type: string}
+        as_of: {type: string, format: date-time}
+        attribution_window_seconds: {const: 1800}
+        late_allowance_seconds: {const: 86400}
+        variants:
+          type: array
+          items:
+            type: object
+            required: [id, weight_bp, provisional, finalized, total, provisional_rate, finalized_rate, total_rate, requests]
+            properties:
+              id: {type: string}
+              weight_bp: {type: integer, minimum: 1, maximum: 10000}
+              provisional: {$ref: '#/components/schemas/ConversionCounts'}
+              finalized: {$ref: '#/components/schemas/ConversionCounts'}
+              total: {$ref: '#/components/schemas/ConversionCounts'}
+              provisional_rate: {$ref: '#/components/schemas/ConversionRate'}
+              finalized_rate: {$ref: '#/components/schemas/ConversionRate'}
+              total_rate: {$ref: '#/components/schemas/ConversionRate'}
+              requests: {$ref: '#/components/schemas/RequestMetrics'}
+        quality:
+          type: object
+          required: [quarantined_events, future_events, pending_outcomes, invalid_reference_outcomes, outside_window_completions, duplicate_attributed_completions]
+          properties:
+            quarantined_events: {type: integer, minimum: 0}
+            future_events: {type: integer, minimum: 0}
+            pending_outcomes: {type: integer, minimum: 0}
+            invalid_reference_outcomes: {type: integer, minimum: 0}
+            outside_window_completions: {type: integer, minimum: 0}
+            duplicate_attributed_completions: {type: integer, minimum: 0}
+        sample_ratio:
+          type: object
+          required: [provisional, finalized, total]
+          properties:
+            provisional: {$ref: '#/components/schemas/SampleRatio'}
+            finalized: {$ref: '#/components/schemas/SampleRatio'}
+            total: {$ref: '#/components/schemas/SampleRatio'}
+        comparisons:
+          type: array
+          items:
+            type: object
+            required: [control_variant_id, variant_id, provisional, finalized, total]
+            properties:
+              control_variant_id: {type: string}
+              variant_id: {type: string}
+              provisional: {$ref: '#/components/schemas/ConversionComparison'}
+              finalized: {$ref: '#/components/schemas/ConversionComparison'}
+              total: {$ref: '#/components/schemas/ConversionComparison'}
+        inference_notes: {type: array, items: {type: string}}
     EventBatch:
       type: object
       additionalProperties: false
