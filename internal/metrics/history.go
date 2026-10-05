@@ -22,14 +22,20 @@ const measurementSourceSQL = `(
 
 // Compact unresolved outcomes stay in the replaceable contribution until their
 // references resolve. Only resolved facts are folded into historical segments.
+const reportingFloorSQL = `(SELECT reporting_since FROM metric_user_state WHERE project_id=$1 AND environment_id=$2 AND run_id=$3 AND user_id=$5)`
+
 func retainedUserSQL() string {
 	sql := strings.Replace(attributionSQL, "SELECT * FROM raw_events", "SELECT * FROM "+measurementSourceSQL+" measurement_facts", 1)
-	sql = strings.Replace(sql, "AND received_at<=$4", "AND received_at<=$4 AND user_id=$5", 1)
+	sql = strings.Replace(sql, "AND received_at<=$4", "AND received_at<=$4 AND user_id=$5 AND received_at>=COALESCE("+reportingFloorSQL+",'-infinity'::timestamptz)", 1)
+	sql = strings.Replace(sql, "user_id,variant_id,event_id,occurred_at\n", "user_id,variant_id,event_id,occurred_at,received_at\n", 1)
 	sql = strings.Replace(sql, "FROM accepted WHERE kind='exposure'", `FROM (
- SELECT user_id,variant_id,event_id,occurred_at FROM accepted WHERE kind='exposure'
- UNION ALL SELECT user_id,variant_id,event_id,occurred_at FROM metric_archived_anchors
+ SELECT user_id,variant_id,event_id,occurred_at,received_at FROM raw_events
+ WHERE project_id=$1 AND environment_id=$2 AND run_id=$3 AND user_id=$5 AND kind='exposure'
+ AND status='accepted' AND received_at<=$4 AND occurred_at<=$4
+ UNION ALL SELECT user_id,variant_id,event_id,occurred_at,received_at FROM metric_archived_anchors
  WHERE project_id=$1 AND environment_id=$2 AND run_id=$3 AND user_id=$5 AND occurred_at<=$4
  ) anchor_sources`, 1)
+	sql = strings.Replace(sql, "FROM anchors a LEFT JOIN converted_users c USING(user_id)", "FROM anchors a LEFT JOIN converted_users c USING(user_id) WHERE a.received_at>=COALESCE("+reportingFloorSQL+",'-infinity'::timestamptz)", 1)
 	return strings.Replace(sql, "LEFT JOIN raw_events x", "LEFT JOIN "+referenceSourceSQL+" x", 1)
 }
 

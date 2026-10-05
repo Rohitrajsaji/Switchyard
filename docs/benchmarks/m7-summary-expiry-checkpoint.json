@@ -1,0 +1,20 @@
+{
+  "observed_at": "2026-10-05T06:04:25.930741+00:00",
+  "counts": {
+    "raw_events": 267,
+    "historical_segments": 0,
+    "compact_pending": 0,
+    "advanced_reporting_floors": 0,
+    "due_users": 0
+  },
+  "live_replay": {
+    "observed_at": "2026-10-05T06:03:57.054528+00:00",
+    "replayed_events": 7,
+    "pages": 1,
+    "inspected_failures": 0,
+    "parity": "docker compose --profile async run --rm --no-deps --entrypoint /app/check-metrics worker\nAggregate parity passed for 27 runs: cohorts, conversions, requests, histograms and quality"
+  },
+  "final_live_parity_runs": 28,
+  "cleanup_enabled": false,
+  "scope": "Summary expiry, monotonic reporting floors, bounded deletion and returning-user attribution verified in disposable schemas. Normal cleanup is not scheduled."
+}

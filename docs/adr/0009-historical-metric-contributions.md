@@ -1,6 +1,6 @@
 # ADR 0009: Historical contributions and retained attribution metadata
 
-Status: accepted as an M7 retention foundation. Bounded folding and identity preservation/expiry primitives are implemented and tested; automatic scheduling and 90-day summary expiry remain pending.
+Status: accepted as an M7 retention foundation. Bounded folding, identity/work expiry and ninety-day summary-expiry primitives are implemented and tested; automatic scheduling and final M7 retention/recovery/read-transition gates remain pending.
 
 ## Decision
 
@@ -47,3 +47,15 @@ This primitive is not scheduled by the normal worker yet. The development databa
 Receipt and publication deletion commit together. An expired broker delivery then fails source validation instead of generating new work. Immutable configuration history, metric user state and counters remain intact. Resolved dead-letter deletion releases its database admission slot; unresolved failures remain inspectable and consume the existing bounded capacity. This policy measures resolved failure retention from resolution rather than first failure, preserving the inspection period after repair.
 
 Exact-boundary, 105-row concurrent paging, rollback after receipt deletion, pending/raw/lease/failure protection, admission-counter consistency, configuration history and active source-lock fixtures verify the primitive. Its scheduling still depends on the remaining M7 retention/failure gates. Summary expiry is separate; deleting receipts does not claim to expire ninety-day analytical data.
+
+## Ninety-day summary expiry checkpoint
+
+Migration 0015 adds a monotonic per-user reporting floor. The summary window contains the current UTC receipt day and the preceding 89 UTC days; day ownership is based on original receipt, not folding/retry time. The internal expiry function accepts 8–365 days so the analytical window exceeds the fixed seven-day raw replay horizon. Increasing retention or moving the clock backward does not reconstruct already-expired summaries.
+
+`ExpireOne` holds the common user lock, deletes at most 100 expired daily segments and 100 expired compact pending outcomes, and rebuilds historical contribution from the bounded retained daily window plus the original anchor's cohort. A cohort/conversion expires with its original anchor receipt day. Requests, histograms and resolved quality expire with their owning daily segment. Unresolved outcomes stop contributing when below the reporting floor, even if another bounded deletion page remains. Historical update, floor advancement, deletion and reconciliation scheduling are atomic. Counter differences are committed by ordinary reconciliation afterward.
+
+Anchor/reference identity is retained separately from reporting counts. Reconciliation chooses the global earliest accepted exposure across raw and archived sources before applying the reporting floor to cohort counts. Consequently a returning user cannot turn a newer exposure into a replacement cohort/variant. Request references can still validate an older exposure. These compact identities are deliberately not raw analytical payloads; their lifecycle remains separate from ninety-day summary data. Source attributes/payloads are governed by raw/identity retention.
+
+The duplicate-completion SQL now subtracts converted users directly rather than visible reporting cohorts; these are identical before expiry, and the former remains valid when an anchor's reporting cohort has expired. Tests cover exact UTC boundaries, partial expiry of two receipt days, returning users, pending outcomes, concurrent expiry, failed-delete rollback, 105 pending rows and 111 historical-day rows requiring bounded pages. Existing full-raw attribution/folding fixtures remain unchanged in meaning.
+
+Automatic scheduling and the final retained replay/parity, failure/load and HTTP read-transition gates remain pending. Normal development data still has no reporting floor advancement or deletion at this checkpoint.

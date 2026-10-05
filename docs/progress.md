@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M7: bounded folding and paired work-receipt expiry implemented; summary expiry and cleanup scheduling next, then complete event/freshness/load gates and results-read transition. M6 is the first completed V2 milestone.
+M7: retention primitives implemented; cleanup scheduling and retained parity next, then complete event/freshness/load gates and results-read transition. M6 is the first completed V2 milestone.
 
 ## M6 verified checkpoints
 
@@ -174,3 +174,9 @@ M7: bounded folding and paired work-receipt expiry implemented; summary expiry a
 - `make fmt check race build api-check` passed. The first full race integration run failed the login deadline under parallel package load and is not a gate pass. The complete PostgreSQL/Redis/NATS race-enabled integration suite passed when rerun with `-p 1`; resource contention is consistent with this result but not proven as the failure cause. `make integration` now defaults to this bounded package concurrency for the supported 8 GB machine; application timeouts/password cost are unchanged.
 - Rebuilt ARM64 Docker services applied migration 0014 and passed live replay, measurement and health checks. Raw/materialized parity passed across 27 experiment runs. Actual evidence in `docs/benchmarks/m7-work-retention-checkpoint.json` records 426 publication rows/processing receipts, zero unpublished intents/dead letters/due users and 259 retained raw facts.
 - Automatic scheduling and ninety-day summary expiry remain pending. This checkpoint does not delete normal demo facts or mark M7 complete.
+
+## M7 ninety-day summary expiry checkpoint
+
+- Migration 0015 adds a monotonic per-user reporting floor. Expiry owns original UTC receipt days, deletes at most 100 historical segments and 100 unresolved outcomes, rebuilds retained history from the bounded daily window and schedules counter reconciliation atomically. Cohort/conversion retention follows the original anchor day; attribution identity remains separate so returning users cannot recreate expired cohorts.
+- Exact ninety-day boundaries, two-day partial expiry, returning-user request/cohort behavior, unresolved outcomes, concurrency and failed-delete rollback passed targeted PostgreSQL race integration. A fixture initially left its second receipt day exactly on the strict raw-folding boundary; advancing its injected clock one hour let both days fold, and the corrected fixture passed. Additional fixtures cover 105 pending outcomes and 111 historical days requiring bounded pages.
+- Source/check/race/build/API validation passed. The complete PostgreSQL/Redis/NATS race integration suite passed with `-p 1`, including the final historical-page fixture. Rebuilt ARM64 Docker services applied migration 0015 and passed live replay, measurement and health checks. Raw/materialized parity passed across 28 runs. Actual evidence in `docs/benchmarks/m7-summary-expiry-checkpoint.json` records 267 raw facts, zero historical/pending rows, zero advanced reporting floors and zero due users. Automatic cleanup scheduling, retained replay/parity, complete event failure drills, the ingestion trial and HTTP read transition remain pending. M7 is not complete.

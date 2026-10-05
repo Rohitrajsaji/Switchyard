@@ -18,6 +18,6 @@ SELECT jsonb_build_object(
         'outside_window_completions',(SELECT count(*) FROM linked e JOIN anchors a USING(user_id,variant_id)
             WHERE e.kind='listing_completion' AND e.reference_status='valid'
             AND NOT (e.occurred_at>=a.occurred_at AND e.occurred_at<=a.occurred_at+interval '30 minutes')),
-        'duplicate_attributed_completions',(SELECT count(*) FROM attributed_completions)-(SELECT count(*) FROM contributions WHERE converted)
+        'duplicate_attributed_completions',(SELECT count(*) FROM attributed_completions)-(SELECT count(*) FROM converted_users)
     )
 )
