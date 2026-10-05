@@ -268,6 +268,7 @@ func TestHTTPGRPCParityAuthorizationBatchAndFreshness(t *testing.T) {
 	if _, err := client.Evaluate(canceled, &pb.EvaluateRequest{ProjectId: project.ID, EnvironmentId: env, Input: inputs[0]}); status.Code(err) != codes.Canceled {
 		t.Fatal("cancellation ignored", err)
 	}
+	ps.SetRevocationObserver(management.ForgetApplication) // this instance drops the key immediately; a remote revocation waits for the cache TTL
 	if err := ps.RevokeKey(ctx, actor, project.ID, key.ID, "revoke"); err != nil {
 		t.Fatal(err)
 	}
