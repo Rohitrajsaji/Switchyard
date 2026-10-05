@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"switchyard/internal/platform/identity"
 )
@@ -17,6 +18,16 @@ const MaxAttempts = 10
 
 var ErrInvalid = errors.New("invalid outbox operation")
 var ErrClaimLost = errors.New("outbox claim lost")
+var ErrCapacity = errors.New("durable work capacity reached")
+
+// CapacityError uses a dedicated database code, never exception-text matching.
+func CapacityError(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "SY001" {
+		return ErrCapacity
+	}
+	return err
+}
 
 type Reference struct {
 	Kind          string `json:"kind"`
@@ -39,7 +50,7 @@ func Record(ctx context.Context, tx pgx.Tx, r Reference) error {
 	_, err := tx.Exec(ctx, `INSERT INTO outbox(kind,project_id,environment_id,object_id,revision)
         VALUES($1,$2,$3,$4,$5) ON CONFLICT(kind,project_id,environment_id,object_id,revision) DO NOTHING`,
 		r.Kind, r.ProjectID, r.EnvironmentID, r.ObjectID, r.Revision)
-	return err
+	return CapacityError(err)
 }
 
 type Item struct {

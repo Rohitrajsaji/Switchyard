@@ -541,6 +541,10 @@ paths:
         '401': {$ref: '#/components/responses/Unauthorized'}
         '403': {$ref: '#/components/responses/Forbidden'}
         '409': {description: Existing event identity has a different payload; no new batch facts commit}
+        '503':
+          description: Durable work capacity reached; no new batch facts commit. Retry with the same event IDs after the indicated delay.
+          headers:
+            Retry-After: {schema: {type: integer, minimum: 1}, description: Suggested retry delay in seconds}
         '500': {description: Transaction failed; no successful acceptance is claimed; retry with stable IDs}
 components:
   securitySchemes:

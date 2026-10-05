@@ -1,0 +1,18 @@
+{
+  "observed_at": "2026-10-05T04:08:51.738731+00:00",
+  "capacity": [
+    {
+      "name": "dead_letters",
+      "used": 0,
+      "actual": 0,
+      "maximum": 10000
+    },
+    {
+      "name": "publication",
+      "used": 0,
+      "actual": 0,
+      "maximum": 200000
+    }
+  ],
+  "verification": "Database counters and durable row counts agree in one statement snapshot; this is not a throughput or disk-space result."
+}

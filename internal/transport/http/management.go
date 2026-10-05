@@ -21,6 +21,7 @@ import (
 	"switchyard/internal/cache"
 	"switchyard/internal/experiments"
 	"switchyard/internal/flags"
+	"switchyard/internal/outbox"
 	"switchyard/internal/platform/identity"
 	"switchyard/internal/projects"
 	"switchyard/pkg/evaluation"
@@ -287,6 +288,9 @@ func (m *Management) audit(w http.ResponseWriter, r *http.Request, actor auth.Ac
 func (m *Management) fail(w http.ResponseWriter, r *http.Request, err error) {
 	status, code := 500, "internal_error"
 	switch {
+	case errors.Is(err, outbox.ErrCapacity):
+		status, code = 503, "durable_work_capacity"
+		w.Header().Set("Retry-After", "1")
 	case errors.Is(err, auth.ErrUnauthorized):
 		status, code = 401, "unauthorized"
 	case errors.Is(err, auth.ErrForbidden):

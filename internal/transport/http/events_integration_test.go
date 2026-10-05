@@ -129,6 +129,26 @@ func TestEventHTTPIdentityAndPermissionBoundary(t *testing.T) {
 	if err = json.Unmarshal(w.Body.Bytes(), &response); err != nil || !response.Receipts[0].Duplicate {
 		t.Fatal("retry duplicated")
 	}
+	if _, err = pool.Exec(ctx, `UPDATE work_capacity SET maximum=used WHERE name='publication'`); err != nil {
+		t.Fatal(err)
+	}
+	overloaded := batch
+	overloaded.Events = append([]events.Event(nil), event)
+	overloaded.Events[0].ID = "capacity_rejected"
+	w = send(overloaded, key.Token)
+	if w.Code != 503 || w.Header().Get("Retry-After") != "1" || !strings.Contains(w.Body.String(), "durable_work_capacity") {
+		t.Fatalf("capacity response=%d %s", w.Code, w.Body.String())
+	}
+	var rejectedFacts int
+	if err = pool.QueryRow(ctx, `SELECT count(*) FROM raw_events WHERE event_id='capacity_rejected'`).Scan(&rejectedFacts); err != nil || rejectedFacts != 0 {
+		t.Fatal("rejected event committed")
+	}
+	if w = send(batch, key.Token); w.Code != 200 {
+		t.Fatal("duplicate rejected at capacity")
+	}
+	if _, err = pool.Exec(ctx, `UPDATE work_capacity SET maximum=200000 WHERE name='publication'`); err != nil {
+		t.Fatal(err)
+	}
 	changed := event
 	changed.VariantID = "other"
 	batch.Events = []events.Event{changed}

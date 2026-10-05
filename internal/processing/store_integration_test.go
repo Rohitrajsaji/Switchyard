@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"switchyard/internal/outbox"
 	"switchyard/internal/platform/messaging"
 	"switchyard/internal/platform/postgres"
 	"switchyard/internal/testutil"
@@ -34,6 +35,32 @@ INSERT INTO application_keys(id,token_hash,project_id,environment_id,name,permis
 		t.Fatal(err)
 	}
 	return p, New(p)
+}
+
+func TestDeadLetterCapacityPreservesUnacknowledgedWork(t *testing.T) {
+	p, s := setup(t)
+	ctx := context.Background()
+	if _, err := p.Exec(ctx, `UPDATE work_capacity SET maximum=1 WHERE name='dead_letters'`); err != nil {
+		t.Fatal(err)
+	}
+	for range 2 {
+		if err := s.DeadLetter(ctx, "STREAM", 1, "", []byte(`bad`), "invalid_envelope"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.DeadLetter(ctx, "STREAM", 2, "", []byte(`bad`), "invalid_envelope"); !errors.Is(err, outbox.ErrCapacity) {
+		t.Fatal("dead letter cap bypassed", err)
+	}
+	var used, count int
+	if err := p.QueryRow(ctx, `SELECT used,(SELECT count(*) FROM work_dead_letters) FROM work_capacity WHERE name='dead_letters'`).Scan(&used, &count); err != nil || used != 1 || count != 1 {
+		t.Fatal("capacity differs from durable records")
+	}
+	if _, err := p.Exec(ctx, `DELETE FROM work_dead_letters WHERE stream_sequence=1`); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.DeadLetter(ctx, "STREAM", 2, "", []byte(`bad`), "invalid_envelope"); err != nil {
+		t.Fatal("cleanup did not release slot", err)
+	}
 }
 func fact(t *testing.T, p *pgxpool.Pool, id, user string) messaging.Envelope {
 	t.Helper()

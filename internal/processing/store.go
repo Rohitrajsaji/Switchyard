@@ -119,5 +119,5 @@ func (s *Store) DeadLetter(ctx context.Context, stream string, sequence uint64, 
 	}
 	_, err := s.pool.Exec(ctx, `INSERT INTO work_dead_letters(stream_name,stream_sequence,message_id,payload,failure_code)
         VALUES($1,$2,$3,$4,$5) ON CONFLICT(stream_name,stream_sequence) DO NOTHING`, stream, int64(sequence), id, payload, code)
-	return err
+	return outbox.CapacityError(err)
 }
