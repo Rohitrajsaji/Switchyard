@@ -116,6 +116,25 @@ test("admin signs in, creates a project, selects environments and reloads the se
   await expect(page.getByLabel("Evaluation value")).toContainText(
     "0.123456789012345678901",
   );
+  await page.getByRole("button", { name: "Create flag", exact: true }).click();
+  await page.getByLabel("Flag key", { exact: true }).fill("copy");
+  await page
+    .getByRole("combobox", { name: "Value type", exact: true })
+    .selectOption("string");
+  await page.getByLabel("Default value", { exact: true }).fill('"checkout"');
+  await page.getByLabel("Emergency safe value", { exact: true }).fill('"safe"');
+  await page
+    .getByLabel("Change reason", { exact: true })
+    .fill("Ship the checkout copy");
+  await page.getByRole("button", { name: "Save flag", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Evaluation preview" }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Evaluate user", exact: true })
+    .click();
+  await expect(page.getByText("default", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Evaluation value")).toContainText("checkout");
   await page.screenshot({
     path: "../.cache/dashboard-flags.png",
     fullPage: true,
