@@ -10,7 +10,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M4 Experiments and measurement | Complete | 5 Oct 2026: lifecycle/ingestion/SQL attribution/statistics gates, race-enabled PostgreSQL fixtures, final Docker measurement journey and API contracts passed. |
 | M5 Dashboard / MVP | Complete | 5 Oct 2026: Go/check/race/API/frontend checks, race-enabled PostgreSQL integration, ARM64 dashboard image, fresh-volume seed idempotence, all production browser journeys and restart persistence passed; local `v0.1.0-mvp` release. |
 | M6 Redis snapshots | Complete | 5 Oct 2026: immutable snapshots, monotonic Redis, bounded coordinator, cached HTTP scope/revocation, race integration, live independent API outage/repair drill, evaluator benchmarks and all three browser journeys passed. |
-| M7 Durable worker | In progress | Transactional outbox and durable NATS publisher verified, including server/worker restart recovery; consumer aggregation/replay/retention and final gates pending. |
+| M7 Durable worker | In progress | Transactional outbox and durable NATS publisher verified, including server/worker restart recovery; durable consumer/per-user aggregates verified; replay/retention and final gates pending. |
 | M8 gRPC / Go SDK | Pending | — |
 | M9 Rollout / approval / safety | Pending | — |
 | M10 Telemetry / performance | Pending | — |
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M7: bounded commit-before-ack consumer processing and idempotent attribution/aggregation next. M6 is the first completed V2 milestone.
+M7: replay/dead-letter controls and retention preserving older finalized summaries next, then complete event/freshness/load gates and results-read transition. M6 is the first completed V2 milestone.
 
 ## M6 verified checkpoints
 
@@ -123,3 +123,14 @@ M7: bounded commit-before-ack consumer processing and idempotent attribution/agg
 - `make check race build api-check` and complete race-enabled PostgreSQL/Redis/NATS integration passed. Docker worker/API built on ARM64 and services started. CI defines NATS startup/health waiting and explicit TEST_NATS_URL; no remote CI execution is claimed.
 - `make publication-drill` passed: NATS restart retained 353 messages, two recovered fixture publications brought retained count to 355, and all three scoped intents were acknowledged with no dead rows. Observed recovery after broker health was 0.1849 s; this is one fixture, not p99/throughput. Worker restart also resumed pending work. The raw report is retained.
 - Publisher-only checkpoint: messages remain in JetStream and results still use raw SQL. The durable consumer API is configured but not running. M7 still requires commit-before-ack processing, idempotent aggregate reconciliation/parity, replay/dead-letter/retention controls, final event drills and the ingestion trial. No consumer-loss/replay/aggregate freshness claim is made yet.
+
+## M7 durable consumer and reconciliation checkpoint
+
+- Migration 0008 adds durable processing receipts, per-user work/contributions, materialized counters and bounded dead-letter records. The consumer validates persisted identity/source and commits a receipt plus scheduling before confirmed broker acknowledgement. Twenty concurrent deliveries yield one receipt/intent; lost acknowledgements, scheduling rollback, dead-letter rollback and expired-source replay are tested.
+- One fixed consumer loop pulls four messages; one fixed reconciliation loop applies per-user differences. Counter updates, contribution replacement and next due time are atomic; race tests prove repeated/concurrent reconciliation cannot double-count and completion failures roll back increments. Raw SQL remains the HTTP results read path.
+- All existing SQL measurement fixtures now also compare materialized results, covering late corrections, arrival order, unique conversion, pending/invalid references, quarantine, histograms, exact boundaries, A/A and SRM. A repeatable-read parity command checks all dimensions and rejects missing materialization/empty fixtures. Separate injected-clock tests verify future occurrence, future own/referenced receipts and strict finalization scheduling without a new event. The referenced-receipt regression failed before its fix, which is retained.
+- Configuration notifications read current PostgreSQL state before Redis repair. A real PostgreSQL test proves a late revision-1 notification still publishes revision-2 kill safety. Disposable cache failure does not block a committed receipt; M6 polling remains independent repair.
+- Initial Docker activation processed all 355 existing messages with zero dead letters/due metric jobs and parity across twenty experiment runs. Existing live flag/experiment/measurement/health journeys passed with processing active. The full race integration suite passed for the consumer checkpoint, with targeted metrics/processing/worker integration passing after clock repairs. No throughput or retention/replay completion is claimed.
+- M7 remains in progress: operator replay/dead-letter controls, finalized-summary retention, bounded backlog/admission, complete consumer/event failure drills, the ingestion trial and results-read transition still remain. No raw data is purged at this checkpoint.
+
+- Final checkpoint verification: `make check race build api-check` and the complete race-enabled PostgreSQL/Redis/NATS integration suite passed after the clock repair. The rebuilt Docker worker passed the publisher restart drill and restored normal processing. Live evidence records 377 processing receipts, zero dead letters, zero due users, 71 counter rows and raw/materialized parity across 22 runs. Broker recovery was 0.1823 s in this single fixture; evidence is in `docs/benchmarks/m7-processing-checkpoint.json`.

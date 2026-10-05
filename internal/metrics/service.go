@@ -22,6 +22,9 @@ var attributionSQL string
 //go:embed results.sql
 var resultsSQL string
 
+//go:embed materialized.sql
+var materializedSQL string
+
 type Counts struct {
 	Exposed   int64 `json:"exposed"`
 	Converted int64 `json:"converted"`
@@ -100,6 +103,16 @@ type derived struct {
 }
 
 func (s *Service) Read(ctx context.Context, actor auth.Actor, projectID, runID string) (Results, error) {
+	return s.read(ctx, actor, projectID, runID, false)
+}
+
+// ReadAggregated is available for the parity gate. HTTP reads remain on the
+// raw-event oracle until the complete M7 aggregation/replay gates pass.
+func (s *Service) ReadAggregated(ctx context.Context, actor auth.Actor, projectID, runID string) (Results, error) {
+	return s.read(ctx, actor, projectID, runID, true)
+}
+
+func (s *Service) read(ctx context.Context, actor auth.Actor, projectID, runID string, aggregated bool) (Results, error) {
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return Results{}, err
@@ -128,7 +141,12 @@ func (s *Service) Read(ctx context.Context, actor auth.Actor, projectID, runID s
 		return Results{}, errors.New("run definition missing assignment")
 	}
 	now := s.now().UTC().Truncate(time.Microsecond)
-	if err = tx.QueryRow(ctx, attributionSQL+resultsSQL, projectID, definition.EnvironmentID, runID, now).Scan(&body); err != nil {
+	if aggregated {
+		err = tx.QueryRow(ctx, materializedSQL, projectID, definition.EnvironmentID, runID).Scan(&body)
+	} else {
+		err = tx.QueryRow(ctx, attributionSQL+resultsSQL, projectID, definition.EnvironmentID, runID, now).Scan(&body)
+	}
+	if err != nil {
 		return Results{}, err
 	}
 	var facts derived

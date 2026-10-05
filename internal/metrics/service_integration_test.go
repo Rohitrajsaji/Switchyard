@@ -30,6 +30,7 @@ type measurementFixture struct {
 	compiled                     *evaluation.Compiled
 	metrics                      *Service
 	events                       *events.Service
+	compareAggregates            bool
 }
 
 func setupMeasurement(t *testing.T, identical ...bool) *measurementFixture {
@@ -42,7 +43,7 @@ func setupMeasurement(t *testing.T, identical ...bool) *measurementFixture {
 	if _, err := pool.Exec(ctx, `INSERT INTO users(id,email,password_hash,role) VALUES('admin','admin@example.test','unused','admin')`); err != nil {
 		t.Fatal(err)
 	}
-	f := &measurementFixture{pool: pool, actor: auth.Actor{ID: "admin"}}
+	f := &measurementFixture{pool: pool, actor: auth.Actor{ID: "admin"}, compareAggregates: true}
 	ps := projects.New(pool)
 	p, err := ps.Create(ctx, f.actor, "Measurement", "project")
 	if err != nil {
@@ -143,6 +144,11 @@ func (f *measurementFixture) read(t *testing.T) Results {
 	result, err := f.metrics.Read(context.Background(), f.actor, f.projectID, f.runID)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if f.compareAggregates {
+		f.enqueueFacts(t)
+		f.drain(t)
+		f.parity(t, result)
 	}
 	return result
 }

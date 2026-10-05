@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"io/fs"
-	"strings"
 	"sync"
 	"testing"
 	"testing/fstest"
@@ -37,7 +36,7 @@ func TestUpgradeBackfillsRetainedFactsExactlyOnce(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, name := range names {
-		if strings.HasPrefix(name, "0007_") {
+		if name >= "0007_" {
 			continue
 		}
 		body, err := fs.ReadFile(migrations.Files, name)

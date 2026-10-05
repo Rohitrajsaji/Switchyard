@@ -37,6 +37,8 @@ services:
     environment:
       DATABASE_URL: postgres://switchyard:${POSTGRES_PASSWORD:?required}@postgres:5432/switchyard?sslmode=disable
       NATS_URL: nats://nats:4222
+      REDIS_URL: redis://redis:6379/0
+      WORKER_PROCESSING_ENABLED: ${WORKER_PROCESSING_ENABLED:-true}
       DB_MAX_CONNS: "6"
     depends_on:
       migrate:

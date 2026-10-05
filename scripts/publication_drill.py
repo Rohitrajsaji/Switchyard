@@ -31,7 +31,13 @@ def main():
     admin = Client("admin@example.test")
     nats_stopped = worker_stopped = False
     report = {}
+    override = ROOT / ".cache" / ("publication-drill-" + uuid.uuid4().hex + ".yaml")
+    override.parent.mkdir(parents=True, exist_ok=True)
+    override.write_text('services:\n  worker:\n    environment:\n      WORKER_PROCESSING_ENABLED: "false"\n')
+    publisher_only = False
     try:
+        publisher_only = True
+        command(COMPOSE + ["-f", str(override), "up", "--no-build", "-d", "--wait", "worker"])
         status, project = admin.call("POST", "/v1/projects", {"name": "Publication drill " + uuid.uuid4().hex[:8]})
         if status != 201:
             raise RuntimeError(f"Project setup HTTP {status}")
@@ -89,7 +95,7 @@ def main():
         update(False)
         if counts() != (3, 2, 0):
             raise RuntimeError("Stopped worker falsely marked publication complete")
-        command(COMPOSE + ["up", "--no-build", "-d", "--wait", "worker"])
+        command(COMPOSE + ["-f", str(override), "up", "--no-build", "-d", "--wait", "worker"])
         worker_stopped = False
         wait_for("worker restart resumes pending publication", lambda: counts() == (3, 3, 0))
         after = messages()
@@ -103,8 +109,9 @@ def main():
     finally:
         if nats_stopped:
             command(COMPOSE + ["up", "--no-build", "-d", "--wait", "nats"])
-        if worker_stopped:
+        if worker_stopped or publisher_only:
             command(COMPOSE + ["up", "--no-build", "-d", "--wait", "worker"])
+        override.unlink(missing_ok=True)
         admin.call("DELETE", "/v1/session")
 
 

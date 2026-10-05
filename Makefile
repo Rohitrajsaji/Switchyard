@@ -19,6 +19,7 @@ build:
 	go build -o bin/migrate ./cmd/migrate
 	go build -o bin/seed ./cmd/seed
 	go build -o bin/worker ./cmd/worker
+	go build -o bin/check-metrics ./cmd/check-metrics
 check: fmt-check vet test
 integration:
 	@test -n "$(TEST_DATABASE_URL)" || (echo 'Set TEST_DATABASE_URL to an isolated test database'; exit 1)
@@ -62,6 +63,9 @@ messaging-check:
 	go test -race -tags=integration -count=1 ./internal/platform/messaging
 publication-drill:
 	python3 scripts/publication_drill.py
+.PHONY: aggregation-parity
+aggregation-parity:
+	docker compose --profile async run --rm --no-deps --entrypoint /app/check-metrics worker
 management-smoke:
 	python3 scripts/management_smoke.py
 fuzz-smoke:

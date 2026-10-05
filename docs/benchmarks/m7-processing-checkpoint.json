@@ -1,0 +1,23 @@
+{
+  "observed_at": "2026-10-05T03:50:00.690432+00:00",
+  "counts": {
+    "processed_receipts": 377,
+    "dead_letters": 0,
+    "due_users": 0,
+    "counter_rows": 71,
+    "experiment_runs": 22
+  },
+  "processing_enabled": true,
+  "parity_output": "Aggregate parity passed for 22 runs: cohorts, conversions, requests, histograms and quality",
+  "publisher_restart_drill": {
+    "observed_at": "2026-10-05T03:47:34.469559+00:00",
+    "publication_recovery_seconds": 0.1823,
+    "retained_messages_before": 1,
+    "retained_messages_after": 3,
+    "fixture_outbox_counts": [
+      3,
+      3,
+      0
+    ]
+  }
+}
