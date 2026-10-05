@@ -1,0 +1,21 @@
+{
+  "observed_at": "2026-10-05T05:53:21.246084+00:00",
+  "counts": {
+    "raw_events": 259,
+    "processing_receipts": 426,
+    "publication_history": 426,
+    "unpublished": 0,
+    "dead_letters": 0,
+    "due_users": 0
+  },
+  "live_replay": {
+    "observed_at": "2026-10-05T05:52:51.803021+00:00",
+    "replayed_events": 7,
+    "pages": 1,
+    "inspected_failures": 0,
+    "parity": "docker compose --profile async run --rm --no-deps --entrypoint /app/check-metrics worker\nAggregate parity passed for 26 runs: cohorts, conversions, requests, histograms and quality"
+  },
+  "final_live_parity_runs": 27,
+  "cleanup_enabled": false,
+  "scope": "Completed publication/receipt pairs and resolved failure expiry verified in disposable schemas. Normal raw and completed-work deletion is not scheduled."
+}

@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M7: bounded folding implemented; summary expiry and cleanup scheduling next, then complete event/freshness/load gates and results-read transition. M6 is the first completed V2 milestone.
+M7: bounded folding and paired work-receipt expiry implemented; summary expiry and cleanup scheduling next, then complete event/freshness/load gates and results-read transition. M6 is the first completed V2 milestone.
 
 ## M6 verified checkpoints
 
@@ -166,3 +166,11 @@ M7: bounded folding implemented; summary expiry and cleanup scheduling next, the
 - Migration 0013 adds compact pending outcomes and UTC receipt-day historical segments. Folding holds the common user lock, requires a durable processing receipt and moves at most 100 delivered facts in one transaction. Identity/reference preservation, historical update and source deletion commit together; counters are updated by ordinary reconciliation.
 - Independent full-raw oracle fixtures verify 108 facts across 100/8 pages, idempotent empty folds, failed-delete rollback, unresolved completion preservation/later resolution, undelivered-source exclusion, concurrent folders and a late earlier anchor across separate UTC receipt days. Original user/variant attribution and one unique conversion are preserved after every fold.
 - Final `make fmt check race build api-check` and the complete race-enabled PostgreSQL/Redis/NATS integration suite passed. The rebuilt ARM64 Docker API/worker applied migration 0013 and passed live replay, measurement and health checks, with raw/materialized parity across 26 runs. The initial measurement invocation omitted the required demo password and failed before an HTTP request; rerunning with the documented demo credential passed. Actual database evidence is in `docs/benchmarks/m7-folding-checkpoint.json`: 251 raw facts, zero archived/pending/historical rows and zero due jobs. The normal worker does not yet schedule folding. Summary expiry, receipt cleanup, configurable retention, retained replay/parity, complete fault/load gates and the HTTP aggregate-read transition remain pending; M7 remains in progress.
+
+## M7 completed-work retention checkpoint
+
+- Migration 0014 supports bounded completed-publication and resolved-dead-letter cleanup. The internal primitive removes at most 100 publication/receipt pairs and 100 resolved failures in one transaction after eight days. It preserves raw sources, unpublished/unprocessed work, leases and unresolved failures. Source validation holds a key-share publication lock; cleanup skips locked sources. Expired messages fail source validation without recreating metric work.
+- Exact eight-day boundaries, 105-pair concurrent paging, failed-delete rollback, protected work, capacity consistency, immutable configuration history and active-source locks are covered by PostgreSQL race integration fixtures. Initial fixture setup used multiple parameterized commands in a prepared statement and was corrected to data-modifying CTEs; the corrected targeted tests passed.
+- `make fmt check race build api-check` passed. The first full race integration run failed the login deadline under parallel package load and is not a gate pass. The complete PostgreSQL/Redis/NATS race-enabled integration suite passed when rerun with `-p 1`; resource contention is consistent with this result but not proven as the failure cause. `make integration` now defaults to this bounded package concurrency for the supported 8 GB machine; application timeouts/password cost are unchanged.
+- Rebuilt ARM64 Docker services applied migration 0014 and passed live replay, measurement and health checks. Raw/materialized parity passed across 27 experiment runs. Actual evidence in `docs/benchmarks/m7-work-retention-checkpoint.json` records 426 publication rows/processing receipts, zero unpublished intents/dead letters/due users and 259 retained raw facts.
+- Automatic scheduling and ninety-day summary expiry remain pending. This checkpoint does not delete normal demo facts or mark M7 complete.

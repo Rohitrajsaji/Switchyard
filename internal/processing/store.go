@@ -62,7 +62,7 @@ func applyTx(ctx context.Context, tx pgx.Tx, e messaging.Envelope) (bool, error)
 		return false, err
 	}
 	var r outbox.Reference
-	err = tx.QueryRow(ctx, `SELECT kind,project_id,environment_id,object_id,revision FROM outbox WHERE id=$1`, id).Scan(&r.Kind, &r.ProjectID, &r.EnvironmentID, &r.ObjectID, &r.Revision)
+	err = tx.QueryRow(ctx, `SELECT kind,project_id,environment_id,object_id,revision FROM outbox WHERE id=$1 FOR KEY SHARE`, id).Scan(&r.Kind, &r.ProjectID, &r.EnvironmentID, &r.ObjectID, &r.Revision)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, ErrSourceMissing
 	}

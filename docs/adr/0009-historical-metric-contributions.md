@@ -39,3 +39,11 @@ Each day's request/histogram/resolved-quality segment owns disjoint facts; cohor
 The source checks and complete PostgreSQL/Redis/NATS race integration suite passed. Independent full-raw oracle fixtures verify 108 facts across 100/8 pages, rollback after a late deletion failure, late earlier anchors across UTC receipt days, compact pending resolution, undelivered-source exclusion and concurrent folders. Reconciliation is checked after each fold against a separate table retaining the full original raw history.
 
 This primitive is not scheduled by the normal worker yet. The development database retains all raw facts. Ninety-day summary expiry, bounded processing/publication cleanup, configurable retention, retained replay/parity and final fault/load/read-transition gates remain required before M7 completion.
+
+## Completed-work expiry checkpoint
+
+`processing.PruneCompleted` removes at most 100 completed publication/processing-receipt pairs and 100 resolved dead letters per transaction. Publication creation, confirmed publication and processing must all be at least 192 hours old. It preserves event sources still present in raw storage, active leases, unpublished intents, unprocessed notifications and references with unresolved dead letters. Processing locks its source publication with `FOR KEY SHARE`; cleanup locks selected publications with `FOR UPDATE SKIP LOCKED`, so in-flight source validation cannot race paired deletion.
+
+Receipt and publication deletion commit together. An expired broker delivery then fails source validation instead of generating new work. Immutable configuration history, metric user state and counters remain intact. Resolved dead-letter deletion releases its database admission slot; unresolved failures remain inspectable and consume the existing bounded capacity. This policy measures resolved failure retention from resolution rather than first failure, preserving the inspection period after repair.
+
+Exact-boundary, 105-row concurrent paging, rollback after receipt deletion, pending/raw/lease/failure protection, admission-counter consistency, configuration history and active source-lock fixtures verify the primitive. Its scheduling still depends on the remaining M7 retention/failure gates. Summary expiry is separate; deleting receipts does not claim to expire ninety-day analytical data.

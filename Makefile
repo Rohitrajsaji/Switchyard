@@ -1,6 +1,8 @@
 SHELL := /bin/sh
 export GOCACHE := $(CURDIR)/.cache/go-build
 export GOMODCACHE := $(CURDIR)/.cache/go-mod
+# Bound package concurrency for the supported 8 GB development machine.
+INTEGRATION_PACKAGES ?= 1
 
 .PHONY: test vet race fmt fmt-check build check integration up down migrate smoke logs foundation-drill
 test:
@@ -26,7 +28,7 @@ integration:
 	@test -n "$(TEST_DATABASE_URL)" || (echo 'Set TEST_DATABASE_URL to an isolated test database'; exit 1)
 	@test -n "$(TEST_REDIS_URL)" || (echo 'Set TEST_REDIS_URL for scoped cache integration'; exit 1)
 	@test -n "$(TEST_NATS_URL)" || (echo 'Set TEST_NATS_URL for scoped durable messaging integration'; exit 1)
-	go test -tags=integration -count=1 ./...
+	go test -p $(INTEGRATION_PACKAGES) -tags=integration -count=1 ./...
 up:
 	@test -f .env || cp .env.example .env
 	docker compose build api web
