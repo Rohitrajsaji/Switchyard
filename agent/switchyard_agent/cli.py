@@ -51,6 +51,9 @@ def main(argv=None):
     if args.context_file:
         with open(args.context_file, encoding="utf-8") as handle:
             summary = EnvironmentContext.model_validate_json(handle.read())
+    elif args.dry_run and not args.token:
+        # A dry run must not call the API. An empty context is the mock's create path.
+        summary = EnvironmentContext(project_id=args.project, environment_id=args.environment, environment="unspecified", flags=[])
     else:
         if not args.token:
             raise SystemExit("set --token or SWITCHYARD_AGENT_TOKEN")
