@@ -2,10 +2,19 @@ package httpapi
 
 import (
 	"net/http"
+	"strings"
 
 	"switchyard/internal/auth"
 	"switchyard/internal/proposals"
 )
+
+func bearerToken(r *http.Request) (string, error) {
+	token, ok := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if !ok || token == "" || strings.Contains(token, " ") {
+		return "", auth.ErrUnauthorized
+	}
+	return token, nil
+}
 
 func (m *Management) proposalService() *proposals.Service { return proposals.New(m.pool, nil) }
 
@@ -77,4 +86,38 @@ func (m *Management) applyProposal(w http.ResponseWriter, r *http.Request, actor
 	}
 	m.invalidate(p.ProjectID, p.EnvironmentID, p.FlagKey)
 	JSON(w, 200, p)
+}
+
+func (m *Management) agentContext(w http.ResponseWriter, r *http.Request) {
+	token, err := bearerToken(r)
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	summary, err := m.proposalService().EnvironmentContext(r.Context(), token, r.PathValue("project"), r.URL.Query().Get("environment_id"))
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	JSON(w, 200, summary)
+}
+
+func (m *Management) agentPropose(w http.ResponseWriter, r *http.Request) {
+	token, err := bearerToken(r)
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	var in proposals.CreateInput
+	if err := DecodeJSON(w, r, &in, 65536); err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	p, err := m.proposalService().CreateAgent(r.Context(), token, r.PathValue("project"), in, w.Header().Get("X-Request-ID"))
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
+	JSON(w, 201, p)
 }

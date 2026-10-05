@@ -92,6 +92,7 @@ function ProposalCard({
       </h3>
       <p>
         <strong>{proposal.state}</strong> · proposed by {proposal.proposer_id}
+        {proposal.source === "agent" ? " (agent)" : ""}
         {proposal.approver_id ? ` · approved by ${proposal.approver_id}` : ""}
         {proposal.approval_expires_at && proposal.state === "approved"
           ? ` · approval expires ${new Date(proposal.approval_expires_at).toLocaleString()}`

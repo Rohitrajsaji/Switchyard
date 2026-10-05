@@ -114,6 +114,8 @@ func (m *Management) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/projects/{project}/proposals/{proposal}/approve", m.human(true, m.approveProposal))
 	mux.HandleFunc("POST /v1/projects/{project}/proposals/{proposal}/reject", m.human(true, m.rejectProposal))
 	mux.HandleFunc("POST /v1/projects/{project}/proposals/{proposal}/apply", m.human(true, m.applyProposal))
+	mux.HandleFunc("GET /v1/projects/{project}/agent/context", m.agentContext)
+	mux.HandleFunc("POST /v1/projects/{project}/agent/proposals", m.agentPropose)
 }
 func (m *Management) login(w http.ResponseWriter, r *http.Request) {
 	if !m.limit(w, r, m.loginLimit) {

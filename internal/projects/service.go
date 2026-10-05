@@ -166,27 +166,58 @@ func (s *Service) CreateUser(ctx context.Context, actor auth.Actor, email, passw
 	}
 	return u, tx.Commit(ctx)
 }
+
+// normalizePermissions accepts either a runtime key (evaluate, events, config reads) or an
+// agent key (context read and proposal submit). One key cannot do both.
+func normalizePermissions(permissions []string) ([]string, error) {
+	permissions = slices.Clone(permissions)
+	slices.Sort(permissions)
+	agent, runtime := false, false
+	for i, p := range permissions {
+		switch p {
+		case "context:read", "proposals:submit":
+			agent = true
+		case "evaluate", "events:write", "config:read":
+			runtime = true
+		default:
+			return nil, auth.ErrInvalid
+		}
+		if i > 0 && permissions[i-1] == p {
+			return nil, auth.ErrInvalid
+		}
+	}
+	if agent && runtime {
+		return nil, auth.ErrInvalid
+	}
+	return permissions, nil
+}
+
 func (s *Service) CreateKey(ctx context.Context, actor auth.Actor, projectID, environmentID, name string, permissions []string, requestID string) (CreatedKey, error) {
 	name = strings.TrimSpace(name)
 	if len(name) < 1 || len(name) > 120 || len(permissions) < 1 || len(permissions) > 3 {
 		return CreatedKey{}, auth.ErrInvalid
 	}
-	permissions = slices.Clone(permissions)
-	slices.Sort(permissions)
-	for i, p := range permissions {
-		if p != "evaluate" && p != "events:write" && p != "config:read" {
-			return CreatedKey{}, auth.ErrInvalid
-		}
-		if i > 0 && permissions[i-1] == p {
-			return CreatedKey{}, auth.ErrInvalid
-		}
+	permissions, err := normalizePermissions(permissions)
+	if err != nil {
+		return CreatedKey{}, err
 	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return CreatedKey{}, err
 	}
 	defer rollback(tx)
-	if err := auth.Authorize(ctx, tx, actor, projectID, environmentID, true); err != nil {
+	agentOnly := true
+	for _, p := range permissions {
+		if p != "context:read" && p != "proposals:submit" {
+			agentOnly = false
+		}
+	}
+	if agentOnly {
+		// A proposal key may target production because it cannot change configuration itself.
+		if _, err := auth.AuthorizeEnv(ctx, tx, actor, projectID, environmentID, true); err != nil {
+			return CreatedKey{}, err
+		}
+	} else if err := auth.Authorize(ctx, tx, actor, projectID, environmentID, true); err != nil {
 		return CreatedKey{}, err
 	}
 	k := CreatedKey{ID: identity.New("key_"), Token: identity.New("swk_"), Permissions: permissions}

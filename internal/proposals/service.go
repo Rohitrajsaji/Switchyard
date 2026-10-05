@@ -143,12 +143,15 @@ func validation(err error) bool {
 	return errors.Is(err, auth.ErrConflict) || errors.Is(err, auth.ErrInvalid) || errors.Is(err, flags.ErrNotFound)
 }
 
-func record(ctx context.Context, tx pgx.Tx, actor auth.Actor, p Proposal, action, reason, requestID string) error {
-	details, err := json.Marshal(map[string]any{"proposal_id": p.ID, "flag_key": p.FlagKey, "diff_hash": p.DiffHash, "proposer_id": p.ProposerID})
+func record(ctx context.Context, tx pgx.Tx, actor auth.Actor, p Proposal, action, reason, requestID, source string) error {
+	if source != "agent" {
+		source = "human"
+	}
+	details, err := json.Marshal(map[string]any{"proposal_id": p.ID, "flag_key": p.FlagKey, "diff_hash": p.DiffHash, "proposer_id": p.ProposerID, "proposal_source": p.Source})
 	if err != nil {
 		return err
 	}
-	return audit.Record(ctx, tx, audit.Entry{ActorID: actor.ID, Source: "human", ProjectID: p.ProjectID, EnvironmentID: p.EnvironmentID, Action: action, RequestID: requestID, Reason: reason, Details: details})
+	return audit.Record(ctx, tx, audit.Entry{ActorID: actor.ID, Source: source, ProjectID: p.ProjectID, EnvironmentID: p.EnvironmentID, Action: action, RequestID: requestID, Reason: reason, Details: details})
 }
 
 // Create validates and stores a production proposal. Development and staging are edited directly.
@@ -179,11 +182,60 @@ func (s *Service) Create(ctx context.Context, actor auth.Actor, projectID string
 	}
 	p := Proposal{ID: identity.New("prp_"), ProjectID: projectID, EnvironmentID: in.EnvironmentID, FlagKey: in.FlagKey, Kind: in.Kind, FlagType: kind,
 		BaseRevision: in.BaseRevision, Configuration: in.Configuration, Rationale: in.Rationale, ProposerID: actor.ID, Source: "human", State: "validated", CreatedAt: s.now().UTC().Truncate(time.Microsecond)}
+	return s.store(ctx, tx, actor, p, requestID)
+}
+
+// CreateAgent submits a production proposal for the human who created the application key.
+// The model cannot choose the proposer, approve, or apply. A standalone rollout may rise by
+// at most MaxAgentIncreaseBP in one proposal.
+func (s *Service) CreateAgent(ctx context.Context, token, projectID string, in CreateInput, requestID string) (Proposal, error) {
+	if (in.Kind != "create" && in.Kind != "update") || in.FlagKey == "" || len(in.Rationale) < 1 || len(in.Rationale) > 512 || in.BaseRevision < 0 || (in.Kind == "create" && in.BaseRevision != 0) {
+		return Proposal{}, auth.ErrInvalid
+	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Proposal{}, err
+	}
+	defer func() { _ = tx.Rollback(context.Background()) }()
+	app, err := auth.AuthorizeApplication(ctx, tx, token, projectID, in.EnvironmentID, "proposals:submit")
+	if err != nil {
+		return Proposal{}, err
+	}
+	var actor auth.Actor
+	err = tx.QueryRow(ctx, `SELECT u.id, u.email, u.role FROM application_keys k JOIN users u ON u.id = k.created_by WHERE k.id=$1 AND u.active`, app.ID).Scan(&actor.ID, &actor.Email, &actor.Role)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Proposal{}, auth.ErrUnauthorized
+	}
+	if err != nil {
+		return Proposal{}, err
+	}
+	env, err := auth.AuthorizeEnv(ctx, tx, actor, projectID, in.EnvironmentID, true)
+	if err != nil {
+		return Proposal{}, err
+	}
+	if env != "production" {
+		return Proposal{}, auth.ErrInvalid
+	}
+	kind := in.FlagType
+	if in.Kind == "update" {
+		if err := tx.QueryRow(ctx, `SELECT type FROM flags WHERE project_id=$1 AND key=$2`, projectID, in.FlagKey).Scan(&kind); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return Proposal{}, flags.ErrNotFound
+			}
+			return Proposal{}, err
+		}
+	}
+	p := Proposal{ID: identity.New("prp_"), ProjectID: projectID, EnvironmentID: in.EnvironmentID, FlagKey: in.FlagKey, Kind: in.Kind, FlagType: kind,
+		BaseRevision: in.BaseRevision, Configuration: in.Configuration, Rationale: in.Rationale, ProposerID: actor.ID, Source: "agent", State: "validated", CreatedAt: s.now().UTC().Truncate(time.Microsecond)}
+	return s.store(ctx, tx, actor, p, requestID)
+}
+
+func (s *Service) store(ctx context.Context, tx pgx.Tx, actor auth.Actor, p Proposal, requestID string) (Proposal, error) {
 	sp, err := tx.Begin(ctx)
 	if err != nil {
 		return Proposal{}, err
 	}
-	old, next, err := s.flags.ApplyTx(ctx, sp, actor, projectID, p.change(p.Rationale), requestID, flags.Options{})
+	old, next, err := s.flags.ApplyTx(ctx, sp, actor, p.ProjectID, p.change(p.Rationale), requestID, flags.Options{})
 	_ = sp.Rollback(ctx)
 	if err != nil {
 		return Proposal{}, err
@@ -192,6 +244,9 @@ func (s *Service) Create(ctx context.Context, actor auth.Actor, projectID string
 	p.Configuration = configurationOf(next)
 	if old != nil && configurationEqual(configurationOf(*old), p.Configuration) {
 		return Proposal{}, auth.ErrInvalid // no-op proposals carry nothing to review
+	}
+	if p.Source == "agent" && trafficIncrease(old, next) > MaxAgentIncreaseBP {
+		return Proposal{}, auth.ErrInvalid
 	}
 	if p.Diff, p.DiffHash, err = diffOf(p, old, next); err != nil {
 		return Proposal{}, err
@@ -204,7 +259,7 @@ func (s *Service) Create(ctx context.Context, actor auth.Actor, projectID string
 		p.ID, p.ProjectID, p.EnvironmentID, p.FlagKey, p.Kind, p.FlagType, p.BaseRevision, config, p.Diff, p.DiffHash, p.Rationale, p.ProposerID, p.Source, p.State, p.CreatedAt); err != nil {
 		return Proposal{}, err
 	}
-	if err = record(ctx, tx, actor, p, "proposal.created", p.Rationale, requestID); err != nil {
+	if err = record(ctx, tx, actor, p, "proposal.created", p.Rationale, requestID, p.Source); err != nil {
 		return Proposal{}, err
 	}
 	return p, tx.Commit(ctx)
@@ -225,7 +280,7 @@ func (s *Service) settle(ctx context.Context, tx pgx.Tx, actor auth.Actor, p Pro
 	if _, err := tx.Exec(ctx, `UPDATE proposals SET state=$2,decided_at=$3 WHERE id=$1`, p.ID, state, s.now().UTC().Truncate(time.Microsecond)); err != nil {
 		return err
 	}
-	if err := record(ctx, tx, actor, p, action, reason, requestID); err != nil {
+	if err := record(ctx, tx, actor, p, action, reason, requestID, "human"); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)
@@ -274,7 +329,7 @@ func (s *Service) Approve(ctx context.Context, actor auth.Actor, projectID, id, 
 	if _, err = tx.Exec(ctx, `UPDATE proposals SET state='approved',approver_id=$2,approved_at=$3,approval_expires_at=$4 WHERE id=$1`, p.ID, actor.ID, now, now.Add(ApprovalTTL)); err != nil {
 		return Proposal{}, err
 	}
-	if err = record(ctx, tx, actor, p, "proposal.approved", reason, requestID); err != nil {
+	if err = record(ctx, tx, actor, p, "proposal.approved", reason, requestID, "human"); err != nil {
 		return Proposal{}, err
 	}
 	if err = tx.Commit(ctx); err != nil {
@@ -397,7 +452,7 @@ func (s *Service) Apply(ctx context.Context, actor auth.Actor, projectID, id, re
 	if _, err = tx.Exec(ctx, `UPDATE proposals SET state='applied',applied_revision=$2,decided_at=$3 WHERE id=$1`, p.ID, applied, now.Truncate(time.Microsecond)); err != nil {
 		return Proposal{}, err
 	}
-	if err = record(ctx, tx, actor, p, "proposal.applied", p.Rationale, requestID); err != nil {
+	if err = record(ctx, tx, actor, p, "proposal.applied", p.Rationale, requestID, "human"); err != nil {
 		return Proposal{}, err
 	}
 	if err = tx.Commit(ctx); err != nil {

@@ -3,9 +3,9 @@ info:
   title: Switchyard API
   version: 0.1.1
   description: >-
-    Modular Go experimentation platform. Management requires human sessions.
-    Production configuration is read-only until the approval milestone.
-    Application keys cannot authorize management operations.
+    Modular Go experimentation platform. Management mutations require human sessions.
+    Production configuration changes are proposals. An application key may only
+    read scoped context and submit a proposal; it cannot approve or apply one.
 servers:
   - url: http://localhost:8080
 security:
@@ -200,7 +200,11 @@ paths:
                   minItems: 1
                   maxItems: 3
                   uniqueItems: true
-                  items: {type: string, enum: [evaluate, 'events:write', 'config:read']}
+                  items: {type: string, enum: [evaluate, 'events:write', 'config:read', 'context:read', 'proposals:submit']}
+                  description: >-
+                    Runtime permissions (evaluate, events:write, config:read) cannot be combined
+                    with agent permissions (context:read, proposals:submit). Agent keys may be
+                    created for production; runtime keys may not.
       responses:
         '201':
           description: One-time key response
@@ -645,6 +649,54 @@ paths:
         '403': {$ref: '#/components/responses/Forbidden'}
         '404': {description: Proposal not found in this project}
         '409': {description: Not approved, stale or expired}
+  /v1/projects/{project}/agent/context:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+    get:
+      security:
+        - application: []
+      summary: Read a secret-free environment summary for a proposal agent
+      description: >-
+        Requires context:read on an application key for this environment. Returns current flag
+        keys, types, revisions, safe/default values, rules and rollout traffic. Salts, user
+        identifiers and credentials are omitted. A revoked key is refused on the next call.
+      parameters:
+        - {name: environment_id, in: query, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Scoped configuration summary
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AgentContext'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /v1/projects/{project}/agent/proposals:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+    post:
+      security:
+        - application: []
+      summary: Submit a production proposal as the human who owns the key
+      description: >-
+        Requires proposals:submit. The proposer is the key's creating user, not a field in the
+        body. Go validates the same schema and policy as a human proposal, and also rejects a
+        standalone rollout increase above 1000 basis points. The key cannot approve or apply.
+        A second human admin must approve the exact diff.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ProposalCreate'}
+      responses:
+        '201':
+          description: Validated agent proposal
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Proposal'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {description: Base revision is not current or the frozen-population rules reject the change}
   /v1/projects/{project}/experiments/{run}/traffic:
     parameters:
       - $ref: '#/components/parameters/Project'
@@ -892,7 +944,9 @@ paths:
         '403': {$ref: '#/components/responses/Forbidden'}
         '409': {description: Existing event identity has a different payload; no new batch facts commit}
         '503':
-          description: Durable work capacity reached; no new batch facts commit. Retry with the same event IDs after the indicated delay.
+          description: >-
+            Retryable overload. durable_work_capacity means the outbox is full and no new facts
+            committed. overloaded means the request deadline expired under load; retry the same event IDs.
           headers:
             Retry-After: {schema: {type: integer, minimum: 1}, description: Suggested retry delay in seconds}
         '500': {description: Transaction failed; no successful acceptance is claimed; retry with stable IDs}
@@ -1271,6 +1325,29 @@ components:
               state: {type: string, enum: [pending, applied, cancelled]}
               applied_revision: {type: integer}
               applied_at: {type: string, format: date-time}
+    AgentContext:
+      type: object
+      required: [project_id, environment_id, environment, flags]
+      properties:
+        project_id: {type: string}
+        environment_id: {type: string}
+        environment: {type: string}
+        flags:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required: [key, type, revision, killed, default, safe, rules]
+            properties:
+              key: {type: string}
+              type: {type: string, enum: [boolean, json]}
+              revision: {type: integer}
+              killed: {type: boolean}
+              traffic_bp: {type: integer, minimum: 0, maximum: 10000}
+              default: {$ref: '#/components/schemas/FlagValue'}
+              safe: {$ref: '#/components/schemas/FlagValue'}
+              rules: {type: array, items: {$ref: '#/components/schemas/TargetRule'}}
+              rollout_value: {$ref: '#/components/schemas/FlagValue'}
     ProposalCreate:
       allOf:
         - $ref: '#/components/schemas/FlagConfiguration'

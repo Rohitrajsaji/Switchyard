@@ -143,6 +143,11 @@ sdk-drill:
 .PHONY: approval-drill
 approval-drill:
 	python3 scripts/approval_drill.py
+.PHONY: agent-test
+agent-test:
+	@test -x .cache/agent-venv/bin/python || python3 -m venv .cache/agent-venv
+	@.cache/agent-venv/bin/python -c 'import pydantic,pytest' || .cache/agent-venv/bin/pip install pydantic pytest
+	cd agent && ../.cache/agent-venv/bin/python -m pytest -q
 .PHONY: rollout-drill
 rollout-drill:
 	python3 scripts/rollout_drill.py

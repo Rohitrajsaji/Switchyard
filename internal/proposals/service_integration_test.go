@@ -344,3 +344,60 @@ func TestProposalRowsAreImmutableAndTransitionsAreGuarded(t *testing.T) {
 		t.Fatal("truncate allowed")
 	}
 }
+
+func TestAgentProposalIsAttributedBoundedAndAppliedOnce(t *testing.T) {
+	f := setup(t)
+	ps := projects.New(f.pool)
+	if _, err := ps.CreateKey(f.ctx, developer, f.project, f.prd, "mixed", []string{"evaluate", "proposals:submit"}, "mix"); !errors.Is(err, auth.ErrInvalid) {
+		t.Fatal("agent permission combined with evaluation", err)
+	}
+	if _, err := ps.CreateKey(f.ctx, developer, f.project, f.prd, "runtime", []string{"evaluate"}, "rt"); !errors.Is(err, auth.ErrForbidden) {
+		t.Fatal("production evaluation key allowed", err)
+	}
+	key, err := ps.CreateKey(f.ctx, developer, f.project, f.prd, "agent", []string{"context:read", "proposals:submit"}, "agent-key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.release(t, "listing", 1000)
+	summary, err := f.ps.EnvironmentContext(f.ctx, key.Token, f.project, f.prd)
+	if err != nil || summary.Environment != "production" || len(summary.Flags) != 1 || summary.Flags[0].Key != "listing" || *summary.Flags[0].TrafficBP != 1000 {
+		t.Fatal("context", summary, err)
+	}
+	if _, err := f.ps.EnvironmentContext(f.ctx, key.Token, f.project, f.dev); !errors.Is(err, auth.ErrForbidden) {
+		t.Fatal("production key read another environment", err)
+	}
+	jump := proposals.CreateInput{EnvironmentID: f.prd, FlagKey: "listing", Kind: "update", BaseRevision: 1, Configuration: rollout(3000, true), Rationale: "jump traffic"}
+	if _, err := f.ps.CreateAgent(f.ctx, key.Token, f.project, jump, "jump"); !errors.Is(err, auth.ErrInvalid) {
+		t.Fatal("oversized increase accepted", err)
+	}
+	if f.count(t, `SELECT count(*) FROM proposals WHERE source='agent'`) != 0 {
+		t.Fatal("rejected agent proposal was stored")
+	}
+	sensitive := jump
+	sensitive.Configuration = rollout(2000, true)
+	sensitive.Configuration.Rules = []evaluation.Rule{{Attribute: "email", Operator: "eq", Values: []json.RawMessage{json.RawMessage(`"a@b.test"`)}, Value: value("true")}}
+	if _, err := f.ps.CreateAgent(f.ctx, key.Token, f.project, sensitive, "sensitive"); !errors.Is(err, auth.ErrInvalid) {
+		t.Fatal("sensitive targeting accepted", err)
+	}
+	created, err := f.ps.CreateAgent(f.ctx, key.Token, f.project, proposals.CreateInput{EnvironmentID: f.prd, FlagKey: "listing", Kind: "update", BaseRevision: 1, Configuration: rollout(2000, true), Rationale: "raise listing traffic by 10 points"}, "ok")
+	if err != nil || created.Source != "agent" || created.ProposerID != developer.ID {
+		t.Fatal("agent proposal", created, err)
+	}
+	if _, err := f.ps.Approve(f.ctx, developer, f.project, created.ID, created.DiffHash, "self", "self"); !errors.Is(err, auth.ErrForbidden) {
+		t.Fatal("proposer approved the agent request", err)
+	}
+	if _, err := f.ps.Approve(f.ctx, admin2, f.project, created.ID, created.DiffHash, "reviewed the agent diff", "approve"); err != nil {
+		t.Fatal(err)
+	}
+	applied, err := f.ps.Apply(f.ctx, admin1, f.project, created.ID, "apply")
+	if err != nil || applied.State != "applied" || *applied.AppliedRevision != 2 {
+		t.Fatal("apply", applied, err)
+	}
+	again, err := f.ps.Apply(f.ctx, admin1, f.project, created.ID, "apply-again")
+	if err != nil || again.State != "applied" || *again.AppliedRevision != 2 || f.count(t, `SELECT count(*) FROM audit_entries WHERE action='proposal.applied' AND project_id=$1 AND details->>'proposal_id'=$2`, f.project, created.ID) != 1 {
+		t.Fatal("repeated apply", again, err)
+	}
+	if f.count(t, `SELECT count(*) FROM audit_entries WHERE action='proposal.created' AND source='agent' AND project_id=$1`, f.project) != 1 {
+		t.Fatal("agent create was not audited as the requesting human via the agent source")
+	}
+}
