@@ -1,0 +1,60 @@
+{
+  "observed_at": "2026-10-05T07:46:44.843398+00:00",
+  "normal_database": {
+    "raw": 30714,
+    "intents": 30922,
+    "receipts": 30922,
+    "unpublished": 0,
+    "due_users": 0,
+    "dead_letters": 0,
+    "failed_browser_active_keys": 0
+  },
+  "normal_retention_check": {
+    "observed_at": "2026-10-05T07:26:56.342204+00:00",
+    "raw_horizon_days": 7,
+    "source_counts": {
+      "raw": 30682,
+      "history": 0,
+      "pending": 0,
+      "identities": 0,
+      "publications": 30863,
+      "receipts": 30863
+    },
+    "enabled_loop": {
+      "time": "2026-10-05T07:26:38.06668234Z",
+      "level": "INFO",
+      "msg": "retention statistics",
+      "statistics": {
+        "ExpiredUsers": 0,
+        "ExpiredSegments": 0,
+        "ExpiredPending": 0,
+        "FoldedRaw": 0,
+        "FoldedPending": 0,
+        "PreservedPending": 0,
+        "Identities": 0,
+        "Publications": 0,
+        "Receipts": 0,
+        "ResolvedFailures": 0
+      },
+      "failed_cycles": 0
+    },
+    "restored_retention_enabled": true,
+    "scope": "Fresh local sources; real aged deletion/replay/expiry verified in disposable integration schemas."
+  },
+  "recovery_check": {
+    "observed_at": "2026-10-05T07:46:42.043623+00:00",
+    "replayed_events": 7,
+    "pages": 1,
+    "raw_horizon_days": 7,
+    "inspected_failures": 0,
+    "parity": "docker compose --profile async run --rm --no-deps --entrypoint /app/check-metrics worker\nAggregate parity passed for 40 runs: cohorts, conversions, requests, histograms and quality"
+  },
+  "fresh_volume_rehearsal": {
+    "compose_project": "switchyard-mvp-b2eba8e29899",
+    "browser_tests_passed": 3,
+    "seed_idempotence_verified": true,
+    "restart_persistence_verified": true,
+    "temporary_volumes_removed": true,
+    "normal_stack_restored": true
+  }
+}

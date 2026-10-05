@@ -1,0 +1,4704 @@
+{
+  "observed_at": "2026-10-05T06:57:41.442336+00:00",
+  "requested_events_per_second": 1000,
+  "offering_seconds": 30,
+  "batch_events": 99,
+  "request_workers": 16,
+  "maximum_inflight_batches": 32,
+  "resource_samples": [
+    {
+      "elapsed_seconds": 2.814,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "22.13%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "5.76%",
+          "MemUsage": "14.76MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "2.41MB / 6.99MB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "42.48%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.47%",
+          "MemUsage": "13.33MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "5.44MB / 9.36MB",
+          "PIDs": "12"
+        },
+        {
+          "BlockIO": "5.19MB / 221kB",
+          "CPUPerc": "14.17%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "6.81%",
+          "MemUsage": "17.44MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "1.8MB / 1.73MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.50%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.41MB / 355kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.02%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "117MB / 2.35GB",
+          "CPUPerc": "147.58%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "13.02%",
+          "MemUsage": "99.97MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "236MB / 122MB",
+          "PIDs": "11"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 6.664,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "33.60%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.65%",
+          "MemUsage": "17.02MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "5.24MB / 15.4MB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "19.74%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.48%",
+          "MemUsage": "13.38MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "11.7MB / 19.5MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.19MB / 377kB",
+          "CPUPerc": "7.87%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.06%",
+          "MemUsage": "18.06MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "3.11MB / 3.04MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.82%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.41MB / 355kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "117MB / 2.39GB",
+          "CPUPerc": "154.19%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "14.12%",
+          "MemUsage": "108.5MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "248MB / 126MB",
+          "PIDs": "11"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 9.707,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "25.56%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.64%",
+          "MemUsage": "16.99MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "7.67MB / 23.5MB",
+          "PIDs": "12"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "31.69%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.44%",
+          "MemUsage": "13.21MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "14.4MB / 23.9MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.19MB / 496kB",
+          "CPUPerc": "12.26%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.39%",
+          "MemUsage": "18.91MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "3.97MB / 3.91MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.19%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.41MB / 355kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.86MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "117MB / 2.43GB",
+          "CPUPerc": "180.10%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "17.28%",
+          "MemUsage": "132.7MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "261MB / 129MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 13.534,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "26.41%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.73%",
+          "MemUsage": "17.23MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "10.6MB / 32.6MB",
+          "PIDs": "12"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "27.29%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.47%",
+          "MemUsage": "13.31MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "18.5MB / 30.3MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.19MB / 651kB",
+          "CPUPerc": "11.97%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.68%",
+          "MemUsage": "19.66MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "5.33MB / 5.27MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.12%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.42MB / 355kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.02%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.86MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "117MB / 2.48GB",
+          "CPUPerc": "181.82%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "19.50%",
+          "MemUsage": "149.8MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "275MB / 134MB",
+          "PIDs": "15"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 17.389,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "26.11%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.67%",
+          "MemUsage": "17.09MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "13.5MB / 41.8MB",
+          "PIDs": "12"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "28.97%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.48%",
+          "MemUsage": "13.36MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "22.4MB / 36.5MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 811kB",
+          "CPUPerc": "12.73%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.73%",
+          "MemUsage": "19.79MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "6.54MB / 6.47MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.67%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.42MB / 356kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "11.03%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "26.77%",
+          "MemUsage": "102.8MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "18"
+        },
+        {
+          "BlockIO": "117MB / 2.52GB",
+          "CPUPerc": "174.45%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "21.09%",
+          "MemUsage": "162MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "285MB / 137MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 21.255,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "22.54%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.76%",
+          "MemUsage": "17.31MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "15.7MB / 48.6MB",
+          "PIDs": "12"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "28.13%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.44%",
+          "MemUsage": "13.22MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "26.5MB / 42.9MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 967kB",
+          "CPUPerc": "12.04%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.98%",
+          "MemUsage": "20.43MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "7.83MB / 7.76MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.54%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.43MB / 356kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "117MB / 2.57GB",
+          "CPUPerc": "177.18%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "23.47%",
+          "MemUsage": "180.3MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "299MB / 141MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 25.178,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "27.24%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "7.31%",
+          "MemUsage": "18.71MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "19.4MB / 60.2MB",
+          "PIDs": "17"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "26.01%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.43%",
+          "MemUsage": "13.17MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "29.3MB / 47.4MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 1.09MB",
+          "CPUPerc": "9.95%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "8.00%",
+          "MemUsage": "20.47MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "8.72MB / 8.66MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.26%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 356kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.02%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.86MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "117MB / 2.69GB",
+          "CPUPerc": "172.74%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "25.91%",
+          "MemUsage": "199MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "317MB / 146MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 28.216,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "28.86%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.79%",
+          "MemUsage": "17.38MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "21.8MB / 67.7MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "20.79%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.50%",
+          "MemUsage": "13.45MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "32.3MB / 52.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 1.25MB",
+          "CPUPerc": "9.73%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "8.01%",
+          "MemUsage": "20.52MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "9.67MB / 9.61MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.98%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 356kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "24.90%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.86MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "118MB / 2.79GB",
+          "CPUPerc": "177.15%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "27.33%",
+          "MemUsage": "209.9MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "326MB / 149MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 32.31,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "1.74%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "49.34%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.41%",
+          "MemUsage": "13.09MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "36.6MB / 58.8MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 1.43MB",
+          "CPUPerc": "22.84%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "8.42%",
+          "MemUsage": "21.54MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "11.1MB / 11.1MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.94%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "118MB / 2.85GB",
+          "CPUPerc": "199.72%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.32%",
+          "MemUsage": "217.5MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "337MB / 153MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 36.211,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "2.60%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "49.80%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.52%",
+          "MemUsage": "13.52MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "41.5MB / 66.3MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 1.59MB",
+          "CPUPerc": "21.99%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "8.38%",
+          "MemUsage": "21.45MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "13.4MB / 13.3MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.31%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "119MB / 2.93GB",
+          "CPUPerc": "205.32%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.94%",
+          "MemUsage": "222.3MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "344MB / 157MB",
+          "PIDs": "16"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 39.26,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.07%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.77%",
+          "MemUsage": "17.34MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "49.43%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.43%",
+          "MemUsage": "13.16MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "47.9MB / 76MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 1.71MB",
+          "CPUPerc": "20.89%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "8.99%",
+          "MemUsage": "23.01MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "15.1MB / 15MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.17%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "25.75%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "119MB / 2.97GB",
+          "CPUPerc": "197.61%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.43%",
+          "MemUsage": "218.3MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "350MB / 160MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 43.19,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.05%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "47.52%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.47%",
+          "MemUsage": "13.33MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "54.3MB / 85.9MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 1.88MB",
+          "CPUPerc": "20.88%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "9.50%",
+          "MemUsage": "24.31MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "17.3MB / 17.3MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.13%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "119MB / 3.01GB",
+          "CPUPerc": "210.19%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.51%",
+          "MemUsage": "219MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "355MB / 163MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 47.119,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.05%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "50.31%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.49%",
+          "MemUsage": "13.39MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "60.3MB / 95.1MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.3MB",
+          "CPUPerc": "20.10%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "9.97%",
+          "MemUsage": "25.51MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "19.4MB / 19.4MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.21%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "119MB / 3.1GB",
+          "CPUPerc": "207.89%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.59%",
+          "MemUsage": "219.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "365MB / 168MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 51.039,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.05%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "48.81%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.57%",
+          "MemUsage": "13.73MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "66.6MB / 105MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.46MB",
+          "CPUPerc": "20.87%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.46%",
+          "MemUsage": "26.78MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "21.6MB / 21.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.20%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "119MB / 3.14GB",
+          "CPUPerc": "195.23%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.55%",
+          "MemUsage": "219.2MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "370MB / 171MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 55.015,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "2.10%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "50.01%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.54%",
+          "MemUsage": "13.61MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "72.2MB / 113MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.62MB",
+          "CPUPerc": "22.03%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.75%",
+          "MemUsage": "27.52MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "23.6MB / 23.5MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.10%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "33.19%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "119MB / 3.21GB",
+          "CPUPerc": "203.37%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.62%",
+          "MemUsage": "219.8MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "377MB / 175MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 58.048,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.06%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "50.83%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.48%",
+          "MemUsage": "13.37MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "76.3MB / 120MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.74MB",
+          "CPUPerc": "21.19%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.58%",
+          "MemUsage": "27.09MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25MB / 25MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.18%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "120MB / 3.31GB",
+          "CPUPerc": "214.69%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.67%",
+          "MemUsage": "220.2MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "384MB / 179MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 61.953,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.03%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.00%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.52%",
+          "MemUsage": "13.51MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "78.5MB / 123MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.16%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.62%",
+          "MemUsage": "27.2MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.6MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.10%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "120MB / 3.33GB",
+          "CPUPerc": "100.54%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.68%",
+          "MemUsage": "220.2MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "386MB / 180MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 65.791,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.04%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.77%",
+          "MemUsage": "17.34MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.35%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.85MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "78.7MB / 124MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.25%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.72%",
+          "MemUsage": "27.44MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.6MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.12%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "18.85%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.67%",
+          "MemUsage": "90.91MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "120MB / 3.34GB",
+          "CPUPerc": "99.02%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.67%",
+          "MemUsage": "220.2MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "387MB / 181MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 68.83,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "1.88%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "4.08%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.62%",
+          "MemUsage": "13.89MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "79.1MB / 124MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.59%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.63%",
+          "MemUsage": "27.21MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.61%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "120MB / 3.34GB",
+          "CPUPerc": "106.24%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.68%",
+          "MemUsage": "220.2MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "388MB / 181MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 72.684,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "1.48%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.82%",
+          "MemUsage": "17.46MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.16%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.62%",
+          "MemUsage": "13.89MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "79.4MB / 125MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.06%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.64%",
+          "MemUsage": "27.24MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.14%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.6MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.85MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "120MB / 3.35GB",
+          "CPUPerc": "97.95%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.67%",
+          "MemUsage": "220.2MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "389MB / 181MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 76.677,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.12%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "5.59%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.60%",
+          "MemUsage": "13.84MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "79.7MB / 126MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.88%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.66%",
+          "MemUsage": "27.29MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.28%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.86%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.84MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.35GB",
+          "CPUPerc": "110.32%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.37%",
+          "MemUsage": "217.9MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "389MB / 181MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 79.726,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.22%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.93%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.84MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "79.9MB / 126MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "2.70%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.66%",
+          "MemUsage": "27.3MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "3.59%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.84MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.36GB",
+          "CPUPerc": "99.54%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.40%",
+          "MemUsage": "218.1MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "390MB / 182MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 83.586,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "1.61%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.53%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.59%",
+          "MemUsage": "13.79MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "80.2MB / 127MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.06%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.66%",
+          "MemUsage": "27.3MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.24%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.66%",
+          "MemUsage": "90.84MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.38GB",
+          "CPUPerc": "95.40%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.48%",
+          "MemUsage": "218.7MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "390MB / 182MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 87.452,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "1.56%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.59%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.67%",
+          "MemUsage": "14.09MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "80.6MB / 128MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.29%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.33MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.73%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.04%",
+          "MemUsage": "5.172MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.02%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.38GB",
+          "CPUPerc": "99.76%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.43%",
+          "MemUsage": "218.3MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "391MB / 182MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 91.38,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "2.04%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.48%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.62%",
+          "MemUsage": "13.89MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "80.8MB / 128MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.69%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.33MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.06%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "15.62%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "27.74%",
+          "MemUsage": "106.5MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "22"
+        },
+        {
+          "BlockIO": "121MB / 3.39GB",
+          "CPUPerc": "101.69%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.43%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "392MB / 183MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 95.281,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "1.44%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.80%",
+          "MemUsage": "17.41MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.62%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.63%",
+          "MemUsage": "13.93MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "81.2MB / 129MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.22%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.33MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.52%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.04%",
+          "MemUsage": "5.168MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.39GB",
+          "CPUPerc": "98.71%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.50%",
+          "MemUsage": "218.9MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "392MB / 183MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 98.321,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.06%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.53%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.58%",
+          "MemUsage": "13.73MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "81.4MB / 129MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.25%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.33MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.15%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.02%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.83MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.39GB",
+          "CPUPerc": "100.34%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.44%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "393MB / 183MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 102.401,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.04%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.69%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.66%",
+          "MemUsage": "14.06MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "81.7MB / 130MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.21%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.33MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.14%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.23%",
+          "MemUsage": "5.414MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.39GB",
+          "CPUPerc": "98.89%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.44%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "393MB / 183MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 106.277,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "1.90%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.64%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.84MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "82MB / 131MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.37%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.33MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.91%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.4GB",
+          "CPUPerc": "104.54%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.47%",
+          "MemUsage": "218.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "394MB / 184MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 109.309,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.04%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.77%",
+          "MemUsage": "17.34MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.35%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.86MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "82.2MB / 131MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.19%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.33MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.14%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.4GB",
+          "CPUPerc": "99.10%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.43%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "395MB / 184MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 113.219,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.06%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.64%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.85MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "82.5MB / 132MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.18%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.33MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.11%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.23%",
+          "MemUsage": "5.414MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "23.98%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.83MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.4GB",
+          "CPUPerc": "99.89%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.44%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "395MB / 184MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 117.1,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.06%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "4.13%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.68%",
+          "MemUsage": "14.12MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "82.7MB / 132MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.27%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.34MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.14%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.4GB",
+          "CPUPerc": "100.57%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.44%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "396MB / 184MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 121.019,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.04%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.78%",
+          "MemUsage": "17.35MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.78%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.58%",
+          "MemUsage": "13.77MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "83MB / 133MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.80%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.34MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.13%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.4GB",
+          "CPUPerc": "100.32%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.67%",
+          "MemUsage": "220.2MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "396MB / 185MB",
+          "PIDs": "20"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 124.934,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "2.73%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.60%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.60%",
+          "MemUsage": "13.84MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "83.2MB / 133MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.69%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.68%",
+          "MemUsage": "27.34MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.79%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.83MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.41GB",
+          "CPUPerc": "95.85%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.46%",
+          "MemUsage": "218.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "397MB / 185MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 129.387,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.08%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "4.42%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.60%",
+          "MemUsage": "13.84MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "83.4MB / 134MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.05%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.78%",
+          "MemUsage": "27.61MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.28%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "49.39%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.41GB",
+          "CPUPerc": "102.49%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.47%",
+          "MemUsage": "218.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "397MB / 185MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 133.35,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "2.52%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "4.22%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.64%",
+          "MemUsage": "14MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "83.6MB / 134MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "2.16%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.69%",
+          "MemUsage": "27.37MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.78%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.41GB",
+          "CPUPerc": "98.40%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.72%",
+          "MemUsage": "220.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "398MB / 185MB",
+          "PIDs": "20"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 137.369,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "2.51%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.59%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.63%",
+          "MemUsage": "13.93MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "83.8MB / 135MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "2.05%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.69%",
+          "MemUsage": "27.37MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.80%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.05%",
+          "MemUsage": "5.18MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.41GB",
+          "CPUPerc": "102.70%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.43%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "398MB / 186MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 141.175,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "6.23%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "6.64%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.67%",
+          "MemUsage": "14.09MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "84MB / 135MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "5.31%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.69%",
+          "MemUsage": "27.38MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "6.67%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "12.64%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.83MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.41GB",
+          "CPUPerc": "88.97%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.43%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "398MB / 186MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 146.481,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.29%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "7.56%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.57%",
+          "MemUsage": "13.72MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "84.1MB / 135MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "5.09%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.69%",
+          "MemUsage": "27.38MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.6MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "4.21%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.23%",
+          "MemUsage": "5.414MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "65.44%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.41GB",
+          "CPUPerc": "98.44%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.43%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "399MB / 186MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 151.181,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.34%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "5.96%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.58%",
+          "MemUsage": "13.73MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "84.2MB / 135MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "7.26%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.69%",
+          "MemUsage": "27.38MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.73%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 357kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.41GB",
+          "CPUPerc": "124.97%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.46%",
+          "MemUsage": "218.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "399MB / 186MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 155.629,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.17%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "5.57%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.60%",
+          "MemUsage": "13.83MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "84.3MB / 136MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.21%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.70%",
+          "MemUsage": "27.38MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "5.16%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.41GB",
+          "CPUPerc": "122.37%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.44%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "399MB / 186MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 159.75,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.06%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.19MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.94%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.85MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "84.5MB / 136MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.71%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.70%",
+          "MemUsage": "27.38MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.24%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.23%",
+          "MemUsage": "5.414MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.41GB",
+          "CPUPerc": "95.70%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.46%",
+          "MemUsage": "218.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "400MB / 186MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 163.912,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.08%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "4.84%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.63%",
+          "MemUsage": "13.95MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "84.7MB / 137MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.71%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.70%",
+          "MemUsage": "27.39MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.24%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.04%",
+          "MemUsage": "5.168MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "46.03%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.83MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.42GB",
+          "CPUPerc": "103.55%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.43%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "400MB / 186MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 167.937,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.09%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.75%",
+          "MemUsage": "17.27MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.74%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.60%",
+          "MemUsage": "13.82MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "84.9MB / 137MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.69%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.80%",
+          "MemUsage": "27.65MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.28%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.04%",
+          "MemUsage": "5.168MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.42GB",
+          "CPUPerc": "136.62%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.43%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "400MB / 187MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 172.069,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.05%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.19MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.69%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.60%",
+          "MemUsage": "13.81MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "85.1MB / 137MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.49%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.70%",
+          "MemUsage": "27.4MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.18%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.42GB",
+          "CPUPerc": "109.01%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.48%",
+          "MemUsage": "218.7MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "401MB / 187MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 176.026,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.12%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.19MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.77%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.59%",
+          "MemUsage": "13.8MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "85.3MB / 138MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.49%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.70%",
+          "MemUsage": "27.4MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.01%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.42GB",
+          "CPUPerc": "99.43%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.44%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "401MB / 187MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 179.062,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "1.85%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.91%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.62%",
+          "MemUsage": "13.91MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "85.5MB / 138MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.77%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.71%",
+          "MemUsage": "27.41MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "1.61%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.04%",
+          "MemUsage": "5.172MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.42GB",
+          "CPUPerc": "95.64%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.47%",
+          "MemUsage": "218.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "402MB / 187MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 183.0,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.06%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.19MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.81%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.64%",
+          "MemUsage": "13.98MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "85.7MB / 139MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.39%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.72%",
+          "MemUsage": "27.44MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.16%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.42GB",
+          "CPUPerc": "100.36%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.47%",
+          "MemUsage": "218.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "402MB / 187MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 186.954,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.06%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.19MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.51%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.85MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "86MB / 139MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.28%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.71%",
+          "MemUsage": "27.41MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.23%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.42GB",
+          "CPUPerc": "100.87%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.44%",
+          "MemUsage": "218.4MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "403MB / 188MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 191.241,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.05%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.81%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.85MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "86.2MB / 140MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.91%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "10.73%",
+          "MemUsage": "27.47MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "3.03%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "2.22%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.43GB",
+          "CPUPerc": "96.13%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.46%",
+          "MemUsage": "218.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "403MB / 188MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 196.084,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.11%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.19MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "4.15%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.85MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "86.4MB / 140MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "4.04%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.10%",
+          "MemUsage": "18.18MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "3.96%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "42.91%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.83MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.43GB",
+          "CPUPerc": "96.24%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.46%",
+          "MemUsage": "218.6MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "404MB / 188MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 199.143,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.09%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.19MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "4.31%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.85MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "86.5MB / 140MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.40%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.10%",
+          "MemUsage": "18.18MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.25%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.43GB",
+          "CPUPerc": "119.72%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.50%",
+          "MemUsage": "218.9MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "404MB / 188MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 203.25,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.05%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.51%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.86MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "86.7MB / 141MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.18%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.10%",
+          "MemUsage": "18.19MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.17%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.44GB",
+          "CPUPerc": "95.94%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.50%",
+          "MemUsage": "218.9MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "404MB / 188MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 207.216,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.09%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "4.03%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.86MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "86.9MB / 141MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.74%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.10%",
+          "MemUsage": "18.18MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.19%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.23%",
+          "MemUsage": "5.414MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "42.79%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.44GB",
+          "CPUPerc": "104.71%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.47%",
+          "MemUsage": "218.7MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "405MB / 189MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 211.249,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "0.09%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.19MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "3.79%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.61%",
+          "MemUsage": "13.85MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "87.1MB / 142MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "0.46%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.10%",
+          "MemUsage": "18.19MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "0.29%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "4.03%",
+          "MemUsage": "5.164MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "6"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.44GB",
+          "CPUPerc": "104.66%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.50%",
+          "MemUsage": "218.9MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "405MB / 189MB",
+          "PIDs": "14"
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 215.401,
+      "containers": [
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "5.22%",
+          "Container": "3369a8983231",
+          "ID": "3369a8983231",
+          "MemPerc": "6.72%",
+          "MemUsage": "17.2MiB / 256MiB",
+          "Name": "switchyard-api-1",
+          "NetIO": "23.6MB / 73.2MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "0B / 0B",
+          "CPUPerc": "6.46%",
+          "Container": "e71ba7e3f0d7",
+          "ID": "e71ba7e3f0d7",
+          "MemPerc": "3.62%",
+          "MemUsage": "13.9MiB / 384MiB",
+          "Name": "switchyard-worker-1",
+          "NetIO": "87.3MB / 142MB",
+          "PIDs": "13"
+        },
+        {
+          "BlockIO": "5.22MB / 2.81MB",
+          "CPUPerc": "1.25%",
+          "Container": "8b177f8dc279",
+          "ID": "8b177f8dc279",
+          "MemPerc": "7.11%",
+          "MemUsage": "18.2MiB / 256MiB",
+          "Name": "switchyard-nats-1",
+          "NetIO": "25.7MB / 25.7MB",
+          "PIDs": "14"
+        },
+        {
+          "BlockIO": "17.3MB / 4.53MB",
+          "CPUPerc": "2.85%",
+          "Container": "57d38e3a26fe",
+          "ID": "57d38e3a26fe",
+          "MemPerc": "5.33%",
+          "MemUsage": "6.816MiB / 128MiB",
+          "Name": "switchyard-redis-1",
+          "NetIO": "2.44MB / 358kB",
+          "PIDs": "12"
+        },
+        {
+          "BlockIO": "67MB / 24.7MB",
+          "CPUPerc": "0.00%",
+          "Container": "008223544abe",
+          "ID": "008223544abe",
+          "MemPerc": "23.65%",
+          "MemUsage": "90.82MiB / 384MiB",
+          "Name": "switchyard-web-1",
+          "NetIO": "272kB / 831kB",
+          "PIDs": "11"
+        },
+        {
+          "BlockIO": "121MB / 3.45GB",
+          "CPUPerc": "112.04%",
+          "Container": "2d93ad07773b",
+          "ID": "2d93ad07773b",
+          "MemPerc": "28.47%",
+          "MemUsage": "218.7MiB / 768MiB",
+          "Name": "switchyard-postgres-1",
+          "NetIO": "406MB / 189MB",
+          "PIDs": "14"
+        }
+      ]
+    }
+  ],
+  "queue_samples": [
+    {
+      "elapsed_seconds": 0.0,
+      "raw": 99,
+      "quarantined": 0,
+      "intents": 101,
+      "published": 2,
+      "receipts": 2,
+      "due_users": 0,
+      "exposed": 0,
+      "converted": 0,
+      "requests": 0
+    },
+    {
+      "elapsed_seconds": 3.824,
+      "raw": 3960,
+      "quarantined": 0,
+      "intents": 3962,
+      "published": 2197,
+      "receipts": 2198,
+      "due_users": 4,
+      "exposed": 729,
+      "converted": 729,
+      "requests": 729
+    },
+    {
+      "elapsed_seconds": 7.673,
+      "raw": 7821,
+      "quarantined": 0,
+      "intents": 7823,
+      "published": 3476,
+      "receipts": 3477,
+      "due_users": 80,
+      "exposed": 1080,
+      "converted": 1080,
+      "requests": 1080
+    },
+    {
+      "elapsed_seconds": 10.713,
+      "raw": 10890,
+      "quarantined": 0,
+      "intents": 10892,
+      "published": 4821,
+      "receipts": 4820,
+      "due_users": 316,
+      "exposed": 1291,
+      "converted": 1291,
+      "requests": 1291
+    },
+    {
+      "elapsed_seconds": 14.541,
+      "raw": 14751,
+      "quarantined": 0,
+      "intents": 14753,
+      "published": 6264,
+      "receipts": 6259,
+      "due_users": 508,
+      "exposed": 1581,
+      "converted": 1581,
+      "requests": 1581
+    },
+    {
+      "elapsed_seconds": 18.393,
+      "raw": 18513,
+      "quarantined": 0,
+      "intents": 18515,
+      "published": 7802,
+      "receipts": 7803,
+      "due_users": 646,
+      "exposed": 1955,
+      "converted": 1955,
+      "requests": 1955
+    },
+    {
+      "elapsed_seconds": 22.256,
+      "raw": 22473,
+      "quarantined": 0,
+      "intents": 22475,
+      "published": 9318,
+      "receipts": 9316,
+      "due_users": 831,
+      "exposed": 2274,
+      "converted": 2274,
+      "requests": 2274
+    },
+    {
+      "elapsed_seconds": 26.188,
+      "raw": 26334,
+      "quarantined": 0,
+      "intents": 26336,
+      "published": 10530,
+      "receipts": 10531,
+      "due_users": 961,
+      "exposed": 2550,
+      "converted": 2550,
+      "requests": 2550
+    },
+    {
+      "elapsed_seconds": 29.216,
+      "raw": 29304,
+      "quarantined": 0,
+      "intents": 29306,
+      "published": 11403,
+      "receipts": 11404,
+      "due_users": 1068,
+      "exposed": 2733,
+      "converted": 2733,
+      "requests": 2733
+    },
+    {
+      "elapsed_seconds": 33.321,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 13858,
+      "receipts": 13836,
+      "due_users": 1697,
+      "exposed": 2916,
+      "converted": 2916,
+      "requests": 2916
+    },
+    {
+      "elapsed_seconds": 37.212,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 16504,
+      "receipts": 16475,
+      "due_users": 2401,
+      "exposed": 3091,
+      "converted": 3091,
+      "requests": 3091
+    },
+    {
+      "elapsed_seconds": 40.261,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 18514,
+      "receipts": 18487,
+      "due_users": 2940,
+      "exposed": 3223,
+      "converted": 3223,
+      "requests": 3223
+    },
+    {
+      "elapsed_seconds": 44.2,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 21186,
+      "receipts": 21168,
+      "due_users": 3645,
+      "exposed": 3411,
+      "converted": 3411,
+      "requests": 3411
+    },
+    {
+      "elapsed_seconds": 48.123,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 23738,
+      "receipts": 23722,
+      "due_users": 4325,
+      "exposed": 3582,
+      "converted": 3582,
+      "requests": 3582
+    },
+    {
+      "elapsed_seconds": 52.045,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 26178,
+      "receipts": 26145,
+      "due_users": 4956,
+      "exposed": 3759,
+      "converted": 3759,
+      "requests": 3759
+    },
+    {
+      "elapsed_seconds": 56.017,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 28511,
+      "receipts": 28490,
+      "due_users": 5579,
+      "exposed": 3917,
+      "converted": 3917,
+      "requests": 3917
+    },
+    {
+      "elapsed_seconds": 59.059,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 5957,
+      "exposed": 4042,
+      "converted": 4042,
+      "requests": 4042
+    },
+    {
+      "elapsed_seconds": 62.963,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 5732,
+      "exposed": 4267,
+      "converted": 4267,
+      "requests": 4267
+    },
+    {
+      "elapsed_seconds": 66.8,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 5510,
+      "exposed": 4489,
+      "converted": 4489,
+      "requests": 4489
+    },
+    {
+      "elapsed_seconds": 69.84,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 5339,
+      "exposed": 4660,
+      "converted": 4660,
+      "requests": 4660
+    },
+    {
+      "elapsed_seconds": 73.685,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 5120,
+      "exposed": 4879,
+      "converted": 4879,
+      "requests": 4879
+    },
+    {
+      "elapsed_seconds": 77.682,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 4962,
+      "exposed": 5037,
+      "converted": 5037,
+      "requests": 5037
+    },
+    {
+      "elapsed_seconds": 80.728,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 4813,
+      "exposed": 5186,
+      "converted": 5186,
+      "requests": 5186
+    },
+    {
+      "elapsed_seconds": 84.595,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 4591,
+      "exposed": 5408,
+      "converted": 5408,
+      "requests": 5408
+    },
+    {
+      "elapsed_seconds": 88.455,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 4389,
+      "exposed": 5610,
+      "converted": 5610,
+      "requests": 5610
+    },
+    {
+      "elapsed_seconds": 92.386,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 4211,
+      "exposed": 5788,
+      "converted": 5788,
+      "requests": 5788
+    },
+    {
+      "elapsed_seconds": 96.292,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 4012,
+      "exposed": 5987,
+      "converted": 5987,
+      "requests": 5987
+    },
+    {
+      "elapsed_seconds": 99.331,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 3878,
+      "exposed": 6121,
+      "converted": 6121,
+      "requests": 6121
+    },
+    {
+      "elapsed_seconds": 103.412,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 3689,
+      "exposed": 6310,
+      "converted": 6310,
+      "requests": 6310
+    },
+    {
+      "elapsed_seconds": 107.285,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 3508,
+      "exposed": 6491,
+      "converted": 6491,
+      "requests": 6491
+    },
+    {
+      "elapsed_seconds": 110.311,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 3363,
+      "exposed": 6636,
+      "converted": 6636,
+      "requests": 6636
+    },
+    {
+      "elapsed_seconds": 114.224,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 3186,
+      "exposed": 6813,
+      "converted": 6813,
+      "requests": 6813
+    },
+    {
+      "elapsed_seconds": 118.111,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 3028,
+      "exposed": 6971,
+      "converted": 6971,
+      "requests": 6971
+    },
+    {
+      "elapsed_seconds": 122.022,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 2857,
+      "exposed": 7142,
+      "converted": 7142,
+      "requests": 7142
+    },
+    {
+      "elapsed_seconds": 125.945,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 2724,
+      "exposed": 7275,
+      "converted": 7275,
+      "requests": 7275
+    },
+    {
+      "elapsed_seconds": 130.395,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 2613,
+      "exposed": 7386,
+      "converted": 7386,
+      "requests": 7386
+    },
+    {
+      "elapsed_seconds": 134.355,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 2483,
+      "exposed": 7516,
+      "converted": 7516,
+      "requests": 7516
+    },
+    {
+      "elapsed_seconds": 138.371,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 2356,
+      "exposed": 7643,
+      "converted": 7643,
+      "requests": 7643
+    },
+    {
+      "elapsed_seconds": 142.176,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 2304,
+      "exposed": 7695,
+      "converted": 7695,
+      "requests": 7695
+    },
+    {
+      "elapsed_seconds": 147.487,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 2221,
+      "exposed": 7778,
+      "converted": 7778,
+      "requests": 7778
+    },
+    {
+      "elapsed_seconds": 152.185,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 2160,
+      "exposed": 7839,
+      "converted": 7839,
+      "requests": 7839
+    },
+    {
+      "elapsed_seconds": 156.638,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 2070,
+      "exposed": 7929,
+      "converted": 7929,
+      "requests": 7929
+    },
+    {
+      "elapsed_seconds": 160.758,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 1950,
+      "exposed": 8049,
+      "converted": 8049,
+      "requests": 8049
+    },
+    {
+      "elapsed_seconds": 164.919,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 1825,
+      "exposed": 8174,
+      "converted": 8174,
+      "requests": 8174
+    },
+    {
+      "elapsed_seconds": 168.948,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 1710,
+      "exposed": 8289,
+      "converted": 8289,
+      "requests": 8289
+    },
+    {
+      "elapsed_seconds": 173.078,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 1567,
+      "exposed": 8432,
+      "converted": 8432,
+      "requests": 8432
+    },
+    {
+      "elapsed_seconds": 177.035,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 1421,
+      "exposed": 8578,
+      "converted": 8578,
+      "requests": 8578
+    },
+    {
+      "elapsed_seconds": 180.067,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 1317,
+      "exposed": 8682,
+      "converted": 8682,
+      "requests": 8682
+    },
+    {
+      "elapsed_seconds": 184.009,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 1169,
+      "exposed": 8830,
+      "converted": 8830,
+      "requests": 8830
+    },
+    {
+      "elapsed_seconds": 187.959,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 1032,
+      "exposed": 8967,
+      "converted": 8967,
+      "requests": 8967
+    },
+    {
+      "elapsed_seconds": 192.251,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 905,
+      "exposed": 9094,
+      "converted": 9094,
+      "requests": 9094
+    },
+    {
+      "elapsed_seconds": 197.087,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 787,
+      "exposed": 9212,
+      "converted": 9212,
+      "requests": 9212
+    },
+    {
+      "elapsed_seconds": 200.152,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 691,
+      "exposed": 9308,
+      "converted": 9308,
+      "requests": 9308
+    },
+    {
+      "elapsed_seconds": 204.26,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 549,
+      "exposed": 9450,
+      "converted": 9450,
+      "requests": 9450
+    },
+    {
+      "elapsed_seconds": 208.218,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 416,
+      "exposed": 9583,
+      "converted": 9583,
+      "requests": 9583
+    },
+    {
+      "elapsed_seconds": 212.251,
+      "raw": 29997,
+      "quarantined": 0,
+      "intents": 29999,
+      "published": 29999,
+      "receipts": 29999,
+      "due_users": 301,
+      "exposed": 9698,
+      "converted": 9698,
+      "requests": 9698
+    }
+  ],
+  "observer_errors": [],
+  "assignment_samples_verified": 10,
+  "project_id": "prj_a3c4bd373218878d52ece7a020185f3362fda0a2db4bf32fc98588be862ed2d7",
+  "run_id": "run_d51ce2b9067f2593e6bbaa8ce2e59aa5bcbebdaf73c12fa1889900f0b676adb5",
+  "host": {
+    "architecture": "arm64",
+    "logical_cpus": "8",
+    "memory_bytes": "8589934592",
+    "docker_version": "28.3.3"
+  },
+  "scheduled_events": 29997,
+  "submitted_events": 29997,
+  "skipped_events": 0,
+  "validated_http_accepted_events": 29997,
+  "http_batch_statuses": {
+    "200": 303
+  },
+  "last_response_seconds": 30.159772958002577,
+  "accepted_per_offering_second": 999.9,
+  "accepted_per_response_elapsed_second": 994.6029780055295,
+  "http_latency_p95_seconds": 0.23543645800236845,
+  "schedule_lateness_p95_seconds": 0.010117458004970104,
+  "follow_up_observed_at": "2026-10-05T07:03:28.562470+00:00",
+  "drain_timeout_seconds": 180,
+  "final_counts": {
+    "raw": 29997,
+    "quarantined": 0,
+    "intents": 29999,
+    "published": 29999,
+    "receipts": 29999,
+    "due_users": 0,
+    "exposed": 9999,
+    "converted": 9999,
+    "requests": 9999
+  },
+  "database_freshness": {
+    "users": 9999,
+    "p50_seconds": 62.267496,
+    "p95_seconds": 177.4952721,
+    "max_seconds": 192.305173
+  },
+  "parity_output": "docker compose --profile async run --rm --no-deps --entrypoint /app/check-metrics worker\nAggregate parity passed for 33 runs: cohorts, conversions, requests, histograms and quality",
+  "duplicate_retry_verified": true,
+  "passed_eventual_correctness": true
+}

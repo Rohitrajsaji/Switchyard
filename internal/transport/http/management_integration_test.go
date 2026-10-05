@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"golang.org/x/crypto/bcrypt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +26,10 @@ func TestManagementCSRFScopesCookiesAndSecretSafeLogs(t *testing.T) {
 	if err := postgres.Migrate(ctx, pool, migrations.Files); err != nil {
 		t.Fatal(err)
 	}
-	hash, err := auth.PasswordHash("a-good-demo-password")
+	// This fixture tests transport permissions, not bcrypt throughput under -race.
+	// Production password hashing remains cost 12 and is covered in auth integration.
+	hashBytes, err := bcrypt.GenerateFromPassword([]byte("a-good-demo-password"), bcrypt.MinCost)
+	hash := string(hashBytes)
 	if err != nil {
 		t.Fatal(err)
 	}

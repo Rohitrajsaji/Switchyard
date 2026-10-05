@@ -23,11 +23,11 @@ def main():
     # process claims one between discovery and startup.
     sockets = []
     try:
-        for _ in range(3):
+        for _ in range(6):
             listener = socket.socket()
             listener.bind(("127.0.0.1", 0))
             sockets.append(listener)
-        pg_port, api_port, web_port = [s.getsockname()[1] for s in sockets]
+        pg_port, api_port, web_port, redis_port, nats_port, monitor_port = [s.getsockname()[1] for s in sockets]
     finally:
         for listener in sockets:
             listener.close()
@@ -35,10 +35,11 @@ def main():
     api_url = f"http://localhost:{api_port}"
     web_url = f"http://localhost:{web_port}"
     env = {**os.environ, "POSTGRES_PORT": str(pg_port), "API_PORT": str(api_port),
-           "WEB_PORT": str(web_port), "SWITCHYARD_URL": api_url,
+           "WEB_PORT": str(web_port), "REDIS_PORT": str(redis_port), "NATS_PORT": str(nats_port),
+           "NATS_MONITOR_PORT": str(monitor_port), "SWITCHYARD_URL": api_url,
            "SWITCHYARD_WEB_URL": web_url, "SWITCHYARD_ORIGIN": web_url,
            "SWITCHYARD_E2E_EXTERNAL": "true", "COMPOSE_PROJECT_NAME": project,
-           "COMPOSE_FILE": str(ROOT / "compose.yaml"), "COMPOSE_PROFILES": ""}
+           "COMPOSE_FILE": str(ROOT / "compose.yaml"), "COMPOSE_PROFILES": "cache,async"}
     compose = ["docker", "compose", "-f", str(ROOT / "compose.yaml"), "-p", project]
 
     def run(command, capture=False):
@@ -78,7 +79,7 @@ def main():
         run(["make", "e2e"])
         before_restart = counts()
         # Stop/start, rather than rebuilding, exercises persistence across normal restarts.
-        run(compose + ["stop", "web", "api", "postgres"])
+        run(compose + ["stop", "web", "api", "worker", "nats", "redis", "postgres"])
         run(compose + ["up", "--no-build", "-d", "--wait"])
         run([sys.executable, "scripts/smoke.py"])
         with urllib.request.urlopen(web_url, timeout=10) as response:

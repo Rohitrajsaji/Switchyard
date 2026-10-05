@@ -71,6 +71,17 @@ type Results struct {
 	SampleRatio              SampleRatios `json:"sample_ratio"`
 	Comparisons              []Comparison `json:"comparisons"`
 	InferenceNotes           []string     `json:"inference_notes"`
+	Processing               *Processing  `json:"processing,omitempty"`
+}
+
+// Processing describes unfinished work at the same database snapshot as counts.
+// LatestReconciledAt is a latest update, never a completeness watermark.
+type Processing struct {
+	PendingEvents      int64      `json:"pending_events"`
+	DueUsers           int64      `json:"due_users"`
+	OldestPendingAt    *time.Time `json:"oldest_pending_at"`
+	LatestReconciledAt *time.Time `json:"latest_reconciled_at"`
+	LagSeconds         float64    `json:"lag_seconds"`
 }
 type Service struct {
 	pool *pgxpool.Pool
@@ -106,16 +117,21 @@ type derived struct {
 }
 
 func (s *Service) Read(ctx context.Context, actor auth.Actor, projectID, runID string) (Results, error) {
-	return s.read(ctx, actor, projectID, runID, false)
+	return s.read(ctx, actor, projectID, runID, false, false)
 }
 
-// ReadAggregated is available for the parity gate. HTTP reads remain on the
-// raw-event oracle until the complete M7 aggregation/replay gates pass.
+// ReadAggregated supplies the counts-only view for independent parity checks.
 func (s *Service) ReadAggregated(ctx context.Context, actor auth.Actor, projectID, runID string) (Results, error) {
-	return s.read(ctx, actor, projectID, runID, true)
+	return s.read(ctx, actor, projectID, runID, true, false)
 }
 
-func (s *Service) read(ctx context.Context, actor auth.Actor, projectID, runID string, aggregated bool) (Results, error) {
+// ReadAsync serves durable aggregates with visible backlog. Raw facts are never
+// an automatic fallback: they cannot reconstruct already-retained history.
+func (s *Service) ReadAsync(ctx context.Context, actor auth.Actor, projectID, runID string) (Results, error) {
+	return s.read(ctx, actor, projectID, runID, true, true)
+}
+
+func (s *Service) read(ctx context.Context, actor auth.Actor, projectID, runID string, aggregated, progress bool) (Results, error) {
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return Results{}, err
@@ -158,6 +174,30 @@ func (s *Service) read(ctx context.Context, actor auth.Actor, projectID, runID s
 	}
 	result := assemble(definition, control, now, facts)
 	addStatistics(&result)
+	if progress {
+		status := &Processing{}
+		err = tx.QueryRow(ctx, `WITH pending AS (
+ SELECT e.received_at FROM raw_events e
+ LEFT JOIN outbox o ON o.kind='event' AND o.project_id=e.project_id AND o.environment_id=e.environment_id AND o.object_id=e.event_id AND o.revision=e.revision
+ LEFT JOIN processed_work p ON p.message_id='switchyard-outbox-v1-'||o.id::text
+ WHERE e.project_id=$1 AND e.environment_id=$2 AND e.run_id=$3 AND p.message_id IS NULL
+), users AS (
+ SELECT due_at,reconciled_at FROM metric_user_state WHERE project_id=$1 AND environment_id=$2 AND run_id=$3
+)
+SELECT (SELECT count(*) FROM pending),
+ (SELECT count(*) FROM users WHERE due_at<=$4),
+ LEAST((SELECT min(received_at) FROM pending),(SELECT min(due_at) FROM users WHERE due_at<=$4)),
+ (SELECT max(reconciled_at) FROM users)`, projectID, definition.EnvironmentID, runID, now).
+			Scan(&status.PendingEvents, &status.DueUsers, &status.OldestPendingAt, &status.LatestReconciledAt)
+		if err != nil {
+			return Results{}, err
+		}
+		if status.OldestPendingAt != nil {
+			status.LagSeconds = max(0, now.Sub(*status.OldestPendingAt).Seconds())
+		}
+		result.Processing = status
+		result.InferenceNotes = append(result.InferenceNotes, "Counts are asynchronous worker aggregates. Snapshot time is the read time, not a completeness watermark; pending work can change these results. Raw facts are not an automatic fallback after retention.")
+	}
 	if err = tx.Commit(ctx); err != nil {
 		return Results{}, err
 	}

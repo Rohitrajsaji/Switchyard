@@ -37,7 +37,7 @@ def logs():
 
 
 settings = json.loads(command(["docker", "compose", "--profile", "async", "config", "--format", "json"]))["services"]["worker"]["environment"]
-assert settings["WORKER_RETENTION_ENABLED"].lower() in ("false", "0"), "Diagnostic requires normal retention disabled"
+normal_enabled = settings["WORKER_RETENTION_ENABLED"].lower() in ("true", "1")
 raw_days = int(settings["RAW_RETENTION_DAYS"])
 assert 2 <= raw_days <= 7
 before = counts()
@@ -72,10 +72,10 @@ while time.monotonic() < deadline:
     if started:
         break
     time.sleep(0.25)
-assert started and started[-1]["processing_enabled"] and not started[-1]["retention_enabled"], "Normal processing/retention settings not restored"
+assert started and started[-1]["processing_enabled"] and started[-1]["retention_enabled"] == normal_enabled, "Normal processing/retention settings not restored"
 report = {"observed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
           "raw_horizon_days": raw_days, "source_counts": before,
-          "enabled_loop": observed, "restored_retention_enabled": False,
+          "enabled_loop": observed, "restored_retention_enabled": normal_enabled,
           "scope": "Fresh local sources; real aged deletion/replay/expiry verified in disposable integration schemas."}
 pathlib.Path(".cache/retention-smoke-report.json").write_text(json.dumps(report, indent=2) + "\n")
 print(json.dumps(report, indent=2))

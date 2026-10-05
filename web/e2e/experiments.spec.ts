@@ -179,9 +179,19 @@ test("reviewer creates an unequal A/B run, controls lifecycle and inspects empty
   await page.getByRole("button", { name: "Experiments", exact: true }).click();
   for (const variant of ["control", "treatment"]) {
     const row = results.locator("tbody tr").filter({ hasText: variant });
-    await expect(row.locator("td").nth(2)).toHaveText(String(exposed[variant]));
-    await expect(row.locator("td").nth(3)).toHaveText("1");
+    // Functional convergence covers async work and two five-second UI refreshes.
+    // The independent ingestion trial measures the freshness target.
+    await expect(row.locator("td").nth(2)).toHaveText(
+      String(exposed[variant]),
+      {
+        timeout: 15000,
+      },
+    );
+    await expect(row.locator("td").nth(3)).toHaveText("1", { timeout: 15000 });
   }
+  await expect(
+    page.getByText("No pending work at this snapshot.", { exact: false }),
+  ).toBeVisible({ timeout: 15000 });
   await page.screenshot({
     path: "../.cache/dashboard-measured-results.png",
     fullPage: true,

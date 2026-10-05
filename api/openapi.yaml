@@ -497,7 +497,7 @@ paths:
         descriptive fixed-analysis outputs, with no sequential stopping or multiplicity correction.
       responses:
         '200':
-          description: Results from committed raw facts; never cache
+          description: Asynchronous durable aggregates with processing backlog in one database snapshot; never cache or automatically fall back to raw facts
           content:
             application/json:
               schema: {$ref: '#/components/schemas/ExperimentResults'}
@@ -621,12 +621,22 @@ components:
         p_value: {type: [number, 'null'], minimum: 0, maximum: 1}
     ExperimentResults:
       type: object
-      required: [run_id, environment_id, control_variant_id, as_of, attribution_window_seconds, late_allowance_seconds, variants, quality, sample_ratio, comparisons, inference_notes]
+      required: [run_id, environment_id, control_variant_id, as_of, processing, attribution_window_seconds, late_allowance_seconds, variants, quality, sample_ratio, comparisons, inference_notes]
       properties:
         run_id: {type: string}
         environment_id: {type: string}
         control_variant_id: {type: string}
         as_of: {type: string, format: date-time}
+        processing:
+          type: object
+          description: Outstanding event receipts and currently due user updates. Latest reconciliation is a latest update, not a completeness watermark. Lag is the age of oldest pending receipt/due time at the read snapshot.
+          required: [pending_events, due_users, oldest_pending_at, latest_reconciled_at, lag_seconds]
+          properties:
+            pending_events: {type: integer, minimum: 0}
+            due_users: {type: integer, minimum: 0}
+            oldest_pending_at: {type: [string, 'null'], format: date-time}
+            latest_reconciled_at: {type: [string, 'null'], format: date-time}
+            lag_seconds: {type: number, minimum: 0}
         attribution_window_seconds: {const: 1800}
         late_allowance_seconds: {const: 86400}
         variants:

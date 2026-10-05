@@ -44,6 +44,13 @@ export type Results = {
   environment_id: string;
   control_variant_id: string;
   as_of: string;
+  processing: {
+    pending_events: number;
+    due_users: number;
+    oldest_pending_at: string | null;
+    latest_reconciled_at: string | null;
+    lag_seconds: number;
+  };
   attribution_window_seconds: number;
   late_allowance_seconds: number;
   variants: Array<{

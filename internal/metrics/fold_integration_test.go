@@ -124,6 +124,14 @@ func TestBoundedFoldingPreservesIndependentOracleAndRollsBackAllState(t *testing
 	if err = f.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM raw_events),(SELECT count(*) FROM retained_event_identities),(SELECT count(*) FROM metric_archived_anchors),(SELECT count(*) FROM metric_event_references),(SELECT count(*) FROM metric_history_segments)`).Scan(&raw, &identities, &anchors, &references, &segments); err != nil || raw != 0 || identities != 108 || anchors != 1 || references != 108 || segments != 1 {
 		t.Fatalf("fold counts=%d %d %d %d %d %v", raw, identities, anchors, references, segments, err)
 	}
+	served, err := f.metrics.ReadAsync(ctx, f.actor, f.projectID, f.runID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	control := variant(t, served, "control")
+	if served.Processing == nil || served.Processing.PendingEvents != 0 || served.Processing.DueUsers != 0 || control.Finalized.Exposed != 1 || control.Finalized.Converted != 1 || control.Requests.Count != 105 {
+		t.Fatal("Serving read lost retained history or reported false backlog", served)
+	}
 }
 
 func TestPendingOutcomeSurvivesFoldAndNotificationThenBecomesHistorical(t *testing.T) {

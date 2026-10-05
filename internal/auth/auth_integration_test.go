@@ -5,6 +5,7 @@ package auth_test
 import (
 	"context"
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 	"testing"
 
 	"switchyard/internal/auth"
@@ -24,6 +25,9 @@ func TestSessionsExpiryRevocationAndScopedKeys(t *testing.T) {
 	hash, err := auth.PasswordHash("a-good-demo-password")
 	if err != nil {
 		t.Fatal(err)
+	}
+	if cost, err := bcrypt.Cost([]byte(hash)); err != nil || cost != 12 {
+		t.Fatal("Production password cost changed", cost, err)
 	}
 	if _, err := pool.Exec(ctx, `INSERT INTO users(id,email,password_hash,role) VALUES('admin','admin@example.test',$1,'admin')`, hash); err != nil {
 		t.Fatal(err)

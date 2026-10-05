@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import struct
+import time
 import urllib.parse
 import urllib.request
 
@@ -153,7 +154,14 @@ def bootstrap(admin, marker, save):
         marker["measurement_complete"] = True
         marker["run_id"] = run["id"]
         save(marker)
-    result = expect(admin, "GET", path + "/experiments/" + run["id"] + "/results")
+    deadline = time.monotonic() + 30
+    while True:
+        result = expect(admin, "GET", path + "/experiments/" + run["id"] + "/results")
+        if result["processing"]["pending_events"] == 0 and result["processing"]["due_users"] == 0:
+            break
+        if time.monotonic() >= deadline:
+            raise RuntimeError("Asynchronous fixture processing did not converge")
+        time.sleep(0.2)
     for variant in result["variants"]:
         if any(variant["total"][key] < expected[variant["id"]][key] for key in ["exposed", "converted"]):
             raise RuntimeError("Results did not reconcile with the committed fixture")

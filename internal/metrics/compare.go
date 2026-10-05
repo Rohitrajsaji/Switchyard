@@ -46,6 +46,12 @@ func (s *Service) Compare(ctx context.Context, actor auth.Actor, project, run st
 		return equal, tx.Commit(ctx)
 	}
 	var rawBody, aggregateBody []byte
+	// The diagnostic scans differently sized runs. A shared generic plan chosen
+	// from tiny scopes can turn a large scope into nested-loop CTE scans. Keep
+	// parameter-aware planning local to this read-only oracle transaction.
+	if _, err = tx.Exec(ctx, `SET LOCAL plan_cache_mode = force_custom_plan`); err != nil {
+		return false, err
+	}
 	if err = tx.QueryRow(ctx, attributionSQL+resultsSQL, project, env, run, s.now()).Scan(&rawBody); err != nil {
 		return false, err
 	}

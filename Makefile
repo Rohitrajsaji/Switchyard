@@ -32,7 +32,7 @@ integration:
 up:
 	@test -f .env || cp .env.example .env
 	docker compose build api web
-	docker compose --profile cache up --no-build -d --wait
+	docker compose --profile cache --profile async up --no-build -d --wait
 down:
 	docker compose --profile cache --profile async down
 migrate:
@@ -112,3 +112,7 @@ retention-smoke:
 .PHONY: event-drill
 event-drill:
 	python3 scripts/event_drill.py
+
+.PHONY: ingestion-trial
+ingestion-trial:
+	python3 scripts/ingestion_trial.py

@@ -1,6 +1,7 @@
 """Live explicit event journey; requires opt-in seeded demo credentials."""
 import datetime
 import json
+import time
 import urllib.error
 import urllib.request
 import uuid
@@ -57,9 +58,15 @@ def main():
             "environment_id": environment or env["development"], "events": items})
 
     def results():
-        status, data = admin.call("GET", path + "/experiments/" + run["id"] + "/results")
-        assert status == 200 and data["run_id"] == run["id"]
-        return data
+        deadline = time.monotonic() + 30
+        while True:
+            status, data = admin.call("GET", path + "/experiments/" + run["id"] + "/results")
+            assert status == 200 and data["run_id"] == run["id"]
+            processing = data["processing"]
+            if processing["pending_events"] == 0 and processing["due_users"] == 0:
+                return data
+            assert time.monotonic() < deadline, "Asynchronous measurement did not converge"
+            time.sleep(0.2)
 
     status, decision = application("/v1/evaluate", {"project_id": project["id"],
         "environment_id": env["development"], "key": "listing", "user_id": "synthetic-user", "fallback": safe})

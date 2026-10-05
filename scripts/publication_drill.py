@@ -33,7 +33,7 @@ def main():
     report = {}
     override = ROOT / ".cache" / ("publication-drill-" + uuid.uuid4().hex + ".yaml")
     override.parent.mkdir(parents=True, exist_ok=True)
-    override.write_text('services:\n  worker:\n    environment:\n      WORKER_PROCESSING_ENABLED: "false"\n')
+    override.write_text('services:\n  worker:\n    environment:\n      WORKER_PROCESSING_ENABLED: "false"\n      WORKER_RETENTION_ENABLED: "false"\n')
     publisher_only = False
     try:
         publisher_only = True

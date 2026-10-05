@@ -18,8 +18,11 @@ import (
 	"switchyard/internal/experiments"
 	"switchyard/internal/flags"
 	"switchyard/internal/metrics"
+	"switchyard/internal/outbox"
 	"switchyard/internal/platform/identity"
+	"switchyard/internal/platform/messaging"
 	"switchyard/internal/platform/postgres"
+	"switchyard/internal/processing"
 	"switchyard/internal/projects"
 	"switchyard/internal/testutil"
 	httpapi "switchyard/internal/transport/http"
@@ -226,6 +229,60 @@ func TestEventHTTPIdentityAndPermissionBoundary(t *testing.T) {
 	var results metrics.Results
 	if err = json.Unmarshal(w.Body.Bytes(), &results); err != nil {
 		t.Fatal(err)
+	}
+	if results.Processing == nil || results.Processing.PendingEvents != 4 || results.Processing.OldestPendingAt == nil {
+		t.Fatalf("Unprocessed facts must expose backlog %+v", results.Processing)
+	}
+	for _, v := range results.Variants {
+		if v.Total.Exposed != 0 || v.Total.Converted != 0 {
+			t.Fatal("HTTP silently fell back to raw facts before processing")
+		}
+	}
+	rows, err := pool.Query(ctx, `SELECT id,kind,project_id,environment_id,object_id,revision FROM outbox WHERE kind='event' ORDER BY id`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var items []outbox.Item
+	for rows.Next() {
+		var item outbox.Item
+		if err = rows.Scan(&item.ID, &item.Kind, &item.ProjectID, &item.EnvironmentID, &item.ObjectID, &item.Revision); err != nil {
+			t.Fatal(err)
+		}
+		items = append(items, item)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	store := processing.New(pool)
+	for _, item := range items {
+		if _, err = store.Apply(ctx, messaging.Envelope{Version: 1, MessageID: item.MessageID(), Reference: item.Reference}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err = pool.Exec(ctx, `UPDATE metric_user_state SET due_at=clock_timestamp()-interval '10 seconds'`); err != nil {
+		t.Fatal(err)
+	}
+	w = get(resultPath, true)
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &results) != nil || results.Processing.PendingEvents != 0 || results.Processing.DueUsers != 1 || results.Processing.LagSeconds < 10 {
+		t.Fatal("Committed receipts hid stalled aggregate work", results.Processing)
+	}
+	for {
+		worked, err := metrics.ReconcileOne(ctx, pool, time.Now())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !worked {
+			break
+		}
+	}
+	w = get(resultPath, true)
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &results) != nil {
+		t.Fatal("Processed HTTP result unavailable")
+	}
+	if results.Processing.PendingEvents != 0 || results.Processing.DueUsers != 0 || results.Processing.OldestPendingAt != nil || results.Processing.LatestReconciledAt == nil || results.Processing.LagSeconds != 0 {
+		t.Fatalf("Drained progress incorrect %+v", results.Processing)
 	}
 	if results.Quality.QuarantinedEvents != 1 || results.Quality.DuplicateAttributedCompletions != 1 || results.RunID != run.ID {
 		t.Fatalf("result diagnostics %+v", results)

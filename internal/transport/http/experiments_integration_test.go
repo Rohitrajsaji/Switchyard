@@ -5,6 +5,7 @@ package httpapi_test
 import (
 	"context"
 	"encoding/json"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -29,7 +30,8 @@ func TestExperimentHTTPManagementJourney(t *testing.T) {
 	if err := postgres.Migrate(ctx, pool, migrations.Files); err != nil {
 		t.Fatal(err)
 	}
-	hash, err := auth.PasswordHash("experiment-demo-password")
+	// Keep the race-enabled HTTP fixture independent of bcrypt throughput.
+	hash, err := bcrypt.GenerateFromPassword([]byte("experiment-demo-password"), bcrypt.MinCost)
 	if err != nil {
 		t.Fatal(err)
 	}

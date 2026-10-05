@@ -88,7 +88,7 @@ export default function ResultsPanel({
               </select>
             </label>
             <p className="fine">
-              Snapshot:{" "}
+              Read at:{" "}
               <time dateTime={results.as_of}>
                 {new Date(results.as_of).toLocaleString()}
               </time>
@@ -96,6 +96,12 @@ export default function ResultsPanel({
               Refreshes every 5 seconds while this screen is open.
             </p>
           </div>
+          <p className="notice" role="status">
+            {results.processing.pending_events > 0 ||
+            results.processing.due_users > 0
+              ? `Processing ${results.processing.pending_events} events and ${results.processing.due_users} user updates. Oldest pending work: ${results.processing.lag_seconds.toFixed(1)} seconds. Counts may be incomplete.`
+              : "No pending work at this snapshot. Counts update asynchronously as events arrive."}
+          </p>
           <p className="notice">
             Provisional counts can change as late events arrive. Finalized
             cohorts mature after the 30-minute window plus the 24-hour lateness

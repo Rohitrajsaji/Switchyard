@@ -324,7 +324,7 @@ The dependency chain is **M1 → M2 → M3 → M4 → M5 → M6 → M7 → M8 �
 
 **Learning:** At-least-once delivery, transaction boundaries, backpressure, worker cancellation and recovery.
 
-**Estimated effort:** 28–42 hours. **Rollback:** switch metrics reads to raw-event SQL; keep outbox/raw data for replay. Do not purge queues to hide a failure.
+**Estimated effort:** 28–42 hours. **Rollback:** before raw cleanup, explicit diagnostic raw-event SQL remains available. After cleanup starts, pause cleanup and retain aggregate serving with visible backlog while repairing/replaying the retained interval; raw-only reads cannot recreate deleted history. Keep outbox/retained sources and older finalized summaries. Do not purge queues to hide a failure.
 
 ### M8 — gRPC and Go SDK
 
