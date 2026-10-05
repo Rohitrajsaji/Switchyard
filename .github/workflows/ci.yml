@@ -13,6 +13,7 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: make web-install web-check
+      - run: node --test sdk/javascript/evaluate.test.mjs
   go:
     runs-on: ubuntu-latest
     services:
