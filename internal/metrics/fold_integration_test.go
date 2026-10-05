@@ -65,6 +65,9 @@ func (f *measurementFixture) foldParity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if equal, err := f.metrics.Compare(context.Background(), f.actor, f.projectID, f.runID); err != nil || !equal {
+		t.Fatal("retained parity gate rejected correct folded state", equal, err)
+	}
 	want := f.foldOracle(t)
 	if !reflect.DeepEqual(got, want) {
 		a, _ := json.Marshal(want)
@@ -238,5 +241,32 @@ func TestFoldingUsesLateEarlierAnchorAcrossUTCReceiptDays(t *testing.T) {
 	actual, err := f.metrics.ReadAggregated(ctx, f.actor, f.projectID, f.runID)
 	if err != nil || variant(t, actual, "control").Total != (Counts{1, 0}) || actual.Quality.OutsideWindowCompletions != 1 {
 		t.Fatal("late earlier exposure correction disappeared", err)
+	}
+}
+
+func TestConfiguredRawRetentionControlsFoldBoundary(t *testing.T) {
+	f := setupMeasurement(t)
+	f.compareAggregates = false
+	ctx := context.Background()
+	e := f.exposure(t, "configured", f.user(t, "control", 0), 0)
+	f.ingest(t, e)
+	f.processingReceipts(t)
+	f.now = f.now.Add(3 * 24 * time.Hour)
+	f.enqueueFacts(t)
+	f.drain(t)
+	if r, err := FoldOne(ctx, f.pool, f.now); err != nil || r != (FoldOutcome{}) {
+		t.Fatal("default raw horizon shortened", r, err)
+	}
+	if r, err := FoldWithRetention(ctx, f.pool, f.now, 2); err != nil || r.Raw != 1 {
+		t.Fatal("configured raw horizon ignored", r, err)
+	}
+	f.drain(t)
+	if equal, err := f.metrics.Compare(ctx, f.actor, f.projectID, f.runID); err != nil || !equal {
+		t.Fatal("configured fold parity", equal, err)
+	}
+	for _, days := range []int{1, 8} {
+		if _, err := FoldWithRetention(ctx, f.pool, f.now, days); err == nil {
+			t.Fatal("unsafe raw horizon")
+		}
 	}
 }

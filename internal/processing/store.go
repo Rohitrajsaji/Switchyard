@@ -7,6 +7,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,9 +19,22 @@ import (
 var ErrIdentity = errors.New("work identity mismatch")
 var ErrSourceMissing = errors.New("work source missing")
 
-type Store struct{ pool *pgxpool.Pool }
+type Store struct {
+	pool          *pgxpool.Pool
+	replayHorizon time.Duration
+}
 
-func New(pool *pgxpool.Pool) *Store { return &Store{pool} }
+func New(pool *pgxpool.Pool) *Store { return &Store{pool: pool, replayHorizon: ReplayHorizon} }
+
+// NewWithRawRetention aligns raw replay with the configured cleanup horizon.
+func NewWithRawRetention(pool *pgxpool.Pool, days int) (*Store, error) {
+	if days < 2 || days > 7 {
+		return nil, ErrRecovery
+	}
+	s := New(pool)
+	s.replayHorizon = time.Duration(days) * 24 * time.Hour
+	return s, nil
+}
 
 // Apply validates both the persisted publication intent and source fact. A
 // duplicate receipt remains valid after raw retention, but cannot change its

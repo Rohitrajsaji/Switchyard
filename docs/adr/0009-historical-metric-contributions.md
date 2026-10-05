@@ -1,6 +1,6 @@
 # ADR 0009: Historical contributions and retained attribution metadata
 
-Status: accepted as an M7 retention foundation. Bounded folding, identity/work expiry and ninety-day summary-expiry primitives are implemented and tested; automatic scheduling and final M7 retention/recovery/read-transition gates remain pending.
+Status: accepted as an M7 retention foundation. Bounded folding, identity/work expiry and ninety-day summary-expiry primitives are implemented and tested; opt-in scheduling is implemented; final M7 failure/load/read-transition gates remain pending.
 
 ## Decision
 
@@ -59,3 +59,15 @@ Anchor/reference identity is retained separately from reporting counts. Reconcil
 The duplicate-completion SQL now subtracts converted users directly rather than visible reporting cohorts; these are identical before expiry, and the former remains valid when an anchor's reporting cohort has expired. Tests cover exact UTC boundaries, partial expiry of two receipt days, returning users, pending outcomes, concurrent expiry, failed-delete rollback, 105 pending rows and 111 historical-day rows requiring bounded pages. Existing full-raw attribution/folding fixtures remain unchanged in meaning.
 
 Automatic scheduling and the final retained replay/parity, failure/load and HTTP read-transition gates remain pending. Normal development data still has no reporting floor advancement or deletion at this checkpoint.
+
+## Retained parity and scheduling checkpoint
+
+The parity command retains the independent full-raw SQL gate for runs without retention. After retention it enumerates users in 100-row keyset pages within one repeatable-read transaction, reconstructs historical counts from daily segments/anchor identity, checks that reconstruction against the cached historical contribution, and recomputes each user's retained raw/compact facts. Combined expected dimensions are compared with materialized counters; stored replaceable contributions are not the oracle. This verifies the retained reporting interval and preservation of historical summaries, not reconstruction of deleted original payloads. Before-delete full-raw fixtures remain the independent proof of folding attribution.
+
+Retention detection includes historical-only quality segments as well as anchors, pending outcomes and advanced reporting floors. A regression initially missed the historical-quality-only case after a pending outcome resolved; the corrected gate passes that full-raw fixture. Tests detect historical cache/counter corruption and cover more than 100 users. An actual operator replay repairs a corrupted replaceable contribution/counter pair while its older folded summary remains byte-equivalent JSON.
+
+One optional fixed Go worker loop runs bounded summary expiry, raw folding, identity pruning and paired completed-work pruning. Each primitive commits independently; cancellation/failure retries remaining work without undoing already committed steps. A two-second cycle context and a short delay between productive cycles bound resource use; idle/error cycles wait one second. Cumulative counts report every thirty seconds, plus startup/shutdown evidence. No per-user goroutine or unbounded task queue is introduced.
+
+`WORKER_RETENTION_ENABLED` defaults false until the final M7 aggregate-read gate. Enabling it requires normal processing. `RAW_RETENTION_DAYS` accepts 2–7 (default 7), preserving the 24h30m finalization interval and keeping raw retention below the eight-day identity/receipt horizon. `SUMMARY_RETENTION_DAYS` accepts 8–365 (default 90). The operator's raw replay interval follows raw retention; publication/dead-letter repair retains its existing maximum seven-day source horizon. Event ingestion's maximum occurrence age stays seven days, independently of when a newly received fact expires.
+
+Late processing can leave raw facts outside the summary window. Folding deletes their delivered sources but does not recreate expired daily segments or reporting counts. The real cycle fixture verifies this tail cleanup after expiry. Queue failure/load gates and the HTTP read transition remain outstanding before M7 completion.

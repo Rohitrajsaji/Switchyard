@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"switchyard/internal/auth"
 	"switchyard/internal/experiments"
 )
 
-// Compare checks all aggregate dimensions against raw SQL in one repeatable-read
-// snapshot. It is a local operations gate, not a public results endpoint.
+// Compare checks raw SQL before retention, or recomputes retained facts plus
+// daily historical summaries after retention, in one repeatable-read snapshot. It is a local operations gate, not a public results endpoint.
 func (s *Service) Compare(ctx context.Context, actor auth.Actor, project, run string) (bool, error) {
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
@@ -29,6 +30,20 @@ func (s *Service) Compare(ctx context.Context, actor auth.Actor, project, run st
 	}
 	if err != nil {
 		return false, err
+	}
+	var retained bool
+	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM metric_archived_anchors WHERE project_id=$1 AND environment_id=$2 AND run_id=$3)
+ OR EXISTS(SELECT 1 FROM metric_pending_outcomes WHERE project_id=$1 AND environment_id=$2 AND run_id=$3)
+ OR EXISTS(SELECT 1 FROM metric_history_segments WHERE project_id=$1 AND environment_id=$2 AND run_id=$3)
+ OR EXISTS(SELECT 1 FROM metric_user_state WHERE project_id=$1 AND environment_id=$2 AND run_id=$3 AND reporting_since>'-infinity'::timestamptz)`, project, env, run).Scan(&retained); err != nil {
+		return false, err
+	}
+	if retained {
+		equal, err := compareRetained(ctx, tx, project, env, run, s.now().UTC().Truncate(time.Microsecond))
+		if err != nil {
+			return false, err
+		}
+		return equal, tx.Commit(ctx)
 	}
 	var rawBody, aggregateBody []byte
 	if err = tx.QueryRow(ctx, attributionSQL+resultsSQL, project, env, run, s.now()).Scan(&rawBody); err != nil {

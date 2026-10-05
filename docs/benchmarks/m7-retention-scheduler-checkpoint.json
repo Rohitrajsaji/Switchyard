@@ -1,0 +1,54 @@
+{
+  "observed_at": "2026-10-05T06:25:59.112297+00:00",
+  "counts": {
+    "raw_events": 275,
+    "publication_history": 446,
+    "processing_receipts": 446,
+    "unpublished": 0,
+    "due_users": 0,
+    "historical_segments": 0
+  },
+  "retention_loop_diagnostic": {
+    "observed_at": "2026-10-05T06:23:51.315450+00:00",
+    "raw_horizon_days": 7,
+    "source_counts": {
+      "raw": 267,
+      "history": 0,
+      "pending": 0,
+      "identities": 0,
+      "publications": 436,
+      "receipts": 436
+    },
+    "enabled_loop": {
+      "time": "2026-10-05T06:23:48.101314595Z",
+      "level": "INFO",
+      "msg": "retention statistics",
+      "statistics": {
+        "ExpiredUsers": 0,
+        "ExpiredSegments": 0,
+        "ExpiredPending": 0,
+        "FoldedRaw": 0,
+        "FoldedPending": 0,
+        "PreservedPending": 0,
+        "Identities": 0,
+        "Publications": 0,
+        "Receipts": 0,
+        "ResolvedFailures": 0
+      },
+      "failed_cycles": 0
+    },
+    "restored_retention_enabled": false,
+    "scope": "Fresh local sources; real aged deletion/replay/expiry verified in disposable integration schemas."
+  },
+  "live_replay": {
+    "observed_at": "2026-10-05T06:24:16.826390+00:00",
+    "replayed_events": 7,
+    "pages": 1,
+    "raw_horizon_days": 7,
+    "inspected_failures": 0,
+    "parity": "docker compose --profile async run --rm --no-deps --entrypoint /app/check-metrics worker\nAggregate parity passed for 28 runs: cohorts, conversions, requests, histograms and quality"
+  },
+  "final_live_parity_runs": 29,
+  "normal_cleanup_enabled": false,
+  "scope": "Actual aged folding, receipt expiry, retained replay repair and summary expiry verified in disposable PostgreSQL schemas; Docker loop startup/stop verified on fresh unchanged normal sources."
+}

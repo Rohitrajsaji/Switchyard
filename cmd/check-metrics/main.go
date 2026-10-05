@@ -1,4 +1,4 @@
-// check-metrics verifies current retained raw facts against materialized counts.
+// check-metrics verifies raw or retained/historical sources against materialized counts.
 package main
 
 import (

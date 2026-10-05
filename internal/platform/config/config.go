@@ -8,21 +8,45 @@ import (
 )
 
 type Config struct {
-	HTTPAddr     string
-	DatabaseURL  string
-	MaxConns     int32
-	CacheEnabled bool
-	RedisURL     string
+	HTTPAddr               string
+	DatabaseURL            string
+	MaxConns               int32
+	CacheEnabled           bool
+	RedisURL               string
+	WorkerRetentionEnabled bool
+	RawRetentionDays       int
+	SummaryRetentionDays   int
 }
 
 func Load(getenv func(string) string) (Config, error) {
-	c := Config{HTTPAddr: getenv("HTTP_ADDR"), DatabaseURL: getenv("DATABASE_URL"), MaxConns: 10, CacheEnabled: true, RedisURL: getenv("REDIS_URL")}
+	c := Config{HTTPAddr: getenv("HTTP_ADDR"), DatabaseURL: getenv("DATABASE_URL"), MaxConns: 10, CacheEnabled: true, RedisURL: getenv("REDIS_URL"), RawRetentionDays: 7, SummaryRetentionDays: 90}
 	if s := getenv("CACHE_ENABLED"); s != "" {
 		value, err := strconv.ParseBool(s)
 		if err != nil {
 			return Config{}, errors.New("CACHE_ENABLED must be a boolean")
 		}
 		c.CacheEnabled = value
+	}
+	if s := getenv("WORKER_RETENTION_ENABLED"); s != "" {
+		v, err := strconv.ParseBool(s)
+		if err != nil {
+			return Config{}, errors.New("WORKER_RETENTION_ENABLED must be a boolean")
+		}
+		c.WorkerRetentionEnabled = v
+	}
+	for _, setting := range []struct {
+		name     string
+		target   *int
+		min, max int
+	}{
+		{"RAW_RETENTION_DAYS", &c.RawRetentionDays, 2, 7}, {"SUMMARY_RETENTION_DAYS", &c.SummaryRetentionDays, 8, 365}} {
+		if s := getenv(setting.name); s != "" {
+			v, err := strconv.Atoi(s)
+			if err != nil || v < setting.min || v > setting.max {
+				return Config{}, errors.New(setting.name + " is outside its supported retention range")
+			}
+			*setting.target = v
+		}
 	}
 	if c.DatabaseURL == "" {
 		return Config{}, errors.New("DATABASE_URL is required")

@@ -104,3 +104,7 @@ e2e:
 .PHONY: recovery-smoke
 recovery-smoke:
 	python3 scripts/recovery_smoke.py
+
+.PHONY: retention-smoke
+retention-smoke:
+	python3 scripts/retention_smoke.py

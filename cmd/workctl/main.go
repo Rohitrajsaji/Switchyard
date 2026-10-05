@@ -56,7 +56,10 @@ func run() error {
 		return err
 	}
 	defer pool.Close()
-	store := processing.New(pool)
+	store, err := processing.NewWithRawRetention(pool, cfg.RawRetentionDays)
+	if err != nil {
+		return err
+	}
 	operator := processing.Operator{Actor: auth.Actor{ID: *actor}, Reason: *reason}
 	now := time.Now().UTC()
 	var result any

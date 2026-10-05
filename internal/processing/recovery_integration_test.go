@@ -171,3 +171,20 @@ func TestFailureInspectionCursorCrossesUnrelatedScopes(t *testing.T) {
 		t.Fatalf("second=%+v %v", second, err)
 	}
 }
+
+func TestConfiguredRawReplayRejectsIntervalsOutsideCleanupHorizon(t *testing.T) {
+	p, _ := setup(t)
+	now := time.Now().UTC()
+	store, err := NewWithRawRetention(p, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Replay(context.Background(), Operator{}, "project", "dev", "run", now.Add(-3*24*time.Hour), now, now, ""); !errors.Is(err, ErrRecovery) {
+		t.Fatal("replay exceeded configured raw horizon", err)
+	}
+	for _, days := range []int{1, 8} {
+		if _, err := NewWithRawRetention(p, days); !errors.Is(err, ErrRecovery) {
+			t.Fatal("unsafe raw replay horizon")
+		}
+	}
+}

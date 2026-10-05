@@ -55,7 +55,7 @@ type ReplayPage struct {
 // cleared; reconciliation replaces contributions with differences atomically.
 func (s *Store) Replay(ctx context.Context, o Operator, project, env, run string, from, until, now time.Time, cursor string) (ReplayPage, error) {
 	var result ReplayPage
-	if from.Before(now.Add(-ReplayHorizon)) || !from.Before(until) || until.After(now) || len(cursor) > 128 {
+	if from.Before(now.Add(-s.replayHorizon)) || !from.Before(until) || until.After(now) || len(cursor) > 128 {
 		return result, ErrRecovery
 	}
 	tx, err := s.pool.Begin(ctx)

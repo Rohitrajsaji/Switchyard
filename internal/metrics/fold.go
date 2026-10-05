@@ -34,9 +34,18 @@ const resolvedPendingSQL = `SELECT p.event_id,p.received_at,false AS raw FROM me
 // clear receipts, rewrite original facts, or change counters outside normal
 // reconciliation. The worker does not schedule folding until final M7 gates.
 func FoldOne(ctx context.Context, pool *pgxpool.Pool, now time.Time) (FoldOutcome, error) {
+	return FoldWithRetention(ctx, pool, now, 7)
+}
+
+// FoldWithRetention bounds raw retention to 2..7 days: at least the late-event
+// finalization interval and shorter than the eight-day identity/receipt horizon.
+func FoldWithRetention(ctx context.Context, pool *pgxpool.Pool, now time.Time, days int) (FoldOutcome, error) {
 	var result FoldOutcome
+	if days < 2 || days > 7 || now.IsZero() {
+		return result, errors.New("raw retention must be 2..7 days")
+	}
 	now = now.UTC().Truncate(time.Microsecond)
-	cutoff := now.Add(-DefaultRawRetention)
+	cutoff := now.Add(-time.Duration(days) * 24 * time.Hour)
 	tx, err := pool.Begin(ctx)
 	if err != nil {
 		return result, err
@@ -198,7 +207,9 @@ func FoldOne(ctx context.Context, pool *pgxpool.Pool, now time.Time) (FoldOutcom
 	if err != nil {
 		return result, err
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO metric_history_segments VALUES($1,$2,$3,$4,$5,$6)
+	if _, err = tx.Exec(ctx, `INSERT INTO metric_history_segments SELECT $1,$2,$3,$4,$5::date,$6::jsonb
+ WHERE $5::date>=(SELECT (reporting_since AT TIME ZONE 'UTC')::date FROM metric_user_state
+ WHERE project_id=$1 AND environment_id=$2 AND run_id=$3 AND user_id=$4)
  ON CONFLICT(project_id,environment_id,run_id,user_id,receipt_day) DO UPDATE SET contribution=excluded.contribution`, project, env, run, user, day, segmentBody); err != nil {
 		return result, err
 	}

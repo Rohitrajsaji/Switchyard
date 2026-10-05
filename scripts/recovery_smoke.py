@@ -15,14 +15,17 @@ def sql(query):
                     "-U", "switchyard", "-d", "switchyard", "-At", "-c", query])
 
 
-scope = json.loads(sql("""
+settings = json.loads(command(["docker", "compose", "--profile", "async", "config", "--format", "json"]))["services"]["worker"]["environment"]
+raw_days = int(settings.get("RAW_RETENTION_DAYS", 7))
+assert 2 <= raw_days <= 7
+scope = json.loads(sql(f"""
 SELECT row_to_json(s) FROM (
 SELECT r.project_id AS project,r.environment_id AS environment,r.id AS run,u.id AS actor
 FROM experiment_runs r JOIN environments e ON e.id=r.environment_id
 JOIN project_memberships m ON m.project_id=r.project_id
 JOIN users u ON u.id=m.user_id AND u.role='admin' AND u.active
 WHERE e.name<>'production' AND EXISTS(SELECT 1 FROM raw_events f WHERE f.run_id=r.id
-AND f.project_id=r.project_id AND f.received_at>=now()-interval '7 days')
+AND f.project_id=r.project_id AND f.received_at>=now()-interval '{raw_days} days')
 ORDER BY r.created_at,r.id LIMIT 1) s
 """))
 base = ["docker", "compose", "--profile", "async", "run", "--rm", "--no-deps",
@@ -30,7 +33,7 @@ base = ["docker", "compose", "--profile", "async", "run", "--rm", "--no-deps",
         "-project", scope["project"], "-environment", scope["environment"]]
 failures = json.loads(command(base + ["-action", "inspect"]))
 now = datetime.datetime.now(datetime.timezone.utc)
-start = (now - datetime.timedelta(days=7) + datetime.timedelta(minutes=1)).isoformat()
+start = (now - datetime.timedelta(days=raw_days) + datetime.timedelta(minutes=1)).isoformat()
 end = now.isoformat()
 pages, count, cursor = 0, 0, ""
 while True:
@@ -52,7 +55,7 @@ while True:
         break
     assert time.monotonic() < deadline, result.stderr + result.stdout
     time.sleep(0.25)
-report = {"observed_at": now.isoformat(), "replayed_events": count, "pages": pages,
+report = {"observed_at": now.isoformat(), "replayed_events": count, "pages": pages, "raw_horizon_days": raw_days,
           "inspected_failures": len(failures["failures"]), "parity": result.stdout.strip()}
 report_path = pathlib.Path(".cache/recovery-smoke-report.json")
 report_path.parent.mkdir(parents=True, exist_ok=True)
