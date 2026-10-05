@@ -117,28 +117,36 @@ type derived struct {
 }
 
 func (s *Service) Read(ctx context.Context, actor auth.Actor, projectID, runID string) (Results, error) {
-	return s.read(ctx, actor, projectID, runID, false, false)
+	return s.read(ctx, actor, projectID, runID, false, false, true)
 }
 
 // ReadAggregated supplies the counts-only view for independent parity checks.
 func (s *Service) ReadAggregated(ctx context.Context, actor auth.Actor, projectID, runID string) (Results, error) {
-	return s.read(ctx, actor, projectID, runID, true, false)
+	return s.read(ctx, actor, projectID, runID, true, false, true)
 }
 
 // ReadAsync serves durable aggregates with visible backlog. Raw facts are never
 // an automatic fallback: they cannot reconstruct already-retained history.
 func (s *Service) ReadAsync(ctx context.Context, actor auth.Actor, projectID, runID string) (Results, error) {
-	return s.read(ctx, actor, projectID, runID, true, true)
+	return s.read(ctx, actor, projectID, runID, true, true, true)
 }
 
-func (s *Service) read(ctx context.Context, actor auth.Actor, projectID, runID string, aggregated, progress bool) (Results, error) {
+// ReadForPolicy serves durable aggregates to trusted in-process policy code (rollout
+// guardrails) that has no human actor. It is not reachable from any HTTP handler.
+func (s *Service) ReadForPolicy(ctx context.Context, projectID, runID string) (Results, error) {
+	return s.read(ctx, auth.Actor{}, projectID, runID, true, true, false)
+}
+
+func (s *Service) read(ctx context.Context, actor auth.Actor, projectID, runID string, aggregated, progress, authorize bool) (Results, error) {
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return Results{}, err
 	}
 	defer tx.Rollback(context.Background())
-	if err = auth.Authorize(ctx, tx, actor, projectID, "", false); err != nil {
-		return Results{}, err
+	if authorize {
+		if err = auth.Authorize(ctx, tx, actor, projectID, "", false); err != nil {
+			return Results{}, err
+		}
 	}
 	var body []byte
 	var control string

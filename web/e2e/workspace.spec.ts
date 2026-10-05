@@ -135,7 +135,7 @@ test("admin signs in, creates a project, selects environments and reloads the se
     .selectOption({ label: "production" });
   await expect(
     page.getByText(
-      "Production is read-only until reviewed change controls are available.",
+      "Production changes need an approved proposal from a different admin. Direct edits are limited to emergency reductions (kill switch, lower traffic). Use the Reviews tab.",
     ),
   ).toBeVisible();
   await page.getByRole("button", { name: "Flags", exact: true }).click();

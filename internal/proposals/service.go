@@ -16,6 +16,7 @@ import (
 	"switchyard/internal/auth"
 	"switchyard/internal/flags"
 	"switchyard/internal/platform/identity"
+	"switchyard/internal/rollouts"
 	"switchyard/pkg/evaluation"
 )
 
@@ -25,6 +26,8 @@ var (
 	ErrStale = errors.New("proposal is stale")
 	// ErrExpired means the approval outlived ApprovalTTL before it was applied.
 	ErrExpired = errors.New("proposal approval expired")
+	// ErrCooldown means a safety rollback of this flag is still cooling down; re-enabling waits.
+	ErrCooldown = errors.New("flag is cooling down after a safety rollback")
 )
 
 // ApprovalTTL is how long an approval authorizes application (plan default: 24 hours).
@@ -350,6 +353,16 @@ func (s *Service) Apply(ctx context.Context, actor auth.Actor, projectID, id, re
 	}
 	if err = auth.RequireRole(ctx, tx, auth.Actor{ID: *p.ApproverID}, "admin"); err != nil {
 		return Proposal{}, err
+	}
+	// A safety rollback starts a cooldown during which no approval may re-enable the flag.
+	if !p.Configuration.Killed {
+		cooling, err := rollouts.ActiveCooldown(ctx, tx, p.ProjectID, p.EnvironmentID, p.FlagKey, now)
+		if err != nil {
+			return Proposal{}, err
+		}
+		if cooling {
+			return Proposal{}, ErrCooldown
+		}
 	}
 	sp, err := tx.Begin(ctx)
 	if err != nil {

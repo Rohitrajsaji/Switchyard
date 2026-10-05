@@ -17,6 +17,22 @@ const routes: Array<[RegExp, string[]]> = [
   [new RegExp(`^${project}/experiments/${segment}$`), ["GET"]],
   [new RegExp(`^${project}/experiments/${segment}/results$`), ["GET"]],
   [new RegExp(`^${project}/experiments/${segment}/transitions$`), ["POST"]],
+  [new RegExp(`^${project}/experiments/${segment}/traffic$`), ["POST"]],
+  [new RegExp(`^${project}/proposals$`), ["GET", "POST"]],
+  [new RegExp(`^${project}/proposals/${segment}$`), ["GET"]],
+  [
+    new RegExp(`^${project}/proposals/${segment}/(approve|reject|apply)$`),
+    ["POST"],
+  ],
+  [new RegExp(`^${project}/rollouts$`), ["GET", "POST"]],
+  [new RegExp(`^${project}/rollouts/${segment}$`), ["GET"]],
+  [new RegExp(`^${project}/rollouts/${segment}/checks$`), ["GET"]],
+  [
+    new RegExp(
+      `^${project}/rollouts/${segment}/(approve|start|reject|cancel)$`,
+    ),
+    ["POST"],
+  ],
   [/^\/v1\/(evaluate|events)$/, ["POST"]],
 ];
 const maxBody = 1024 * 1024;

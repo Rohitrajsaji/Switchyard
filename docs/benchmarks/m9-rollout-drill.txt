@@ -1,0 +1,5 @@
+# make rollout-drill, Docker ARM64 stack, 2026-10-05 (single run; observations, not capacity claims)
+collecting 1,000 treatment-assigned users ...
+phase 1: healthy metric-driven step applied; traffic 8000 -> 9000
+phase 2: automatic rollback after 20.2s from broken traffic; evaluation returned the safe value 1.12s after the rollback committed
+rollout drill passed: bounded approval, metric promotion, breach rollback, cancellation, evidence, propagation

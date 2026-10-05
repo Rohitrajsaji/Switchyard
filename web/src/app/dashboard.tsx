@@ -6,6 +6,7 @@ import type { Session, Project, Environment } from "@/lib/api";
 import FlagsPanel from "./flags-panel";
 import AuditPanel from "./audit-panel";
 import ExperimentsPanel from "./experiments-panel";
+import ReviewsPanel from "./reviews-panel";
 import DemoPanel from "./demo-panel";
 import type { DemoHandle } from "./demo-panel";
 
@@ -110,9 +111,9 @@ function Workspace({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [refresh, setRefresh] = useState(0);
-  const [tab, setTab] = useState<"flags" | "experiments" | "demo" | "audit">(
-    "flags",
-  );
+  const [tab, setTab] = useState<
+    "flags" | "experiments" | "reviews" | "demo" | "audit"
+  >("flags");
   const demoRef = useRef<DemoHandle | null>(null);
   async function navigate(change: () => void) {
     setBusy(true);
@@ -303,8 +304,9 @@ function Workspace({
           )}
           {environment?.name === "production" && (
             <p className="notice">
-              Production is read-only until reviewed change controls are
-              available.
+              Production changes need an approved proposal from a different
+              admin. Direct edits are limited to emergency reductions (kill
+              switch, lower traffic). Use the Reviews tab.
             </p>
           )}
           {session.user.role === "viewer" && (
@@ -342,6 +344,14 @@ function Workspace({
                 Experiments
               </button>
               <button
+                className={tab === "reviews" ? "active" : ""}
+                aria-current={tab === "reviews" ? "page" : undefined}
+                disabled={busy}
+                onClick={() => void navigate(() => setTab("reviews"))}
+              >
+                Reviews
+              </button>
+              <button
                 className={tab === "demo" ? "active" : ""}
                 aria-current={tab === "demo" ? "page" : undefined}
                 disabled={busy}
@@ -358,6 +368,12 @@ function Workspace({
               />
             ) : tab === "experiments" ? (
               <ExperimentsPanel
+                projectID={projectID}
+                environment={environment}
+                session={session}
+              />
+            ) : tab === "reviews" ? (
+              <ReviewsPanel
                 projectID={projectID}
                 environment={environment}
                 session={session}

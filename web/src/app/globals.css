@@ -518,3 +518,28 @@ dd {
 .marketplace form {
   margin-top: 20px;
 }
+.review {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  background: #fff;
+}
+.review h3 {
+  margin: 0 0 6px;
+}
+.review .columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.review mark {
+  background: #fff3c4;
+  padding: 0 2px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}

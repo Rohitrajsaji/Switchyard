@@ -38,6 +38,13 @@ func run(logger *slog.Logger) error {
 			return errors.New("WORKER_PROCESSING_ENABLED must be a boolean")
 		}
 	}
+	rolloutsEnabled := true
+	if value := os.Getenv("WORKER_ROLLOUTS_ENABLED"); value != "" {
+		rolloutsEnabled, err = strconv.ParseBool(value)
+		if err != nil {
+			return errors.New("WORKER_ROLLOUTS_ENABLED must be a boolean")
+		}
+	}
 	if cfg.WorkerRetentionEnabled && !processingEnabled {
 		return errors.New("retention requires normal worker processing")
 	}
@@ -88,8 +95,12 @@ func run(logger *slog.Logger) error {
 		tasks.Add(1)
 		go func() { defer tasks.Done(); retain(ctx, pool, cfg.RawRetentionDays, cfg.SummaryRetentionDays, logger) }()
 	}
+	if rolloutsEnabled {
+		tasks.Add(1)
+		go func() { defer tasks.Done(); progressRollouts(ctx, pool, logger) }()
+	}
 	store := outbox.New(pool)
-	logger.Info("worker started", "publication_batch_limit", 8, "lease_seconds", 30, "processing_enabled", processingEnabled, "retention_enabled", cfg.WorkerRetentionEnabled, "raw_retention_days", cfg.RawRetentionDays, "summary_retention_days", cfg.SummaryRetentionDays)
+	logger.Info("worker started", "rollouts_enabled", rolloutsEnabled, "publication_batch_limit", 8, "lease_seconds", 30, "processing_enabled", processingEnabled, "retention_enabled", cfg.WorkerRetentionEnabled, "raw_retention_days", cfg.RawRetentionDays, "summary_retention_days", cfg.SummaryRetentionDays)
 	wake := time.NewTimer(0)
 	defer wake.Stop()
 	var total outbox.PublicationStats

@@ -143,3 +143,6 @@ sdk-drill:
 .PHONY: approval-drill
 approval-drill:
 	python3 scripts/approval_drill.py
+.PHONY: rollout-drill
+rollout-drill:
+	python3 scripts/rollout_drill.py

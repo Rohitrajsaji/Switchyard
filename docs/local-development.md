@@ -28,7 +28,7 @@ SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make seed
 
 This local-only example creates `admin@example.test`, `reviewer@example.test`, `developer@example.test` and `viewer@example.test`. Re-running seed does not change existing credentials or duplicate creation audit entries. Login sends `POST /v1/session` with JSON email/password and `Origin: http://localhost:3000`, matching `SWITCHYARD_ORIGIN`. Keep the Set-Cookie cookie and returned `csrf_token`; mutations also send `X-CSRF-Token`. The current-session GET reissues that token after reload. No account is created unless seed is explicitly enabled.
 
-Management endpoints and permission details are in [OpenAPI](../api/openapi.yaml). `make seed` does not automatically grant project memberships: the admin creates a project and grants others membership explicitly. Each project automatically gets development/staging/production. Production configuration is read-only until M9. Application credentials do not grant management access.
+Management endpoints and permission details are in [OpenAPI](../api/openapi.yaml). `make seed` does not automatically grant project memberships: the admin creates a project and grants others membership explicitly. Each project automatically gets development/staging/production. Production flag changes need an approved proposal (see Approvals and rollouts below); application credentials do not grant management access.
 
 Cookie Secure is disabled only for local HTTP. A hosted deployment would need HTTPS, `COOKIE_SECURE=true`, an exact trusted origin, non-demo credentials and a separately approved deployment plan.
 
@@ -110,7 +110,7 @@ Open `http://localhost:3000` and sign in with a seeded account. Use localhost ra
 
 The proxy forwards the existing HttpOnly session cookie and real Origin/CSRF headers. It performs transport restrictions, not domain authorization. Go's per-peer limits currently see the Next process as one peer; the small local demo shares that login/request allowance. A future approved hosted setup would need a deliberate trusted-proxy/client-identity design.
 
-Flag updates send the displayed revision; a stale update returns a conflict and requires reloading. Targeting and rollout editors use explicit JSON examples. Their validation and the experiment freeze rules are enforced in Go. JSON values/target operands retain decimal tokens using the pinned `lossless-json` parser; native browser number conversion cannot silently change a safe value. Preview returns the Go decision and records no exposure. Production configuration controls remain hidden until M9.
+Flag updates send the displayed revision; a stale update returns a conflict and requires reloading. Targeting and rollout editors use explicit JSON examples. Their validation and the experiment freeze rules are enforced in Go. JSON values/target operands retain decimal tokens using the pinned `lossless-json` parser; native browser number conversion cannot silently change a safe value. Preview returns the Go decision and records no exposure. Production edits use proposals in the Reviews tab.
 
 ```sh
 make web-check
@@ -145,7 +145,7 @@ Local ports are configurable with `POSTGRES_PORT`, `API_PORT` and `WEB_PORT`. Wh
 7. Open Experiments for provisional counts, intervals, quality and product-request metrics. Reads refresh every five seconds. Fresh users have zero finalized exposure until the 30-minute attribution window plus 24-hour lateness allowance expires. Empty/insufficient-data statistics stay unavailable; descriptive p-values are not an automatic stopping rule.
 8. Inspect Audit, pause/resume/complete the run with reasons, or use the flag kill switch. The demo key is revoked before ordinary navigation, project/environment changes, or logout. It is never placed in local storage, URLs or rendered output. Browser close/reload revocation is best effort; an interrupted cleanup can leave an application key active. An admin can identify its key ID in creation audit details and revoke it through the existing application-key API. This is a local trusted-operator sample; a public integration uses server-held credentials.
 
-Viewers can inspect flags, previews, runs and results but cannot create runs, transition them or enable a demo key. Production configuration remains read-only until M9. All authorization, experiment policy, historical assignment and event receipt decisions come from Go.
+Viewers can inspect flags, previews, runs and results but cannot create runs, transition them or enable a demo key. Production changes use the Reviews tab. All authorization, experiment policy, historical assignment and event receipt decisions come from Go.
 
 ## M6 cached evaluation
 
@@ -253,3 +253,16 @@ Do not run broker/worker failure drills while the integration suite is using tho
 ### Bounded ingestion trial
 
 Run `SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make ingestion-trial` separately from builds, tests and failure drills. It creates one development project/run, offers a finite thirty-second 1,000-events/sec workload, preserves facts and records `.cache/ingestion-trial-report.json`. A 180-second drain timeout fails the command and does not imply lost events. Observe that same workload without resubmitting it using `SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' python3 scripts/ingestion_trial.py --finish-report .cache/ingestion-trial-report.json`; the follow-up report retains the timeout and verifies final counts, duplicate receipts and parity. Small trials can use `--rate 99 --seconds 2`. The first actual run missed the five-second freshness target; read the benchmark report before making capacity claims.
+
+## Approvals and rollouts (M9)
+
+Production flag changes are proposed (`POST /v1/projects/{project}/proposals`), approved against their exact diff hash by an admin other than the proposer, then applied; an approval expires after 24 hours and a changed base revision makes the proposal stale. The only direct production edits are a kill switch and a lower standalone-rollout traffic. See [ADR 0011](adr/0011-approvals-and-rollouts.md) and the Reviews tab.
+
+Rollout plans (`/v1/projects/{project}/rollouts`) move a running experiment's eligible traffic in approved steps of at most 10 percentage points. The worker checks live plans every ten seconds (`WORKER_ROLLOUTS_ENABLED`, default true). Production experiments cannot yet be created or started (the generic production gate still applies), so plans currently run in development and staging.
+
+```sh
+SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make approval-drill   # proposal policy over HTTP
+SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make rollout-drill    # healthy promotion, then breach rollback (~1 minute)
+```
+
+`make rollout-drill` uses the default guardrails (1,000 eligible requests per evaluated variant, two consecutive breaches). Guardrail thresholds are tunable engineering defaults, not statistically validated limits.

@@ -25,6 +25,7 @@ import (
 	"switchyard/internal/outbox"
 	"switchyard/internal/projects"
 	"switchyard/internal/proposals"
+	"switchyard/internal/rollouts"
 	"switchyard/pkg/snapshot"
 )
 
@@ -87,6 +88,15 @@ func (m *Management) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/projects/{project}/experiments/{run}", m.human(false, m.getExperiment))
 	mux.HandleFunc("GET /v1/projects/{project}/experiments/{run}/results", m.human(false, m.getResults))
 	mux.HandleFunc("POST /v1/projects/{project}/experiments/{run}/transitions", m.human(true, m.transitionExperiment))
+	mux.HandleFunc("POST /v1/projects/{project}/experiments/{run}/traffic", m.human(true, m.setExperimentTraffic))
+	mux.HandleFunc("GET /v1/projects/{project}/rollouts", m.human(false, m.listRollouts))
+	mux.HandleFunc("POST /v1/projects/{project}/rollouts", m.human(true, m.createRollout))
+	mux.HandleFunc("GET /v1/projects/{project}/rollouts/{rollout}", m.human(false, m.getRollout))
+	mux.HandleFunc("GET /v1/projects/{project}/rollouts/{rollout}/checks", m.human(false, m.rolloutChecks))
+	mux.HandleFunc("POST /v1/projects/{project}/rollouts/{rollout}/approve", m.human(true, m.approveRollout))
+	mux.HandleFunc("POST /v1/projects/{project}/rollouts/{rollout}/start", m.human(true, m.startRollout))
+	mux.HandleFunc("POST /v1/projects/{project}/rollouts/{rollout}/reject", m.human(true, m.rejectRollout))
+	mux.HandleFunc("POST /v1/projects/{project}/rollouts/{rollout}/cancel", m.human(true, m.cancelRollout))
 	mux.HandleFunc("GET /v1/projects/{project}/proposals", m.human(false, m.listProposals))
 	mux.HandleFunc("POST /v1/projects/{project}/proposals", m.human(true, m.createProposal))
 	mux.HandleFunc("GET /v1/projects/{project}/proposals/{proposal}", m.human(false, m.getProposal))
@@ -307,11 +317,13 @@ func (m *Management) fail(w http.ResponseWriter, r *http.Request, err error) {
 		status, code = 400, "invalid_input"
 	case errors.Is(err, auth.ErrConflict):
 		status, code = 409, "conflict"
-	case errors.Is(err, proposals.ErrStale):
+	case errors.Is(err, proposals.ErrStale), errors.Is(err, rollouts.ErrStale):
 		status, code = 409, "stale"
-	case errors.Is(err, proposals.ErrExpired):
+	case errors.Is(err, proposals.ErrCooldown):
+		status, code = 409, "cooldown"
+	case errors.Is(err, proposals.ErrExpired), errors.Is(err, rollouts.ErrExpired):
 		status, code = 409, "expired"
-	case errors.Is(err, flags.ErrNotFound), errors.Is(err, experiments.ErrNotFound), errors.Is(err, proposals.ErrNotFound):
+	case errors.Is(err, flags.ErrNotFound), errors.Is(err, experiments.ErrNotFound), errors.Is(err, proposals.ErrNotFound), errors.Is(err, rollouts.ErrNotFound):
 		status, code = 404, "not_found"
 	}
 	if status == 500 {

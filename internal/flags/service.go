@@ -374,3 +374,91 @@ func normalize(c Configuration) (Configuration, error) {
 	}
 	return c, nil
 }
+
+// TrafficChange moves a running experiment's eligible traffic without touching its frozen
+// assignment definition (salts, variants, weights). Raising traffic keeps every previously
+// eligible user's variant, lowering it removes users above the boundary without reshuffling.
+type TrafficChange struct {
+	EnvironmentID    string
+	Key              string
+	ExpectedRevision int64
+	TrafficBP        int
+	Reason           string
+	Source           string
+	Details          map[string]any
+}
+
+// ApplyTraffic validates and persists a traffic change inside the caller's transaction. The
+// caller owns authorization, policy, commit and rollback. It fails with ErrConflict when the
+// revision moved, the flag is killed, or no experiment is attached.
+func (s *Service) ApplyTraffic(ctx context.Context, tx pgx.Tx, actor auth.Actor, projectID string, ch TrafficChange, requestID string) (evaluation.Definition, error) {
+	if len(ch.Reason) < 1 || len(ch.Reason) > 512 || ch.TrafficBP < 0 || ch.TrafficBP > 10000 {
+		return evaluation.Definition{}, auth.ErrInvalid
+	}
+	d, err := LockCurrent(ctx, tx, projectID, ch.EnvironmentID, ch.Key)
+	if err != nil {
+		return evaluation.Definition{}, err
+	}
+	if d.Revision != ch.ExpectedRevision || d.Killed || d.Experiment == nil {
+		return evaluation.Definition{}, auth.ErrConflict
+	}
+	before := d.Revision
+	experiment := *d.Experiment
+	previous := experiment.TrafficBP
+	experiment.TrafficBP = ch.TrafficBP
+	d.Experiment = &experiment
+	d.Revision++
+	if err = AppendRevision(ctx, tx, actor, &d); err != nil {
+		return evaluation.Definition{}, err
+	}
+	source := ch.Source
+	if source == "" {
+		source = "human"
+	}
+	details := map[string]any{"flag_key": ch.Key, "run_id": experiment.RunID, "from_traffic_bp": previous, "to_traffic_bp": ch.TrafficBP}
+	for k, v := range ch.Details {
+		details[k] = v
+	}
+	body, err := json.Marshal(details)
+	if err != nil {
+		return evaluation.Definition{}, err
+	}
+	if err = audit.Record(ctx, tx, audit.Entry{ActorID: actor.ID, Source: source, ProjectID: projectID, EnvironmentID: ch.EnvironmentID, Action: "flag.traffic_changed", RequestID: requestID, Reason: ch.Reason, BeforeRevision: &before, AfterRevision: &d.Revision, Details: body}); err != nil {
+		return evaluation.Definition{}, err
+	}
+	return d, nil
+}
+
+// Kill appends a killed revision (the emergency safe-value disable) inside the caller's
+// transaction, preserving attached experiment metadata. It is a no-op error-free result when
+// the flag is already killed: the returned bool reports whether a revision was written.
+func (s *Service) Kill(ctx context.Context, tx pgx.Tx, actor auth.Actor, projectID, environmentID, key, reason, source, requestID string, details map[string]any) (evaluation.Definition, bool, error) {
+	if len(reason) < 1 || len(reason) > 512 {
+		return evaluation.Definition{}, false, auth.ErrInvalid
+	}
+	d, err := LockCurrent(ctx, tx, projectID, environmentID, key)
+	if err != nil {
+		return evaluation.Definition{}, false, err
+	}
+	if d.Killed {
+		return d, false, nil
+	}
+	before := d.Revision
+	d.Killed = true
+	d.Revision++
+	if err = AppendRevision(ctx, tx, actor, &d); err != nil {
+		return evaluation.Definition{}, false, err
+	}
+	all := map[string]any{"flag_key": key, "policy": "emergency_exempt"}
+	for k, v := range details {
+		all[k] = v
+	}
+	body, err := json.Marshal(all)
+	if err != nil {
+		return evaluation.Definition{}, false, err
+	}
+	if err = audit.Record(ctx, tx, audit.Entry{ActorID: actor.ID, Source: source, ProjectID: projectID, EnvironmentID: environmentID, Action: "flag.updated", RequestID: requestID, Reason: reason, BeforeRevision: &before, AfterRevision: &d.Revision, Details: body}); err != nil {
+		return evaluation.Definition{}, false, err
+	}
+	return d, true, nil
+}

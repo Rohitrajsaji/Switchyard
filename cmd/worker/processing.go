@@ -13,6 +13,7 @@ import (
 	"switchyard/internal/metrics"
 	"switchyard/internal/outbox"
 	"switchyard/internal/processing"
+	"switchyard/internal/rollouts"
 	"switchyard/pkg/snapshot"
 )
 
@@ -121,6 +122,36 @@ func reconcile(ctx context.Context, pool *pgxpool.Pool, logger *slog.Logger) {
 			if !pause(ctx, 250*time.Millisecond) {
 				return
 			}
+		}
+	}
+}
+
+// progressRollouts runs the approved-plan engine every ten seconds (the plan's check cadence).
+// One fixed loop with bounded cycles: a failing plan never blocks the others, and cancellation
+// stops the loop between cycles.
+func progressRollouts(ctx context.Context, pool *pgxpool.Pool, logger *slog.Logger) {
+	service := rollouts.New(pool, time.Now)
+	total := map[string]int{}
+	lastReport := time.Now()
+	for ctx.Err() == nil {
+		cycle, cancel := context.WithTimeout(ctx, 8*time.Second)
+		counts, err := service.RunOnce(cycle)
+		cancel()
+		for outcome, n := range counts {
+			if outcome != "inactive" && outcome != "waiting_schedule" && outcome != "waiting_start" {
+				logger.Info("rollout outcome", "outcome", outcome, "plans", n)
+			}
+			total[outcome] += n
+		}
+		if err != nil && ctx.Err() == nil {
+			logger.Warn("rollout cycle had failures", "failure", "database_unavailable_or_plan_error")
+		}
+		if time.Since(lastReport) >= 30*time.Second {
+			logger.Info("rollout statistics", "statistics", total)
+			lastReport = time.Now()
+		}
+		if !pause(ctx, 10*time.Second) {
+			return
 		}
 	}
 }
