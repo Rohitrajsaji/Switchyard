@@ -519,6 +519,9 @@ paths:
         and equivalent decimal numbers do not change identity. Events more than 24 hours
         late or 5 minutes in the future are stored in quarantine, as are assignment errors
         and nonrandomized decisions. Unknown run IDs and malformed schemas reject the batch.
+        When no original receipt remains, events older than seven days reject the batch
+        instead of creating a new fact. Original retained identity receipts are returned
+        unchanged on duplicates; changing a known expired identity's timestamp is a conflict.
         Historical flag revision determines assignment, rather than current configuration.
         Outcomes may arrive before their referenced exposure; accepted does not mean counted
         as a conversion. Attribution waits for a valid matching exposure.

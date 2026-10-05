@@ -21,6 +21,7 @@ import (
 const MaxBatchSize = 100
 const LateAllowance = 24 * time.Hour
 const FutureAllowance = 5 * time.Minute
+const MaxReplayAge = 7 * 24 * time.Hour
 
 var eventIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,128}$`)
 
@@ -168,7 +169,7 @@ func (s *Service) Ingest(ctx context.Context, token string, in Batch) ([]Receipt
 		e := p.event
 		var equal bool
 		receipt := Receipt{EventID: e.ID}
-		err = tx.QueryRow(ctx, `SELECT payload=$4::jsonb,status,quarantine_reason FROM raw_events WHERE project_id=$1 AND environment_id=$2 AND event_id=$3`, in.ProjectID, in.EnvironmentID, e.ID, p.body).Scan(&equal, &receipt.Status, &receipt.Reason)
+		err = tx.QueryRow(ctx, receiptSQL, in.ProjectID, in.EnvironmentID, e.ID, p.body).Scan(&equal, &receipt.Status, &receipt.Reason)
 		if err == nil {
 			if !equal {
 				return nil, auth.ErrConflict
@@ -179,6 +180,19 @@ func (s *Service) Ingest(ctx context.Context, token string, in Batch) ([]Receipt
 		}
 		if !errors.Is(err, pgx.ErrNoRows) {
 			return nil, err
+		}
+		// Once the original receipt is unavailable, an unsupported old replay
+		// cannot create a new fact/intent after deduplication state expires.
+		if e.OccurredAt.Before(now.Add(-MaxReplayAge)) {
+			return nil, auth.ErrInvalid
+		}
+		var known bool
+		if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM outbox WHERE kind='event' AND project_id=$1 AND environment_id=$2 AND object_id=$3)
+ OR EXISTS(SELECT 1 FROM metric_event_references WHERE project_id=$1 AND environment_id=$2 AND event_id=$3)`, in.ProjectID, in.EnvironmentID, e.ID).Scan(&known); err != nil {
+			return nil, err
+		}
+		if known {
+			return nil, auth.ErrConflict
 		}
 		cacheKey := e.RunID + ":" + strconv.FormatInt(e.Revision, 10)
 		d, ok := definitions[cacheKey]
@@ -218,7 +232,7 @@ func (s *Service) Ingest(ctx context.Context, token string, in Batch) ([]Receipt
 			return nil, err
 		}
 		if tag.RowsAffected() == 0 {
-			if err = tx.QueryRow(ctx, `SELECT payload=$4::jsonb,status,quarantine_reason FROM raw_events WHERE project_id=$1 AND environment_id=$2 AND event_id=$3`, in.ProjectID, in.EnvironmentID, e.ID, p.body).Scan(&equal, &receipt.Status, &receipt.Reason); err != nil {
+			if err = tx.QueryRow(ctx, receiptSQL, in.ProjectID, in.EnvironmentID, e.ID, p.body).Scan(&equal, &receipt.Status, &receipt.Reason); err != nil {
 				return nil, err
 			}
 			if !equal {

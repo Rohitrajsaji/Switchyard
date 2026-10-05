@@ -207,3 +207,9 @@ These are row admission limits, not a disk-space promise or throughput result. T
 ### Historical attribution foundation
 
 Migration 0011 adds a historical contribution field, archived user anchors and compact event-reference projections. Normal reconciliation supports these alongside retained raw facts, preserving one cohort/conversion when a user returns and preserving reference validation after deletion. No normal cleanup command populates this state or deletes raw events yet; deletion parity is verified only in disposable test schemas. Unresolved historical future/pending counts reject reconciliation and keep the due job, so cleanup must address unresolved outcomes before folding them. Automatic retention/identity expiry and post-retention replay verification remain pending. See [ADR 0009](adr/0009-historical-metric-contributions.md).
+
+### Identity after raw folding
+
+Migration 0012 provides a retained identity archive for the forthcoming folding worker. During the eight-day receipt interval, ingestion returns the original accepted/quarantined receipt even after the raw fact was folded; equivalent decimals/timestamp zones remain duplicate identities. Payload changes return conflict. Once the receipt is unavailable, an original occurrence older than seven days is rejected rather than inserted again, and an identity still known to publication/reference state cannot be reused with a fresh timestamp.
+
+Normalized identity payload is retained for eight days to support exact semantic equality, one day beyond the default analytical raw window. Expiry is exactly 192 hours from original receipt, independent of daylight-saving/calendar arithmetic. Preservation and pruning primitives are bounded but are not automatically scheduled yet; normal raw cleanup remains disabled.
