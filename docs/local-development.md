@@ -146,3 +146,14 @@ Local ports are configurable with `POSTGRES_PORT`, `API_PORT` and `WEB_PORT`. Wh
 8. Inspect Audit, pause/resume/complete the run with reasons, or use the flag kill switch. The demo key is revoked before ordinary navigation, project/environment changes, or logout. It is never placed in local storage, URLs or rendered output. Browser close/reload revocation is best effort; an interrupted cleanup can leave an application key active. An admin can identify its key ID in creation audit details and revoke it through the existing application-key API. This is a local trusted-operator sample; a public integration uses server-held credentials.
 
 Viewers can inspect flags, previews, runs and results but cannot create runs, transition them or enable a demo key. Production configuration remains read-only until M9. All authorization, experiment policy, historical assignment and event receipt decisions come from Go.
+
+## M6 cache construction checkpoint
+
+Redis storage and versioned snapshots are available for integration checks. The API has not switched to cached evaluation yet; the refresh coordinator and outage gates are still being built. Start the disposable local cache explicitly:
+
+```sh
+docker compose --profile cache up --no-build -d --wait redis
+TEST_REDIS_URL='redis://127.0.0.1:63799/0' make cache-storage-check
+```
+
+This uses the pinned Redis 8.10.2 multi-architecture image, a non-root Redis runtime, a 128 MiB container ceiling and 96 MiB eviction budget. No Redis data volume or persistence is required. Integration checks use a unique test prefix and delete only their own keys; they never flush a database. Stop it with `docker compose --profile cache stop redis`. The normal MVP `make up` does not start Redis at this checkpoint. Snapshot rules and the remaining M6 work are described in ADR 0006.

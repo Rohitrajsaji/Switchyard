@@ -1,5 +1,20 @@
 name: switchyard
 services:
+  redis:
+    # Opt in while M6 is being built; the MVP remains a three-service stack.
+    profiles: [cache]
+    image: redis:8.10.2@sha256:6f81e8915c60b065a524e6967e0ad1c639ba6efa84d669f823683ea04d9150ee
+    user: redis:redis
+    command: [redis-server, --save, "", --appendonly, "no", --maxmemory, 96mb, --maxmemory-policy, allkeys-lru]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-63799}:6379"
+    mem_limit: 128m
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
   postgres:
     image: postgres:17.11-bookworm
     environment:

@@ -44,6 +44,10 @@ seed-demo: seed
 	python3 scripts/seed_demo.py
 mvp-drill:
 	python3 scripts/mvp_drill.py
+.PHONY: cache-storage-check
+cache-storage-check:
+	@test -n "$(TEST_REDIS_URL)" || (echo 'Set TEST_REDIS_URL to the local test Redis service'; exit 1)
+	go test -race -tags=integration -count=1 ./internal/cache ./pkg/snapshot
 management-smoke:
 	python3 scripts/management_smoke.py
 fuzz-smoke:

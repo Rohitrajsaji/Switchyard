@@ -9,7 +9,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
 | M4 Experiments and measurement | Complete | 5 Oct 2026: lifecycle/ingestion/SQL attribution/statistics gates, race-enabled PostgreSQL fixtures, final Docker measurement journey and API contracts passed. |
 | M5 Dashboard / MVP | Complete | 5 Oct 2026: Go/check/race/API/frontend checks, race-enabled PostgreSQL integration, ARM64 dashboard image, fresh-volume seed idempotence, all production browser journeys and restart persistence passed; local `v0.1.0-mvp` release. |
-| M6 Redis snapshots | Pending | — |
+| M6 Redis snapshots | In progress | Versioned immutable snapshots and monotonic Redis storage verified; bounded coordinator/API integration and outage gates pending. |
 | M7 Durable worker | Pending | — |
 | M8 gRPC / Go SDK | Pending | — |
 | M9 Rollout / approval / safety | Pending | — |
@@ -53,7 +53,13 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M6: versioned compiled snapshots, bounded in-memory refresh and Redis reconciliation. No V2 milestones are complete yet.
+M6: bounded in-memory refresh coordinator, PostgreSQL repair, API integration, counters and live cache/outage gates. No V2 milestones are complete yet.
+
+## M6 verified checkpoints
+
+- Shared `pkg/snapshot` version-1 envelopes retain PostgreSQL verification time across serialization/cache relay. Expiry is strict at thirty seconds, refresh due at two seconds, and future timestamps fail closed. Compilation owns input bytes and returned values/JSON cannot mutate concurrent readers.
+- Redis storage uses an atomic script, bounded key scopes, positive int64 revision strings and remaining-age TTL. Delayed old writers cannot replace a newer kill switch; identical revisions require the same configuration/flag identity and a newer authoritative proof. Redis reset loses its version fence, so PostgreSQL reconciliation and snapshot age remain necessary.
+- Real Redis 8.10.2 integration passed with race detection: concurrent delayed writes, revisions above 2^53 and maximum int64, equal-version mutation rejection, cross-environment payload rejection, corrupt payload rejection, deletion repair and no freshness/TTL renewal from reads. Tests delete only their own unique keys. Snapshot unit/race tests and `make check race api-check` passed. The API remains on its verified direct-PostgreSQL evaluation path; this is a storage checkpoint, not complete M6 or a cache performance claim.
 
 ## M5 verified checkpoints
 
