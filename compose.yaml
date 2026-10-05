@@ -53,6 +53,8 @@ services:
       DB_MAX_CONNS: "10"
       SWITCHYARD_ORIGIN: ${SWITCHYARD_ORIGIN:-http://localhost:3000}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      CACHE_ENABLED: ${CACHE_ENABLED:-true}
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     depends_on:

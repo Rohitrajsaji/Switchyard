@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Switchyard API
-  version: 0.0.4
+  version: 0.1.1
   description: >-
     Modular Go experimentation platform. Management requires human sessions.
     Production configuration is read-only until the approval milestone.
@@ -347,6 +347,12 @@ paths:
         No exposure or per-user database write. A known flag requires fallback
         to match its emergency safe value; unknown flags return the declared
         typed fallback. decision_id is correlation context, not proof of exposure.
+        Application configuration reads use immutable snapshots with two-second
+        re-verification and a strict thirty-second maximum authoritative age.
+        Authorization and key revocation remain PostgreSQL-backed per request.
+        Configuration expiry/outage returns 503 with the declared safe fallback,
+        an explicit degraded reason, no experiment assignment and Retry-After.
+        Human preview reads directly from PostgreSQL.
       requestBody:
         required: true
         content:
@@ -361,6 +367,19 @@ paths:
         '400': {$ref: '#/components/responses/Invalid'}
         '401': {$ref: '#/components/responses/Unauthorized'}
         '403': {$ref: '#/components/responses/Forbidden'}
+        '503':
+          description: Configuration refresh unavailable or saturated; typed safe fallback is included
+          headers:
+            Retry-After: {schema: {type: integer}, description: Suggested retry delay in seconds}
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EvaluationResult'
+                  - type: object
+                    required: [error]
+                    properties:
+                      error: {type: string, enum: [configuration_unavailable]}
   /v1/projects/{project}/experiments:
     parameters:
       - $ref: '#/components/parameters/Project'
@@ -862,7 +881,7 @@ components:
       required: [value, reason, revision, decision_id]
       properties:
         value: {$ref: '#/components/schemas/FlagValue'}
-        reason: {type: string, enum: [kill_switch, targeting, experiment, rollout, default, flag_not_found]}
+        reason: {type: string, enum: [kill_switch, targeting, experiment, rollout, default, flag_not_found, cache_expired, cache_unavailable]}
         revision: {type: integer, minimum: 0}
         decision_id: {type: string}
         run_id: {type: string}

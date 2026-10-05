@@ -16,7 +16,7 @@ If it already exists, use it without recreating it. Integration tests require a 
 
 Read-header/read/write/idle timeouts and body/header limits bound HTTP resource use. SIGTERM/SIGINT drains requests for up to ten seconds before force-close, then closes the pool. Compose normal shutdown preserves named volumes.
 
-The MVP runs three services: PostgreSQL (768 MiB limit), API (256 MiB) and dashboard (384 MiB, with a 256 MiB Node heap limit). These are runtime ceilings, not reserved memory or total Docker Desktop usage. Image builds can use more memory. Redis, NATS, SDKs and optional telemetry arrive at their V2 milestones.
+The MVP runs three services; current M6 setup also starts disposable Redis (128 MiB): PostgreSQL (768 MiB limit), API (256 MiB) and dashboard (384 MiB, with a 256 MiB Node heap limit). These are runtime ceilings, not reserved memory or total Docker Desktop usage. Image builds can use more memory. NATS, SDKs and optional telemetry follow at later V2 milestones.
 
 ## M2 accounts and management API
 
@@ -147,13 +147,18 @@ Local ports are configurable with `POSTGRES_PORT`, `API_PORT` and `WEB_PORT`. Wh
 
 Viewers can inspect flags, previews, runs and results but cannot create runs, transition them or enable a demo key. Production configuration remains read-only until M9. All authorization, experiment policy, historical assignment and event receipt decisions come from Go.
 
-## M6 cache construction checkpoint
+## M6 cached evaluation
 
-Redis storage and versioned snapshots are available for integration checks. The API has not switched to cached evaluation yet; the refresh coordinator and outage gates are still being built. Start the disposable local cache explicitly:
+`make up` enables the Redis `cache` profile at localhost:63799. Redis 8.10.2 runs non-root with a 128 MiB container ceiling, a 96 MiB eviction budget and no persistence. PostgreSQL owns configuration and authorization. API readiness does not depend on Redis.
 
 ```sh
-docker compose --profile cache up --no-build -d --wait redis
 TEST_REDIS_URL='redis://127.0.0.1:63799/0' make cache-storage-check
+TEST_DATABASE_URL='postgres://switchyard:switchyard-local-only@127.0.0.1:54329/switchyard_test?sslmode=disable' TEST_REDIS_URL='redis://127.0.0.1:63799/0' make integration
+SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make cache-drill
 ```
 
-This uses the pinned Redis 8.10.2 multi-architecture image, a non-root Redis runtime, a 128 MiB container ceiling and 96 MiB eviction budget. No Redis data volume or persistence is required. Integration checks use a unique test prefix and delete only their own keys; they never flush a database. Stop it with `docker compose --profile cache stop redis`. The normal MVP `make up` does not start Redis at this checkpoint. Snapshot rules and the remaining M6 work are described in ADR 0006.
+Tests use their own Redis keys and isolated PostgreSQL schemas; they never flush Redis. Run the drill separately from integration tests because it temporarily stops Redis and locks development configuration reads. It creates a temporary observer API, preserves its project/audits, revokes its key, restores Redis/releases the lock and stops only its observer. Its ignored `.cache/cache-drill-report.json` records timings and sampled counters.
+
+Application evaluations share immutable snapshots, refresh active flags every two seconds and expire thirty seconds after the authoritative read began. Redis relay never renews age. Configuration expiry returns the safe fallback with HTTP 503; callers must handle that response. Per-request key checks remain in PostgreSQL, so complete database outage prevents authorization. Dashboard previews read PostgreSQL directly.
+
+For host development set `REDIS_URL=redis://127.0.0.1:63799/0`; omit it for bounded PostgreSQL-only loading. `CACHE_ENABLED=false` restores direct PostgreSQL evaluation for diagnosis. See [ADR 0006](adr/0006-configuration-snapshots.md). Counters are logged every thirty seconds; metrics export follows in M10.

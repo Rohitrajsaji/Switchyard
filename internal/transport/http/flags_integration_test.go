@@ -9,9 +9,12 @@ import (
 	"log/slog"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"switchyard/internal/auth"
+	"switchyard/internal/cache"
 	"switchyard/internal/flags"
 	"switchyard/internal/platform/postgres"
 	"switchyard/internal/projects"
@@ -19,6 +22,7 @@ import (
 	httpapi "switchyard/internal/transport/http"
 	"switchyard/migrations"
 	"switchyard/pkg/evaluation"
+	"switchyard/pkg/snapshot"
 )
 
 func TestEvaluationHTTPScopesSafeFallbackAndNoWrite(t *testing.T) {
@@ -54,7 +58,24 @@ func TestEvaluationHTTPScopesSafeFallbackAndNoWrite(t *testing.T) {
 		t.Fatal(err)
 	}
 	logger := slog.New(slog.NewJSONHandler(io.Discard, nil))
-	m, err := httpapi.NewManagement(pool, logger, "http://localhost:3000", false)
+	baseTime := time.Now()
+	var elapsed atomic.Int64
+	var unavailable atomic.Bool
+	options := cache.Defaults()
+	options.Now = func() time.Time { return baseTime.Add(time.Duration(elapsed.Load())) }
+	options.PollInterval = 0
+	pgSource := cache.PostgresSource(pool)
+	coordinator, err := cache.NewCoordinator(ctx, func(ctx context.Context, key snapshot.Key) (evaluation.Definition, error) {
+		if unavailable.Load() {
+			return evaluation.Definition{}, cache.ErrUnavailable
+		}
+		return pgSource(ctx, key)
+	}, nil, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(coordinator.Close)
+	m, err := httpapi.NewManagement(pool, logger, "http://localhost:3000", false, coordinator)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,6 +109,9 @@ func TestEvaluationHTTPScopesSafeFallbackAndNoWrite(t *testing.T) {
 			t.Fatalf("bad result %+v", response)
 		}
 	}
+	if coordinator.Stats().SourceReads != 1 || coordinator.Stats().MemoryHits < 19 {
+		t.Fatalf("configuration read amplification: %+v", coordinator.Stats())
+	}
 	if w := evaluate(dev, "listing", "true", k.Token); w.Code != 400 {
 		t.Fatal("unsafe caller fallback accepted")
 	}
@@ -103,5 +127,23 @@ func TestEvaluationHTTPScopesSafeFallbackAndNoWrite(t *testing.T) {
 	var after int
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_entries`).Scan(&after); err != nil || before != after {
 		t.Fatal("evaluation wrote audit/state")
+	}
+	// Configuration outage is injected independently of real PostgreSQL-backed
+	// authorization, so expiry cannot be hidden by an earlier auth failure.
+	unavailable.Store(true)
+	elapsed.Store(int64(30 * time.Second))
+	w := evaluate(dev, "listing", "false", k.Token)
+	if w.Code != 503 || w.Header().Get("Cache-Control") != "no-store" || w.Header().Get("Retry-After") != "1" ||
+		!strings.Contains(w.Body.String(), `"reason":"cache_expired"`) || !strings.Contains(w.Body.String(), `"data":false`) {
+		t.Fatalf("expired HTTP fallback=%d %s", w.Code, w.Body.String())
+	}
+	if w := evaluate(dev, "listing", "true", k.Token); w.Code != 400 {
+		t.Fatal("known unsafe fallback accepted during outage")
+	}
+	if err := ps.RevokeKey(ctx, actor, p.ID, k.ID, "revoke"); err != nil {
+		t.Fatal(err)
+	}
+	if w := evaluate(dev, "listing", "false", k.Token); w.Code != 401 {
+		t.Fatal("configuration cache bypassed key revocation")
 	}
 }

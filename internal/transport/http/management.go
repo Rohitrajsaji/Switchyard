@@ -18,11 +18,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"switchyard/internal/audit"
 	"switchyard/internal/auth"
+	"switchyard/internal/cache"
 	"switchyard/internal/experiments"
 	"switchyard/internal/flags"
 	"switchyard/internal/platform/identity"
 	"switchyard/internal/projects"
 	"switchyard/pkg/evaluation"
+	"switchyard/pkg/snapshot"
 )
 
 const SessionCookie = "switchyard_session"
@@ -36,9 +38,13 @@ type Management struct {
 	secure       bool
 	loginLimit   *Limiter
 	requestLimit *Limiter
+	snapshots    *cache.Coordinator
 }
 
-func NewManagement(pool *pgxpool.Pool, logger *slog.Logger, origin string, secure bool) (*Management, error) {
+func NewManagement(pool *pgxpool.Pool, logger *slog.Logger, origin string, secure bool, snapshots ...*cache.Coordinator) (*Management, error) {
+	if len(snapshots) > 1 {
+		return nil, errors.New("at most one evaluation cache may be configured")
+	}
 	u, err := url.Parse(origin)
 	if err != nil || u.Host == "" || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || (u.Scheme != "http" && u.Scheme != "https") {
 		return nil, errors.New("SWITCHYARD_ORIGIN must be an HTTP(S) origin")
@@ -47,7 +53,11 @@ func NewManagement(pool *pgxpool.Pool, logger *slog.Logger, origin string, secur
 	if err != nil {
 		return nil, err
 	}
-	return &Management{auth: a, projects: projects.New(pool), pool: pool, logger: logger, origin: origin, secure: secure, loginLimit: NewLimiter(10, time.Minute, time.Now), requestLimit: NewLimiter(600, time.Minute, time.Now)}, nil
+	m := &Management{auth: a, projects: projects.New(pool), pool: pool, logger: logger, origin: origin, secure: secure, loginLimit: NewLimiter(10, time.Minute, time.Now), requestLimit: NewLimiter(600, time.Minute, time.Now)}
+	if len(snapshots) == 1 {
+		m.snapshots = snapshots[0]
+	}
+	return m, nil
 }
 
 func (m *Management) Register(mux *http.ServeMux) {
@@ -313,6 +323,7 @@ func (m *Management) createFlag(w http.ResponseWriter, r *http.Request, actor au
 		m.fail(w, r, err)
 		return
 	}
+	m.invalidate(d.ProjectID, d.EnvironmentID, d.Key)
 	JSON(w, 201, d)
 }
 func (m *Management) updateFlag(w http.ResponseWriter, r *http.Request, actor auth.Actor) {
@@ -326,6 +337,7 @@ func (m *Management) updateFlag(w http.ResponseWriter, r *http.Request, actor au
 		m.fail(w, r, err)
 		return
 	}
+	m.invalidate(d.ProjectID, d.EnvironmentID, d.Key)
 	JSON(w, 200, d)
 }
 func (m *Management) getFlag(w http.ResponseWriter, r *http.Request, actor auth.Actor) {
@@ -370,7 +382,34 @@ func (m *Management) evaluate(w http.ResponseWriter, r *http.Request) {
 		m.fail(w, r, err)
 		return
 	}
+	if m.snapshots != nil {
+		m.cachedEvaluateInput(w, r, in)
+		return
+	}
 	m.evaluateInput(w, r, in)
+}
+func (m *Management) invalidate(projectID, environmentID, key string) {
+	if m.snapshots != nil {
+		m.snapshots.Invalidate(snapshot.Key{ProjectID: projectID, EnvironmentID: environmentID, FlagKey: key})
+	}
+}
+func (m *Management) cachedEvaluateInput(w http.ResponseWriter, r *http.Request, in evaluationInput) {
+	w.Header().Set("Cache-Control", "no-store")
+	result, err := m.snapshots.Evaluate(r.Context(), snapshot.Key{ProjectID: in.ProjectID, EnvironmentID: in.EnvironmentID, FlagKey: in.Key}, in.UserID, in.Attributes, in.Fallback)
+	if errors.Is(err, cache.ErrInvalidFallback) || errors.Is(err, snapshot.ErrInvalid) {
+		m.fail(w, r, auth.ErrInvalid)
+		return
+	}
+	response := evaluationResponse{Result: result, DecisionID: identity.New("dec_")}
+	if err != nil {
+		w.Header().Set("Retry-After", "1")
+		JSON(w, 503, struct {
+			evaluationResponse
+			Error string `json:"error"`
+		}{response, "configuration_unavailable"})
+		return
+	}
+	JSON(w, 200, response)
 }
 func (m *Management) previewFlag(w http.ResponseWriter, r *http.Request, actor auth.Actor) {
 	var in evaluationInput

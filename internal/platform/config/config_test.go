@@ -16,6 +16,7 @@ func TestLoad(t *testing.T) {
 		{"valid", map[string]string{"DATABASE_URL": "postgres://localhost/switchyard"}, false},
 		{"invalid pool", map[string]string{"DATABASE_URL": "postgres://localhost/switchyard", "DB_MAX_CONNS": "0"}, true},
 		{"invalid address", map[string]string{"DATABASE_URL": "postgres://localhost/switchyard", "HTTP_ADDR": "bad"}, true},
+		{"invalid cache", map[string]string{"DATABASE_URL": "postgres://localhost/switchyard", "CACHE_ENABLED": "maybe"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

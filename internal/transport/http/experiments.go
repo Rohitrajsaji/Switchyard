@@ -46,5 +46,6 @@ func (m *Management) transitionExperiment(w http.ResponseWriter, r *http.Request
 		m.fail(w, r, err)
 		return
 	}
+	m.invalidate(run.Definition.ProjectID, run.Definition.EnvironmentID, run.Definition.Key)
 	JSON(w, 200, run)
 }

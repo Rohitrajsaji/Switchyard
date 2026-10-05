@@ -105,6 +105,10 @@ func (s *Snapshot) VerifiedAt() time.Time        { return s.verifiedAt }
 func (s *Snapshot) FlagID() string               { return s.flagID }
 func (s *Snapshot) MarshalJSON() ([]byte, error) { return bytes.Clone(s.wire), nil }
 func (s *Snapshot) DefinitionJSON() []byte       { return bytes.Clone(s.definition) }
+
+// Weight bounds admission by a conservative payload accounting estimate, not a
+// promise about Go allocator RSS. The container remains the hard process limit.
+func (s *Snapshot) Weight() int64 { return int64(len(s.wire))*8 + 2048 }
 func (s *Snapshot) Safe() evaluation.Value {
 	return evaluation.Value{Type: s.safe.Type, Data: bytes.Clone(s.safe.Data)}
 }

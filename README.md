@@ -6,7 +6,7 @@ Implementation follows [the approved plan](docs/implementation-plan.md) in miles
 
 ## Local setup
 
-Requires Docker Desktop with Compose, Make and Python 3. Images support Apple Silicon. Start the API, PostgreSQL and dashboard:
+Requires Docker Desktop with Compose, Make and Python 3. Images support Apple Silicon. Start the API, PostgreSQL, Redis and dashboard:
 
 ```sh
 make up
@@ -23,11 +23,11 @@ For host Go development, export `DATABASE_URL` from `.env`, then `make migrate` 
 ```sh
 make check
 make race
-TEST_DATABASE_URL='postgres://switchyard:switchyard-local-only@127.0.0.1:54329/switchyard_test?sslmode=disable' make integration
+TEST_DATABASE_URL='postgres://switchyard:switchyard-local-only@127.0.0.1:54329/switchyard_test?sslmode=disable' TEST_REDIS_URL='redis://127.0.0.1:63799/0' make integration
 ```
 
 Integration tests require an isolated test database and create/drop their own schema. See [local development](docs/local-development.md). Local evaluator microbenchmarks are recorded in [the benchmark report](docs/benchmark-report.md); end-to-end load results remain unmeasured.
 
-Login, projects/environments, boolean/JSON flags, preview, kill, audit, A/B lifecycle/results and a listing demo comprise the MVP. Production configuration stays read-only until M9. Redis, durable workers, SDKs, approved rollouts, telemetry/load testing and the governed agent follow at their V2 milestones.
+Login, projects/environments, boolean/JSON flags, preview, kill, audit, A/B lifecycle/results and a listing demo comprise the MVP. Production configuration stays read-only until M9. M6 adds bounded snapshots and disposable Redis with strict expiry and PostgreSQL repair. Durable workers, SDKs, approved rollouts, telemetry/load testing and the governed agent follow at later V2 milestones.
 
 For host dashboard development with Node 22.23.2, stop the Docker dashboard (`docker compose stop web`), then run `make web-install web-dev`. See [local development](docs/local-development.md) for browser tests and the fresh-volume MVP rehearsal.

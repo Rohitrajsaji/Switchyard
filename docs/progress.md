@@ -9,7 +9,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M3 Flags and evaluator | Complete | 5 Oct 2026: unit/property/golden/fuzz/race checks, PostgreSQL revision integration, final Docker HTTP flag journey, OpenAPI reference checks and recorded local baseline passed. |
 | M4 Experiments and measurement | Complete | 5 Oct 2026: lifecycle/ingestion/SQL attribution/statistics gates, race-enabled PostgreSQL fixtures, final Docker measurement journey and API contracts passed. |
 | M5 Dashboard / MVP | Complete | 5 Oct 2026: Go/check/race/API/frontend checks, race-enabled PostgreSQL integration, ARM64 dashboard image, fresh-volume seed idempotence, all production browser journeys and restart persistence passed; local `v0.1.0-mvp` release. |
-| M6 Redis snapshots | In progress | Versioned immutable snapshots and monotonic Redis storage verified; bounded coordinator/API integration and outage gates pending. |
+| M6 Redis snapshots | Complete | 5 Oct 2026: immutable snapshots, monotonic Redis, bounded coordinator, cached HTTP scope/revocation, race integration, live independent API outage/repair drill, evaluator benchmarks and all three browser journeys passed. |
 | M7 Durable worker | Pending | — |
 | M8 gRPC / Go SDK | Pending | — |
 | M9 Rollout / approval / safety | Pending | — |
@@ -53,13 +53,13 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M6: bounded in-memory refresh coordinator, PostgreSQL repair, API integration, counters and live cache/outage gates. No V2 milestones are complete yet.
+M7: transactional outbox first, then durable NATS publication and bounded worker processing. M6 is the first completed V2 milestone.
 
 ## M6 verified checkpoints
 
 - Shared `pkg/snapshot` version-1 envelopes retain PostgreSQL verification time across serialization/cache relay. Expiry is strict at thirty seconds, refresh due at two seconds, and future timestamps fail closed. Compilation owns input bytes and returned values/JSON cannot mutate concurrent readers.
 - Redis storage uses an atomic script, bounded key scopes, positive int64 revision strings and remaining-age TTL. Delayed old writers cannot replace a newer kill switch; identical revisions require the same configuration/flag identity and a newer authoritative proof. Redis reset loses its version fence, so PostgreSQL reconciliation and snapshot age remain necessary.
-- Real Redis 8.10.2 integration passed with race detection: concurrent delayed writes, revisions above 2^53 and maximum int64, equal-version mutation rejection, cross-environment payload rejection, corrupt payload rejection, deletion repair and no freshness/TTL renewal from reads. Tests delete only their own unique keys. Snapshot unit/race tests and `make check race api-check` passed. The API remains on its verified direct-PostgreSQL evaluation path; this is a storage checkpoint, not complete M6 or a cache performance claim.
+- Real Redis 8.10.2 integration passed with race detection: concurrent delayed writes, revisions above 2^53 and maximum int64, equal-version mutation rejection, cross-environment payload rejection, corrupt payload rejection, deletion repair and no freshness/TTL renewal from reads. Tests delete only their own unique keys. Snapshot unit/race tests and `make check race api-check` passed. This storage checkpoint preceded the coordinator/API gate recorded below.
 
 ## M5 verified checkpoints
 
@@ -97,3 +97,13 @@ M6: bounded in-memory refresh coordinator, PostgreSQL repair, API integration, c
 - Product-request samples require valid exposure references and return error rate, fixed-bin histograms and an explicitly approximate p95 upper bound. Empty rates/percentiles remain null. These do not represent platform API latency.
 - Final source passed `make check race api-check`, `make integration`, and race-enabled measurement integration after the set-based SQL refinement. Full race-enabled PostgreSQL integration also passed for the results API; HTTP tests verify scoped human/viewer reads, app-key denial, no-store responses and exact counts.
 - Final Docker rebuild applied migration 0006 and passed `make measurement-smoke smoke`. The live journey verifies pending outcomes become one conversion, extra completion IDs cannot inflate counts, histograms/intervals are returned, quarantine is excluded and a fresh cohort remains provisional. No load target or V2 aggregation/retention behavior is claimed.
+
+## M6 final gate
+
+- Four fixed refresh workers, a 64-job queue, 256-key admission and a 32 MiB estimated compiled-weight budget bound refresh work. Race tests prove one source read for 100 concurrent misses, cancellation isolation, queue saturation, LRU/weight bounds, negative caching, query-time freshness consumption, local invalidation fencing and shutdown. Sticky expiry and monotonic deadlines prevent proof revival.
+- Application HTTP evaluations use immutable snapshots; management previews remain PostgreSQL reads. Full race-enabled PostgreSQL/Redis integration passed, including safe fallback/503 at expiry, unknown flags, scope, no per-evaluation audit writes, wrong fallback rejection and database key revocation despite warm cache.
+- The final Docker API passed live flag/experiment/measurement/health journeys and all three Chromium journeys against the production dashboard. `make check race api-check` passed after the final queue/proof tests. CI now defines a Redis service for scoped integration; no remote CI run is claimed.
+- `make cache-drill` passed with an independent observer API: disable propagation 1.9616 s, PostgreSQL refresh during Redis outage 1.8988 s, fallback 28.6816 s after the configuration lock. Redis deletion/restart repair, readiness during Redis outage, source recovery and key revocation passed. Snapshot age predates the lock; this is a single scenario rather than a p99/SLO measurement. Raw evidence is retained in `docs/benchmarks/m6-cache-drill.json`.
+- An initial integration run overlapped the intentional Redis stop and failed with connection-refused errors. The complete race integration gate was rerun after service recovery and passed. No failure was hidden or counted as a successful gate.
+- Counters distinguish in-memory hits, cold misses, stale hits, source/Redis reads, failures, coalescing, expiry and admission pressure. Periodic structured logging is implemented; Prometheus export waits for M10. `make up` starts Redis with the cache profile; normal shutdown preserves PostgreSQL.
+- Pure evaluator runs remain 40 B/op, two allocations/op; current observations and limits are recorded in the benchmark report. End-to-end evaluation/ingestion targets remain unmeasured. Complete PostgreSQL outage prevents remote authorization; M8 local SDK fallback remains pending.

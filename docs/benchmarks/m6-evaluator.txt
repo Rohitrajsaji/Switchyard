@@ -1,0 +1,22 @@
+Observed 5 October 2026, Go 1.27.1, make benchmark-evaluator
+First run:
+goos: darwin
+goarch: arm64
+pkg: switchyard/pkg/evaluation
+cpu: Apple M1
+BenchmarkEvaluate-8 5286908 204.7 ns/op 40 B/op 2 allocs/op
+BenchmarkEvaluate-8 6047160 200.0 ns/op 40 B/op 2 allocs/op
+BenchmarkEvaluate-8 6060614 204.5 ns/op 40 B/op 2 allocs/op
+PASS
+ok switchyard/pkg/evaluation 3.718s
+
+Later gate run with concurrent integration/browser activity:
+goos: darwin
+goarch: arm64
+pkg: switchyard/pkg/evaluation
+cpu: Apple M1
+BenchmarkEvaluate-8 5281328 237.6 ns/op 40 B/op 2 allocs/op
+BenchmarkEvaluate-8 5851542 219.6 ns/op 40 B/op 2 allocs/op
+BenchmarkEvaluate-8 5764131 209.2 ns/op 40 B/op 2 allocs/op
+PASS
+ok switchyard/pkg/evaluation 3.879s

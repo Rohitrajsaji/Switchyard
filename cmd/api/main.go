@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"switchyard/internal/cache"
 	"switchyard/internal/platform/config"
 	"switchyard/internal/platform/postgres"
 	httpapi "switchyard/internal/transport/http"
@@ -56,7 +57,40 @@ func run(logger *slog.Logger) error {
 	if origin == "" {
 		origin = "http://localhost:3000"
 	}
-	management, err := httpapi.NewManagement(pool, logger, origin, os.Getenv("COOKIE_SECURE") == "true")
+	var snapshots *cache.Coordinator
+	if cfg.CacheEnabled {
+		var store cache.Store
+		if cfg.RedisURL != "" {
+			r, err := cache.NewRedis(cfg.RedisURL, "switchyard:snapshot:v1:", time.Now)
+			if err != nil {
+				return err
+			}
+			defer r.Close()
+			store = r
+		}
+		snapshots, err = cache.NewCoordinator(context.Background(), cache.PostgresSource(pool), store, cache.Defaults())
+		if err != nil {
+			return err
+		}
+		defer snapshots.Close()
+		reportCtx, cancelReport := context.WithCancel(context.Background())
+		reportDone := make(chan struct{})
+		go func() {
+			defer close(reportDone)
+			ticker := time.NewTicker(30 * time.Second)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-reportCtx.Done():
+					return
+				case <-ticker.C:
+					logger.Info("cache statistics", "statistics", snapshots.Stats())
+				}
+			}
+		}()
+		defer func() { cancelReport(); <-reportDone }()
+	}
+	management, err := httpapi.NewManagement(pool, logger, origin, os.Getenv("COOKIE_SECURE") == "true", snapshots)
 	if err != nil {
 		return err
 	}

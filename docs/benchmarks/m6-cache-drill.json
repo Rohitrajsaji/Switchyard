@@ -1,0 +1,22 @@
+{
+  "observed_at": "2026-10-05T02:52:32.289086+00:00",
+  "healthy_disable_seconds": 1.9616,
+  "redis_outage_refresh_seconds": 1.8988,
+  "fallback_seconds_after_lock": 28.6816,
+  "observer_counters": {
+    "MemoryHits": 146,
+    "RedisHits": 0,
+    "SourceReads": 15,
+    "SourceFailures": 9,
+    "StoreFailures": 1,
+    "MemoryMisses": 1,
+    "StaleHits": 77,
+    "Coalesced": 0,
+    "Backpressure": 0,
+    "Evictions": 0,
+    "Regressions": 0,
+    "Expired": 0,
+    "Entries": 1,
+    "Weight": 5936
+  }
+}

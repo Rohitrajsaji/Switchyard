@@ -25,9 +25,9 @@ integration:
 up:
 	@test -f .env || cp .env.example .env
 	docker compose build api web
-	docker compose up --no-build -d --wait
+	docker compose --profile cache up --no-build -d --wait
 down:
-	docker compose down
+	docker compose --profile cache down
 migrate:
 	go run ./cmd/migrate
 smoke:
@@ -48,6 +48,9 @@ mvp-drill:
 cache-storage-check:
 	@test -n "$(TEST_REDIS_URL)" || (echo 'Set TEST_REDIS_URL to the local test Redis service'; exit 1)
 	go test -race -tags=integration -count=1 ./internal/cache ./pkg/snapshot
+.PHONY: cache-drill
+cache-drill:
+	python3 scripts/cache_drill.py
 management-smoke:
 	python3 scripts/management_smoke.py
 fuzz-smoke:

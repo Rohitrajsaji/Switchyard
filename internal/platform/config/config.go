@@ -8,13 +8,22 @@ import (
 )
 
 type Config struct {
-	HTTPAddr    string
-	DatabaseURL string
-	MaxConns    int32
+	HTTPAddr     string
+	DatabaseURL  string
+	MaxConns     int32
+	CacheEnabled bool
+	RedisURL     string
 }
 
 func Load(getenv func(string) string) (Config, error) {
-	c := Config{HTTPAddr: getenv("HTTP_ADDR"), DatabaseURL: getenv("DATABASE_URL"), MaxConns: 10}
+	c := Config{HTTPAddr: getenv("HTTP_ADDR"), DatabaseURL: getenv("DATABASE_URL"), MaxConns: 10, CacheEnabled: true, RedisURL: getenv("REDIS_URL")}
+	if s := getenv("CACHE_ENABLED"); s != "" {
+		value, err := strconv.ParseBool(s)
+		if err != nil {
+			return Config{}, errors.New("CACHE_ENABLED must be a boolean")
+		}
+		c.CacheEnabled = value
+	}
 	if c.DatabaseURL == "" {
 		return Config{}, errors.New("DATABASE_URL is required")
 	}
