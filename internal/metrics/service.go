@@ -84,22 +84,25 @@ func New(pool *pgxpool.Pool, now func() time.Time) *Service {
 	return &Service{pool: pool, now: now}
 }
 
+type cohortCounts struct {
+	VariantID string `json:"variant_id"`
+	Finalized bool   `json:"finalized"`
+	Counts
+}
+type requestCounts struct {
+	VariantID string `json:"variant_id"`
+	Count     int64  `json:"count"`
+	Errors    int64  `json:"errors"`
+}
+type bucketCounts struct {
+	VariantID string `json:"variant_id"`
+	Bucket
+}
 type derived struct {
-	Cohorts []struct {
-		VariantID string `json:"variant_id"`
-		Finalized bool   `json:"finalized"`
-		Counts
-	} `json:"cohorts"`
-	Requests []struct {
-		VariantID string `json:"variant_id"`
-		Count     int64  `json:"count"`
-		Errors    int64  `json:"errors"`
-	} `json:"requests"`
-	Buckets []struct {
-		VariantID string `json:"variant_id"`
-		Bucket
-	} `json:"buckets"`
-	Quality Quality `json:"quality"`
+	Cohorts  []cohortCounts  `json:"cohorts"`
+	Requests []requestCounts `json:"requests"`
+	Buckets  []bucketCounts  `json:"buckets"`
+	Quality  Quality         `json:"quality"`
 }
 
 func (s *Service) Read(ctx context.Context, actor auth.Actor, projectID, runID string) (Results, error) {

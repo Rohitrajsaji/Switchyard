@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -78,9 +77,9 @@ func ReconcileOne(ctx context.Context, pool *pgxpool.Pool, now time.Time) (bool,
 	}
 	defer tx.Rollback(context.Background())
 	var project, env, run, user string
-	var oldBody []byte
-	err = tx.QueryRow(ctx, `SELECT project_id,environment_id,run_id,user_id,contribution FROM metric_user_state
-        WHERE due_at<=$1 ORDER BY due_at,project_id,environment_id,run_id,user_id LIMIT 1 FOR UPDATE SKIP LOCKED`, now).Scan(&project, &env, &run, &user, &oldBody)
+	var oldBody, historyBody []byte
+	err = tx.QueryRow(ctx, `SELECT project_id,environment_id,run_id,user_id,contribution,historical_contribution FROM metric_user_state
+        WHERE due_at<=$1 ORDER BY due_at,project_id,environment_id,run_id,user_id LIMIT 1 FOR UPDATE SKIP LOCKED`, now).Scan(&project, &env, &run, &user, &oldBody, &historyBody)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, nil
 	}
@@ -89,7 +88,7 @@ func ReconcileOne(ctx context.Context, pool *pgxpool.Pool, now time.Time) (bool,
 	}
 	// Reuse the MVP semantics with a single-user fact set. References still join
 	// the full scoped raw table, so mismatched identities remain invalid.
-	userSQL := strings.Replace(attributionSQL, "AND received_at<=$4", "AND received_at<=$4 AND user_id=$5", 1)
+	userSQL := retainedUserSQL()
 	var newBody []byte
 	var next *time.Time
 	err = tx.QueryRow(ctx, userSQL+`SELECT (`+resultsSQL+`), LEAST(
@@ -102,9 +101,17 @@ func ReconcileOne(ctx context.Context, pool *pgxpool.Pool, now time.Time) (bool,
 	if err != nil {
 		return false, err
 	}
-	var old, new derived
-	if json.Unmarshal(oldBody, &old) != nil || json.Unmarshal(newBody, &new) != nil {
+	var old, new, history derived
+	if json.Unmarshal(oldBody, &old) != nil || json.Unmarshal(newBody, &new) != nil || json.Unmarshal(historyBody, &history) != nil {
 		return false, errors.New("invalid stored metric contribution")
+	}
+	new, err = mergeHistorical(history, new)
+	if err != nil {
+		return false, err
+	}
+	newBody, err = json.Marshal(new)
+	if err != nil {
+		return false, err
 	}
 	deltas := contributionCounts(new)
 	for k, n := range contributionCounts(old) {

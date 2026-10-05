@@ -1,0 +1,19 @@
+{
+  "observed_at": "2026-10-05T04:19:44.559979+00:00",
+  "counts": {
+    "due_users": 0,
+    "raw_events": 235,
+    "archived_anchors": 0,
+    "historical_users": 0,
+    "compact_references": 0
+  },
+  "live_replay": {
+    "observed_at": "2026-10-05T04:19:07.455723+00:00",
+    "replayed_events": 7,
+    "pages": 1,
+    "inspected_failures": 0,
+    "parity": "docker compose --profile async run --rm --no-deps --entrypoint /app/check-metrics worker\nAggregate parity passed for 24 runs: cohorts, conversions, requests, histograms and quality"
+  },
+  "cleanup_enabled": false,
+  "limit": "Historical folding/deletion is tested only in disposable schemas; normal raw facts remain intact. Full M7 retention is not yet implemented."
+}

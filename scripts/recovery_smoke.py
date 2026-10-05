@@ -54,5 +54,7 @@ while True:
     time.sleep(0.25)
 report = {"observed_at": now.isoformat(), "replayed_events": count, "pages": pages,
           "inspected_failures": len(failures["failures"]), "parity": result.stdout.strip()}
-pathlib.Path("docs/benchmarks/m7-recovery-smoke.json").write_text(json.dumps(report, indent=2) + "\n")
+report_path = pathlib.Path(".cache/recovery-smoke-report.json")
+report_path.parent.mkdir(parents=True, exist_ok=True)
+report_path.write_text(json.dumps(report, indent=2) + "\n")
 print(json.dumps(report, indent=2))
