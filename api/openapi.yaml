@@ -301,7 +301,9 @@ paths:
       description: >-
         Full configuration replacement. expected_revision=0 initializes another
         development/staging environment for an existing project flag.
-        Salt is server-fixed; production writes are denied in MVP.
+        Salt is server-fixed. Direct production writes are accepted only for emergency
+        reductions (setting killed=true, or lowering standalone rollout traffic with every
+        other field unchanged); every other production change requires an approved proposal.
       parameters:
         - $ref: '#/components/parameters/Origin'
         - $ref: '#/components/parameters/CSRF'
@@ -504,6 +506,145 @@ paths:
         '401': {$ref: '#/components/responses/Unauthorized'}
         '403': {$ref: '#/components/responses/Forbidden'}
         '404': {description: Run not found in this project}
+  /v1/projects/{project}/proposals:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+    get:
+      summary: List up to 100 proposals, newest first
+      parameters:
+        - {name: environment_id, in: query, required: false, schema: {type: string}}
+      responses:
+        '200':
+          description: Proposals visible to project members
+          content:
+            application/json:
+              schema: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/Proposal'}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+    post:
+      summary: Propose a production flag creation or update
+      description: >-
+        Developers and admins propose; viewers cannot. Only production proposals are accepted
+        (development and staging are edited directly). The change is validated by the same code
+        that applies it, and the response carries the exact before/after diff and its diff_hash.
+        A no-op change is rejected. expected_revision is the base configuration revision.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ProposalCreate'}
+      responses:
+        '201':
+          description: Validated proposal
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Proposal'}
+        '400': {$ref: '#/components/responses/Invalid'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: Flag not found for an update proposal}
+        '409': {description: Base revision is not current or the frozen-population rules reject the change}
+  /v1/projects/{project}/proposals/{proposal}:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - {name: proposal, in: path, required: true, schema: {type: string}}
+    get:
+      summary: Read one proposal
+      responses:
+        '200':
+          description: Proposal
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Proposal'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: Proposal not found in this project}
+  /v1/projects/{project}/proposals/{proposal}/approve:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - {name: proposal, in: path, required: true, schema: {type: string}}
+    post:
+      summary: Approve the exact diff (admin other than the proposer)
+      description: >-
+        diff_hash must equal the proposal's hash. The change is revalidated against the current
+        revision; if it no longer applies the proposal becomes stale (409 stale). An approval
+        expires 24 hours after it is granted.
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [diff_hash, reason]
+              properties:
+                diff_hash: {type: string, pattern: '^[0-9a-f]{64}$'}
+                reason: {type: string, minLength: 1, maxLength: 512}
+      responses:
+        '200':
+          description: Approved proposal
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Proposal'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: Proposal not found in this project}
+        '409': {description: Wrong state, different diff hash, or stale (error code stale)}
+  /v1/projects/{project}/proposals/{proposal}/reject:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - {name: proposal, in: path, required: true, schema: {type: string}}
+    post:
+      summary: Reject or withdraw an open proposal (admin or proposer)
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [reason]
+              properties:
+                reason: {type: string, minLength: 1, maxLength: 512}
+      responses:
+        '200':
+          description: Rejected proposal
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Proposal'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: Proposal not found in this project}
+        '409': {description: Proposal is already final}
+  /v1/projects/{project}/proposals/{proposal}/apply:
+    parameters:
+      - $ref: '#/components/parameters/Project'
+      - {name: proposal, in: path, required: true, schema: {type: string}}
+    post:
+      summary: Apply an approved proposal exactly once
+      description: >-
+        Revalidates and compares the base revision, the exact diff hash, approval expiry and the
+        approver's current admin role in one transaction with the new revision, audit entry and
+        outbox record. Repeating the request returns the original applied result without a second
+        revision. A changed base revision records the proposal as stale (409 stale); an elapsed
+        approval records it as expired (409 expired).
+      parameters:
+        - $ref: '#/components/parameters/Origin'
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '200':
+          description: Applied proposal with applied_revision
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Proposal'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: Proposal not found in this project}
+        '409': {description: Not approved, stale or expired}
   /v1/events:
     post:
       security:
@@ -848,6 +989,43 @@ components:
           anyOf:
             - $ref: '#/components/schemas/Rollout'
             - type: 'null'
+    ProposalCreate:
+      allOf:
+        - $ref: '#/components/schemas/FlagConfiguration'
+        - type: object
+          required: [environment_id, key, kind, rationale]
+          properties:
+            environment_id: {type: string, description: A production environment}
+            key: {type: string, pattern: '^[a-z][a-z0-9_-]{0,63}$'}
+            kind: {type: string, enum: [create, update]}
+            type: {type: string, enum: [boolean, json], description: Required for create}
+            expected_revision: {type: integer, minimum: 0, description: Base revision; must be 0 for create}
+            rationale: {type: string, minLength: 1, maxLength: 512}
+      unevaluatedProperties: false
+    Proposal:
+      type: object
+      required: [id, project_id, environment_id, flag_key, kind, type, base_revision, configuration, diff, diff_hash, rationale, proposer_id, source, state, created_at]
+      properties:
+        id: {type: string}
+        project_id: {type: string}
+        environment_id: {type: string}
+        flag_key: {type: string}
+        kind: {type: string, enum: [create, update]}
+        type: {type: string, enum: [boolean, json]}
+        base_revision: {type: integer, minimum: 0}
+        configuration: {$ref: '#/components/schemas/FlagConfiguration'}
+        diff: {type: object, description: Exact reviewed change (scope, base revision, before and after configurations)}
+        diff_hash: {type: string, pattern: '^[0-9a-f]{64}$'}
+        rationale: {type: string}
+        proposer_id: {type: string}
+        source: {type: string, enum: [human, agent]}
+        state: {type: string, enum: [validated, approved, applied, rejected, expired, stale]}
+        approver_id: {type: string}
+        approved_at: {type: string, format: date-time}
+        approval_expires_at: {type: string, format: date-time}
+        applied_revision: {type: integer}
+        created_at: {type: string, format: date-time}
+        decided_at: {type: string, format: date-time}
     FlagCreate:
       allOf:
         - $ref: '#/components/schemas/FlagConfiguration'

@@ -140,3 +140,6 @@ sdk-contract:
 .PHONY: sdk-drill
 sdk-drill:
 	python3 scripts/sdk_drill.py
+.PHONY: approval-drill
+approval-drill:
+	python3 scripts/approval_drill.py

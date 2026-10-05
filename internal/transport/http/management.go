@@ -24,6 +24,7 @@ import (
 	"switchyard/internal/flags"
 	"switchyard/internal/outbox"
 	"switchyard/internal/projects"
+	"switchyard/internal/proposals"
 	"switchyard/pkg/snapshot"
 )
 
@@ -86,6 +87,12 @@ func (m *Management) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/projects/{project}/experiments/{run}", m.human(false, m.getExperiment))
 	mux.HandleFunc("GET /v1/projects/{project}/experiments/{run}/results", m.human(false, m.getResults))
 	mux.HandleFunc("POST /v1/projects/{project}/experiments/{run}/transitions", m.human(true, m.transitionExperiment))
+	mux.HandleFunc("GET /v1/projects/{project}/proposals", m.human(false, m.listProposals))
+	mux.HandleFunc("POST /v1/projects/{project}/proposals", m.human(true, m.createProposal))
+	mux.HandleFunc("GET /v1/projects/{project}/proposals/{proposal}", m.human(false, m.getProposal))
+	mux.HandleFunc("POST /v1/projects/{project}/proposals/{proposal}/approve", m.human(true, m.approveProposal))
+	mux.HandleFunc("POST /v1/projects/{project}/proposals/{proposal}/reject", m.human(true, m.rejectProposal))
+	mux.HandleFunc("POST /v1/projects/{project}/proposals/{proposal}/apply", m.human(true, m.applyProposal))
 }
 func (m *Management) login(w http.ResponseWriter, r *http.Request) {
 	if !m.limit(w, r, m.loginLimit) {
@@ -300,7 +307,11 @@ func (m *Management) fail(w http.ResponseWriter, r *http.Request, err error) {
 		status, code = 400, "invalid_input"
 	case errors.Is(err, auth.ErrConflict):
 		status, code = 409, "conflict"
-	case errors.Is(err, flags.ErrNotFound), errors.Is(err, experiments.ErrNotFound):
+	case errors.Is(err, proposals.ErrStale):
+		status, code = 409, "stale"
+	case errors.Is(err, proposals.ErrExpired):
+		status, code = 409, "expired"
+	case errors.Is(err, flags.ErrNotFound), errors.Is(err, experiments.ErrNotFound), errors.Is(err, proposals.ErrNotFound):
 		status, code = 404, "not_found"
 	}
 	if status == 500 {
