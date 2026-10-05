@@ -4,6 +4,7 @@ Requires `make observability-up` (API and worker started with OTLP export at ful
 seeded demo credentials. Everything it creates is synthetic."""
 import base64
 import datetime
+import http.client
 import json
 import time
 import urllib.error
@@ -37,7 +38,7 @@ def wait(description, check, seconds=60):
             result = check()
             if result:
                 return result
-        except (urllib.error.URLError, KeyError, IndexError, ValueError):
+        except (urllib.error.URLError, http.client.HTTPException, OSError, KeyError, IndexError, ValueError):
             pass
         time.sleep(1)
     raise AssertionError("timed out: " + description)
@@ -110,7 +111,7 @@ def main():
 
     # Grafana is provisioned.
     auth = {"Authorization": "Basic " + base64.b64encode(b"admin:switchyard-local-only").decode()}
-    wait("grafana healthy", lambda: get(GRAFANA + "/api/health")["database"] == "ok")
+    wait("grafana healthy", lambda: get(GRAFANA + "/api/health")["database"] == "ok", 120)
     dashboard = get(GRAFANA + "/api/dashboards/uid/switchyard-overview", auth)["dashboard"]
     assert len(dashboard["panels"]) >= 15
     for uid in ("prometheus", "tempo"):

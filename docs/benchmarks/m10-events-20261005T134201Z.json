@@ -1,0 +1,114 @@
+{
+  "name": "events-20261005T134201Z",
+  "workload": "events",
+  "commit": "714cfbd",
+  "dirty_tree": false,
+  "started_at": "2026-10-05T13:42:03.281105+00:00",
+  "host": {
+    "cpu": "Apple M1",
+    "cpus": 8,
+    "memory_gib": 8.0,
+    "docker_vm_memory_gib": 3.8
+  },
+  "docker_memory_limits_mib": {
+    "switchyard-api-1": 256,
+    "switchyard-worker-1": 384,
+    "switchyard-postgres-1": 768,
+    "switchyard-redis-1": 128,
+    "switchyard-nats-1": 256
+  },
+  "observability_profile_running": false,
+  "k6_image": "grafana/k6:2.3.0@sha256:9c2dee7f8ed74d317e4027c06a10f169b625638189de8d4555d0b3486a5aeb34",
+  "max_vus": 200,
+  "dataset": {
+    "flags": 100,
+    "experiments": 10,
+    "evaluation_user_space": 100000,
+    "event_user_pool": 20000
+  },
+  "generator_kind": "k6",
+  "generator_exit_codes": [
+    0
+  ],
+  "duration_seconds": 132.3,
+  "ingestion": {
+    "batch_rate_requested": 10,
+    "events_per_second_requested": 990,
+    "accepted_batches": 1200,
+    "rejected_batches": 1,
+    "accepted_events": 118800,
+    "accepted_events_per_second": 990.0,
+    "batch_latency_ms": {
+      "avg": 906.682,
+      "med": 425.838,
+      "p(90)": 2409.311,
+      "p(95)": 2940.909,
+      "p(99)": 4271.434,
+      "max": 5016.343,
+      "source": "http_req_duration; this events-only run has no separate evaluate samples, and k6 did not export a kind=ingest sub-histogram"
+    },
+    "failure_rate": 0.0008326394671107411,
+    "dropped_iterations": 0,
+    "http_status_counts": {
+      "200": 1200,
+      "503": 1,
+      "source": "API request logs for POST /v1/events during the run"
+    },
+    "expected_distinct_users": 20000,
+    "converged_exactly": false,
+    "results_read_errors": 3,
+    "seconds_from_load_end_to_exact_convergence": null,
+    "final_counts": {
+      "exposed": 10849,
+      "converted": 10849,
+      "requests": 19737
+    },
+    "database_freshness_per_user_seconds": {
+      "users": 20000,
+      "p50_seconds": 0,
+      "p95_seconds": 585.1684712,
+      "max_seconds": 632.085076
+    },
+    "finding": "Accepted rate matched the 990 events/s offer. One request hit the 5s deadline and returned 503 overloaded. Exact cohort convergence did not occur within the 600s poll. Per-user freshness p95 was 585s, so the 5s freshness target failed again. Final counts in this file are the snapshot at the poll deadline, not a completed drain."
+  },
+  "resources": {
+    "switchyard-api-1": {
+      "samples": 22,
+      "cpu_percent_mean": 28.3,
+      "cpu_percent_max": 64.25,
+      "memory_mib_max": 22.8
+    },
+    "switchyard-k6-c91f93": {
+      "samples": 22,
+      "cpu_percent_mean": 45.1,
+      "cpu_percent_max": 440.83,
+      "memory_mib_max": 1310.7
+    },
+    "switchyard-nats-1": {
+      "samples": 22,
+      "cpu_percent_mean": 7.8,
+      "cpu_percent_max": 35.05,
+      "memory_mib_max": 52.7
+    },
+    "switchyard-postgres-1": {
+      "samples": 22,
+      "cpu_percent_mean": 192.5,
+      "cpu_percent_max": 445.48,
+      "memory_mib_max": 320.3
+    },
+    "switchyard-redis-1": {
+      "samples": 22,
+      "cpu_percent_mean": 3.9,
+      "cpu_percent_max": 22.74,
+      "memory_mib_max": 12.2
+    },
+    "switchyard-worker-1": {
+      "samples": 22,
+      "cpu_percent_mean": 13.1,
+      "cpu_percent_max": 66.69,
+      "memory_mib_max": 26.6
+    }
+  },
+  "prometheus_peaks": null,
+  "finished_at": "2026-10-05T13:54:20.425843+00:00"
+}

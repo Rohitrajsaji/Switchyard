@@ -226,12 +226,14 @@ def main():
         rejected = int(metric(summary, "event_batches_rejected", "count") or 0)
         accepted_events = int(metric(summary, "events_accepted", "count") or 0)
         d = "http_req_duration{kind:ingest}"
+        if metric(summary, d, "avg") is None:
+            d = "http_req_duration"  # events-only runs have no other HTTP samples
         statuses = {name.split("{status:")[-1].rstrip("}"): int(body.get("count") or 0)
                     for name, body in summary.get("metrics", {}).items() if name.startswith("ingest_http_status{")}
         ingestion = report["ingestion"] = {"batch_rate_requested": args.batch_rate, "events_per_second_requested": args.batch_rate * 99, "accepted_batches": batches, "rejected_batches": rejected,
             "accepted_events": accepted_events, "accepted_events_per_second": round(accepted_events / max(1, event_seconds), 1),
             "batch_latency_ms": {k: metric(summary, d, k) for k in ("avg", "med", "p(90)", "p(95)", "p(99)", "max")},
-            "failure_rate": metric(summary, "http_req_failed{kind:ingest}", "value"), "dropped_iterations": metric(summary, "dropped_iterations", "count"),
+            "failure_rate": metric(summary, "http_req_failed{kind:ingest}", "value"), "dropped_iterations": metric(summary, "dropped_iterations", "count") or 0,
             "http_status_counts": statuses}
         # Convergence and exact counts through the public results API, after the load ends.
         # A slow or refused read is a result, not a reason to discard the generator summary.

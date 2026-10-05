@@ -52,3 +52,23 @@ Fifty-six Docker resource samples were collected during offering/drain. Peak sam
 M10 should profile PostgreSQL query plans and worker scheduling/reconciliation before increasing concurrency or changing architecture. This result justifies measuring that path; it does not prove a specific query is the bottleneck. Repeat controlled lower-rate, sustained, saturation and mixed workloads after any optimization. The realistic M10 dataset (100 flags, ten experiments, 100,000 users and one million seeded events) and 10,000 evaluations/sec target remain unmeasured.
 
 During final aggregate-read/replay verification, the thirty-second parity command timed out with this larger dataset. A read-only diagnostic reproduced PostgreSQL plan sensitivity: the recorded trial's literal scoped oracle completed in 491.201 ms, while the forced generic prepared plan used nested-loop CTE joins and was canceled at 35 seconds. [Query-plan evidence](benchmarks/m7-parity-query-plans.json) is retained. The oracle now sets `plan_cache_mode=force_custom_plan` locally in its read-only transaction; it does not change global settings, the deadline, aggregate serving or worker reconciliation. Actual parity then passed across 34 runs with the connection otherwise forced to generic planning. This diagnostic repair does not revise the ingestion/freshness result or establish the worker's bottleneck.
+
+## M10 evaluation and ingestion — 5 October 2026
+
+Host: Apple M1, 8 logical CPUs, 8 GiB RAM, Docker VM 3.8 GiB. Observability profile was off. The evaluation run used the Go generator on commit `e5e1eec` with the M10 tree dirty; the numbers are the HTTP steps in [m10-evaluation-http-baseline.json](benchmarks/m10-evaluation-http-baseline.json). Dataset: 100 flags, 10 experiments, 100,000 evaluation users. Hold was 45 seconds per step after a ramp.
+
+| Target req/s | Achieved during hold | p50 ms | p99 ms | Dropped | Failures |
+|---:|---:|---:|---:|---:|---:|
+| 500 | 500 | 0.63 | 3.72 | 0 | 0 |
+| 1000 | 1000 | 0.60 | 3.27 | 0 | 0 |
+| 2000 | 2000 | 0.43 | 5.80 | 0 | 0 |
+| 4000 | 4001 | 0.27 | 3.07 | 0 | 0 |
+| 6000 | 6001 | 0.29 | 317.82 | 0 | 0 |
+| 8000 | 7855 | 0.34 | 628.15 | 6526 | 0 |
+| 10000 | 9642 | 0.68 | 1033.73 | 35969 | 0 |
+
+Correctness stayed 1. The p99 < 50 ms target holds through 4,000 requests/s and fails at 6,000 and above, where in-flight requests hit the generator cap of 4,000. API CPU peaked at 242% and memory at 247 MiB of the 256 MiB limit. This is one run, not three repeats.
+
+Event ingestion was offered at 10 batches/s (990 events/s) for 120 seconds against the 100-flag fixture. The first attempt, before deadline errors were classified, accepted 66,231 events and returned HTTP 500 for 482 batches; the harness then aborted. Evidence is [m10-events-attempt-1.json](benchmarks/m10-events-attempt-1.json). `context.DeadlineExceeded` is now HTTP 503 `overloaded` with `Retry-After`.
+
+The rerun on commit `714cfbd` ([report](benchmarks/m10-events-20261005T134201Z.json)) accepted 118,800 events, 990/s, with one 503 and failure rate 0.083%. Batch latency p50 was 426 ms and p99 was 4,271 ms. The 600-second results poll did not reach exact counts (exposed 10,849, converted 10,849, requests 19,737 of 20,000 users at the deadline). Database freshness p95 was 585 seconds. **The five-second freshness target failed again.** PostgreSQL CPU peaked at 445%. k6 itself used up to 1,311 MiB. Mixed, soak, observability smoke and a CPU profile are still outstanding; do not treat 990 accepted events/s as fresh-metrics capacity.
