@@ -90,3 +90,21 @@ The post-index events rerun, 120 seconds at 10 batches/s ([m10-events-after-inde
 The outbox then drained to zero. Reconciliation stopped at 97,074 applied and 16 failed; those 16 failures did not grow after the drain. `due_at IS NOT NULL` stayed at 86,993 because that column also stores the next attribution-window deadline. Overdue rows (`due_at <= now`) were 0. The earliest scheduled deadline was 2026-10-05 21:33:52.551057+00. Host `go run ./cmd/check-metrics` then passed for 171 runs in 23.5 s (ended 2026-10-05T16:26:46Z). The soak run `run_5e2ebad00a89ad617f2cb14a0943cbffa94287d8911a16b9d1c33929c98dab4b` compared in 6.907 s, `run_918e5a645d0cffaaf3538364639c743b31c2e8bdf8de4c1f10ea705bf1660944` in 6.490 s, and `run_0b2c618d5bd8a360e2135bcab65b0e2f538cb70e3758226efe90ae8286975cba` in 3.277 s. The earlier mismatch was lag, not a counter disagreement after folding caught up.
 
 While that database was quiet, retention still logged `database_or_retention_validation_failed` about every three seconds (`failed_cycles` 228) with every retention counter still zero. `EXPLAIN ANALYZE` of the fold candidate took 4,589 ms and removed all 89,059 user rows by filter. The summary-expiry candidate then took 1,892 ms because `reporting_since` is `-infinity` on every row. Every raw fact was received between 2026-10-04 21:05:52Z and 2026-10-05 16:11:52Z, inside both windows, so the two-second worker budget could never finish a no-op cycle. Folding and summary expiry now return immediately when no fact is older than the cutoff. Fold and expiry integration tests passed. After the worker image was rebuilt, the first retention cycle succeeded. `failed_cycles` was 2 one minute later, while container parity was scanning the same database; it was no longer failing every cycle. `make aggregation-parity` on that image passed for 171 runs, including the soak run in 8.202 s.
+
+## M12 failure-drill recheck — 5 October 2026
+
+`make failure-drills` on the running ARM64 stack, after the retention no-op fixes and without repeating the soak. These are single observations. They do not replace the missed latency or freshness targets above. Raw JSON is [m12-failure-drills.json](benchmarks/m12-failure-drills.json).
+
+| Drill | Observed |
+|---|---|
+| Cache disable propagation | 1.8228 s |
+| PostgreSQL refresh during Redis outage | 1.5318 s |
+| Safe fallback after the configuration lock | 28.5058 s |
+| Observer revocation | 1.7109 s |
+| Broker recovery after health | 1.7651 s |
+| Worker recovery after health | 0.8517 s |
+| Counts after SIGKILL | 2 exposures, 2 conversions, 2 requests |
+| Aggregate parity | 177 runs |
+| Metric promotion | 8000 → 9000 |
+| Safety rollback | 18.2 s from the broken traffic |
+| Safe value after the rollback commit | 0.37 s |

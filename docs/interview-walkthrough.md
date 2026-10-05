@@ -28,4 +28,4 @@ Tracing on the hot path is optional and expensive. A profile with export enabled
 
 ## What I would not claim
 
-Hosted deployment was not done. GitHub Actions is defined and has not been run on a remote repository. Failure drills from earlier milestones were not all repeated after the reconcile change. Performance targets that failed stay failed in `docs/benchmark-report.md`.
+Hosted deployment was not done. GitHub Actions is defined and has not been run on a remote repository. Cache, event, and rollout drills were repeated after the retention changes: disable propagation 1.82 s, broker recovery 1.77 s, worker recovery 0.85 s, rollback 18.2 s, and parity for 177 runs. Performance targets that failed stay failed in `docs/benchmark-report.md`.

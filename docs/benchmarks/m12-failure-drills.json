@@ -1,0 +1,23 @@
+{
+  "observed_at": "2026-10-05T17:05:58Z",
+  "command": "SWITCHYARD_DEMO_PASSWORD set; make failure-drills",
+  "commit": "81680b19349fb1887689918a770b6064caf0bf4c",
+  "cache": {
+    "healthy_disable_seconds": 1.8228,
+    "redis_outage_refresh_seconds": 1.5318,
+    "fallback_seconds_after_lock": 28.5058,
+    "observer_revocation_seconds": 1.7109
+  },
+  "events": {
+    "broker_post_health_recovery_seconds": 1.7651,
+    "worker_post_health_recovery_seconds": 0.8517,
+    "final_fixture_counts": {"exposed": 2, "converted": 2, "requests": 2},
+    "parity_runs": 177
+  },
+  "rollout": {
+    "promotion": "8000 to 9000",
+    "rollback_seconds_from_broken_traffic": 18.2,
+    "safe_value_seconds_after_commit": 0.37
+  },
+  "scope": "Single local observations on the running ARM64 stack. Not percentiles and not a replacement for the missed soak latency or freshness targets."
+}

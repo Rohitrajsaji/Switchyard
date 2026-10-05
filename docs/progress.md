@@ -53,7 +53,9 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M1–M12 have recorded local evidence. `v0.2.0` is a local tag on this checkpoint and has not been pushed. The soak's missed latency and freshness targets stay documented findings.
+M1–M12 have recorded local evidence. `v0.2.0` is a local tag on `81680b1` and has not been pushed. The soak's missed latency and freshness targets stay documented findings.
+
+Re-checked on 5 Oct 2026 at `81680b1`, before the browser assertion fix: `make check`, `make race`, `make web-check`, `make api-check`, `make agent-test` (7 pytest, 2 JavaScript golden tests), and `make integration` (`-p 1`, PostgreSQL/Redis/NATS) passed. `make e2e` then failed once: the admin journey clicked Evaluate while the kill button was disabled for the in-flight request, and the preview remounted on the new revision without a result. The assertion now waits for the Killed row. The rerun passed all four Chromium journeys against the Docker dashboard. `make failure-drills` passed: cache disable 1.8228 s, Redis-outage refresh 1.5318 s, fallback 28.5058 s after the lock, observer revocation 1.7109 s; event broker recovery 1.7651 s, worker recovery 0.8517 s, exact 2/2/2 counts after SIGKILL, parity for 177 runs; rollout 8000 → 9000, rollback 18.2 s, safe value 0.37 s after commit. `make smoke` and `make agent-drill` passed after the drills. Load tests were not repeated; this recheck did not change the measured evaluation or ingestion path. Raw drill JSON is in `docs/benchmarks/m12-failure-drills.json`.
 
 ## M6 verified checkpoints
 

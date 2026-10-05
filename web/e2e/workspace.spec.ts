@@ -55,6 +55,11 @@ test("admin signs in, creates a project, selects environments and reloads the se
   await expect(page.getByText("targeting", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Evaluation value")).toHaveText("true");
   await page.getByRole("button", { name: "Kill switch", exact: true }).click();
+  // The button is also disabled while the request is in flight. Wait until the
+  // refreshed row shows Killed so the preview is bound to that revision.
+  await expect(
+    page.getByRole("cell", { name: "Killed", exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Kill switch", exact: true }),
   ).toBeDisabled();
