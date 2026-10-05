@@ -2,8 +2,10 @@ package httpapi
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"mime"
@@ -312,31 +314,44 @@ func (m *Management) audit(w http.ResponseWriter, r *http.Request, actor auth.Ac
 	}
 	JSON(w, 200, items)
 }
-func (m *Management) fail(w http.ResponseWriter, r *http.Request, err error) {
-	status, code := 500, "internal_error"
+
+// classifyFailure maps an error to an HTTP status. A request that hits its own deadline is
+// overload, not an internal fault: callers can retry the same identities. The error value itself
+// is not logged; pgx errors can contain SQL text.
+func classifyFailure(err error) (status int, code string, retry bool) {
 	switch {
+	case errors.Is(err, context.DeadlineExceeded):
+		return 503, "overloaded", true
 	case errors.Is(err, outbox.ErrCapacity):
-		status, code = 503, "durable_work_capacity"
-		w.Header().Set("Retry-After", "1")
+		return 503, "durable_work_capacity", true
 	case errors.Is(err, auth.ErrUnauthorized):
-		status, code = 401, "unauthorized"
+		return 401, "unauthorized", false
 	case errors.Is(err, auth.ErrForbidden):
-		status, code = 403, "forbidden"
+		return 403, "forbidden", false
 	case errors.Is(err, auth.ErrInvalid):
-		status, code = 400, "invalid_input"
+		return 400, "invalid_input", false
 	case errors.Is(err, auth.ErrConflict):
-		status, code = 409, "conflict"
+		return 409, "conflict", false
 	case errors.Is(err, proposals.ErrStale), errors.Is(err, rollouts.ErrStale):
-		status, code = 409, "stale"
+		return 409, "stale", false
 	case errors.Is(err, proposals.ErrCooldown):
-		status, code = 409, "cooldown"
+		return 409, "cooldown", false
 	case errors.Is(err, proposals.ErrExpired), errors.Is(err, rollouts.ErrExpired):
-		status, code = 409, "expired"
+		return 409, "expired", false
 	case errors.Is(err, flags.ErrNotFound), errors.Is(err, experiments.ErrNotFound), errors.Is(err, proposals.ErrNotFound), errors.Is(err, rollouts.ErrNotFound):
-		status, code = 404, "not_found"
+		return 404, "not_found", false
+	default:
+		return 500, "internal_error", false
+	}
+}
+
+func (m *Management) fail(w http.ResponseWriter, r *http.Request, err error) {
+	status, code, retry := classifyFailure(err)
+	if retry {
+		w.Header().Set("Retry-After", "1")
 	}
 	if status == 500 {
-		m.logger.Error("management operation failed", "route", r.Pattern, "request_id", w.Header().Get("X-Request-ID"))
+		m.logger.Error("management operation failed", "route", r.Pattern, "request_id", w.Header().Get("X-Request-ID"), "error_type", fmt.Sprintf("%T", err))
 	}
 	JSON(w, status, map[string]string{"error": code, "request_id": w.Header().Get("X-Request-ID")})
 }

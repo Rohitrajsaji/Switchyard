@@ -21,7 +21,7 @@ class Client:
         assert status == 200, f"Login status {status}"
         self.csrf = data["csrf_token"]
 
-    def call(self, method, path, data=None, csrf=True):
+    def call(self, method, path, data=None, csrf=True, timeout=5):
         headers = {"Origin": origin, "Content-Type": "application/json"}
         if csrf:
             headers["X-CSRF-Token"] = self.csrf
@@ -32,7 +32,7 @@ class Client:
             method=method,
         )
         try:
-            response = self.opener.open(request, timeout=5)
+            response = self.opener.open(request, timeout=timeout)
         except urllib.error.HTTPError as e:
             response = e
         with response:

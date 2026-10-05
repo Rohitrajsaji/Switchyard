@@ -1,0 +1,42 @@
+{
+  "name": "events-attempt-1",
+  "workload": "events",
+  "commit": "3f4b2ab",
+  "note": "The generator summary was retained. The harness then timed out on the first results read (5s client timeout while PostgreSQL was saturated) and exited before writing this report. Counts below are taken from the k6 summary and API request logs for the same window.",
+  "started_at": "2026-10-05T13:15:15Z",
+  "duration_seconds": 120,
+  "generator_kind": "k6",
+  "k6_image": "grafana/k6:2.3.0@sha256:9c2dee7f8ed74d317e4027c06a10f169b625638189de8d4555d0b3486a5aeb34",
+  "offered": {
+    "batch_rate_requested": 10,
+    "events_per_batch": 99,
+    "events_per_second_requested": 990,
+    "seconds": 120
+  },
+  "ingestion": {
+    "http_requests": 1151,
+    "accepted_batches": 669,
+    "rejected_batches": 482,
+    "accepted_events": 66231,
+    "accepted_events_per_second": 551.9,
+    "dropped_iterations": 50,
+    "failure_rate": 0.4188,
+    "http_status_from_api_logs": {"200": 669, "500": 482},
+    "batch_latency_ms": {
+      "avg": 3527.2,
+      "med": 4375.1,
+      "p(90)": 5070.8,
+      "p(95)": 5181.6,
+      "p(99)": 6018.2,
+      "max": 6634.8
+    }
+  },
+  "cause": "API middleware cancels every request after 5 seconds. Under this offered rate PostgreSQL saturated (readiness returned 503 while the database check exceeded 1 second). Event handlers that hit the deadline were logged as management operation failed and returned HTTP 500 internal_error, with no error class. That is overload, and the following change maps context.DeadlineExceeded to HTTP 503 overloaded with Retry-After. Exact convergence was not observed because the harness aborted.",
+  "database_after_abort": {
+    "unpublished_outbox_intents_soon_after": 43751,
+    "due_users_soon_after": 5961,
+    "unpublished_outbox_intents_at_13_24_53Z": 0,
+    "due_users_at_13_24_53Z": 14729,
+    "note": "Publication drained within about five minutes. User reconciliation was still behind, so a later run waits for that backlog before measuring again."
+  }
+}

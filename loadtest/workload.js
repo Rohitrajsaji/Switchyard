@@ -20,6 +20,7 @@ const correct = new Rate("evaluation_correct");
 const acceptedBatches = new Counter("event_batches_accepted");
 const rejectedBatches = new Counter("event_batches_rejected");
 const eventsAccepted = new Counter("events_accepted");
+const ingestStatus = new Counter("ingest_http_status");
 
 const scenarios = {};
 if (workload !== "events") {
@@ -44,15 +45,21 @@ if (workload !== "evaluation") {
     maxVUs: Number(__ENV.EVENT_MAX_VUS || 200),
   };
 }
+// Thresholds apply only to scenarios this run actually executes. An events-only run has no
+// evaluation samples, and k6 would otherwise judge the empty series.
+const thresholds = {};
+if (workload !== "events") {
+  thresholds["http_req_failed{kind:evaluate}"] = ["rate<0.001"];
+  thresholds["http_req_duration{kind:evaluate}"] = ["p(99)<50"];
+  thresholds.evaluation_correct = ["rate>0.999999"];
+}
+if (workload !== "evaluation") {
+  thresholds["http_req_failed{kind:ingest}"] = ["rate<0.001"];
+}
 export const options = {
   scenarios,
   summaryTrendStats: ["avg", "med", "p(90)", "p(95)", "p(99)", "max"],
-  thresholds: {
-    "http_req_failed{kind:evaluate}": ["rate<0.001"],
-    "http_req_duration{kind:evaluate}": ["p(99)<50"],
-    evaluation_correct: ["rate>0.999999"],
-    "http_req_failed{kind:ingest}": ["rate<0.001"],
-  },
+  thresholds,
 };
 
 // jsonb canonicalizes object key order, so compare JSON values structurally rather than as text.
@@ -131,6 +138,7 @@ export function ingest() {
     JSON.stringify({ project_id: fixture.project_id, environment_id: fixture.environment_id, events }),
     { headers, tags: { kind: "ingest" } },
   );
+  ingestStatus.add(1, { status: String(response.status) });
   const accepted =
     response.status === 200 &&
     check(response, { "all receipts accepted": (r) => r.json("receipts").every((x) => x.status === "accepted") });

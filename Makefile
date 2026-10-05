@@ -158,19 +158,21 @@ observability-down:
 	docker compose --profile cache --profile async up --no-build -d --wait api worker
 observability-smoke:
 	python3 scripts/observability_smoke.py
-.PHONY: load-fixture load-evaluation load-events load-mixed load-soak failure-drills
+.PHONY: load-fixture load-evaluation load-events load-mixed load-soak failure-drills require-demo-password
+require-demo-password:
+	@test -n "$(SWITCHYARD_DEMO_PASSWORD)" || (echo 'Set SWITCHYARD_DEMO_PASSWORD explicitly'; exit 1)
 # Durations are the scaled local protocol recorded in docs/benchmark-report.md; override the
 # variables for the plan's longer runs. Results are written to docs/benchmarks/m10-*.json.
 LOAD_EVAL_STEPS ?= 500,1000,2000,4000,6000,8000,10000
 LOAD_STEP_SECONDS ?= 45
-load-fixture:
+load-fixture: require-demo-password
 	cd scripts && python3 load_fixture.py
-load-evaluation:
+load-evaluation: require-demo-password
 	cd scripts && python3 load_run.py evaluation --steps $(LOAD_EVAL_STEPS) --step-seconds $(LOAD_STEP_SECONDS)
-load-events:
+load-events: require-demo-password
 	cd scripts && python3 load_run.py events --batch-rate 10 --seconds 120
-load-mixed:
+load-mixed: require-demo-password
 	cd scripts && python3 load_run.py mixed --steps 2000 --step-seconds 120 --batch-rate 10
-load-soak:
+load-soak: require-demo-password
 	cd scripts && python3 load_run.py soak --steps 1000 --step-seconds 600 --batch-rate 5
 failure-drills: cache-drill event-drill rollout-drill

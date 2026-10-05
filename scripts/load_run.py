@@ -15,6 +15,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
@@ -225,27 +226,40 @@ def main():
         rejected = int(metric(summary, "event_batches_rejected", "count") or 0)
         accepted_events = int(metric(summary, "events_accepted", "count") or 0)
         d = "http_req_duration{kind:ingest}"
+        statuses = {name.split("{status:")[-1].rstrip("}"): int(body.get("count") or 0)
+                    for name, body in summary.get("metrics", {}).items() if name.startswith("ingest_http_status{")}
         ingestion = report["ingestion"] = {"batch_rate_requested": args.batch_rate, "events_per_second_requested": args.batch_rate * 99, "accepted_batches": batches, "rejected_batches": rejected,
             "accepted_events": accepted_events, "accepted_events_per_second": round(accepted_events / max(1, event_seconds), 1),
             "batch_latency_ms": {k: metric(summary, d, k) for k in ("avg", "med", "p(90)", "p(95)", "p(99)", "max")},
-            "failure_rate": metric(summary, "http_req_failed{kind:ingest}", "value"), "dropped_iterations": metric(summary, "dropped_iterations", "count")}
+            "failure_rate": metric(summary, "http_req_failed{kind:ingest}", "value"), "dropped_iterations": metric(summary, "dropped_iterations", "count"),
+            "http_status_counts": statuses}
         # Convergence and exact counts through the public results API, after the load ends.
+        # A slow or refused read is a result, not a reason to discard the generator summary.
         admin = Client("admin@example.test")
         path = f"/v1/projects/{fixture['project_id']}/experiments/{fixture['run_id']}/results"
         distinct = min(batches * 33, len(fixture["users"]))
         deadline = time.monotonic() + 600
         converged_at, counts = None, [0, 0, 0]
+        read_errors = 0
         while time.monotonic() < deadline:
-            status, results = admin.call("GET", path)
-            if status == 200:
+            try:
+                status, results = admin.call("GET", path, timeout=20)
+            except (TimeoutError, urllib.error.URLError):
+                read_errors += 1
+                time.sleep(2)
+                continue
+            if status == 200 and results:
                 p = results["processing"]
                 counts = [sum(v["total"]["exposed"] for v in results["variants"]), sum(v["total"]["converted"] for v in results["variants"]), sum(v["requests"]["count"] for v in results["variants"])]
                 if p["pending_events"] == 0 and p["due_users"] == 0 and counts == [distinct] * 3:
                     converged_at = time.time()
                     break
+            else:
+                read_errors += 1
             time.sleep(2)
         ingestion["expected_distinct_users"] = distinct
         ingestion["converged_exactly"] = converged_at is not None
+        ingestion["results_read_errors"] = read_errors
         ingestion["seconds_from_load_end_to_exact_convergence"] = round(converged_at - finished, 1) if converged_at else None
         ingestion["final_counts"] = {"exposed": counts[0], "converted": counts[1], "requests": counts[2]}
         try:
