@@ -182,8 +182,25 @@ def main():
         lock_process = None
         wait_for("PostgreSQL source recovery", lambda: sees(False), 5)
         status, _ = admin.call("DELETE", path + "/application-keys/" + credential["id"])
-        if status != 204 or evaluate()[0] != 401:
-            raise RuntimeError("Cache bypassed application-key revocation")
+        if status != 204:
+            raise RuntimeError(f"Revocation HTTP {status}")
+        # The API that committed the revocation drops its own cache immediately.
+        # The observer did not process it, so its positive lookup can survive for
+        # the two-second application-key TTL and must then fail closed.
+        local_request = urllib.request.Request(base + "/v1/evaluate", method="POST",
+            data=json.dumps({"project_id": project["id"], "environment_id": env, "key": "cache_listing",
+                             "user_id": "synthetic_cache_user", "fallback": configuration["safe"]}).encode(),
+            headers={"Content-Type": "application/json", "Authorization": "Bearer " + credential["token"]})
+        try:
+            local_response = urllib.request.urlopen(local_request, timeout=5)
+        except urllib.error.HTTPError as error:
+            local_response = error
+        with local_response:
+            if local_response.status != 401:
+                raise RuntimeError("Processing API kept a revoked application key")
+        revoked_at = time.monotonic()
+        wait_for("observer honors revocation after the auth cache TTL", lambda: evaluate()[0] == 401, 5)
+        report["observer_revocation_seconds"] = round(time.monotonic() - revoked_at, 4)
         credential = None
         logs = command(["docker", "logs", observer], capture=True)
         counters = [json.loads(line)["statistics"] for line in logs.splitlines()
