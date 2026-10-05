@@ -14,6 +14,7 @@ import (
 	"switchyard/internal/cache"
 	"switchyard/internal/platform/config"
 	"switchyard/internal/platform/postgres"
+	grpcapi "switchyard/internal/transport/grpc"
 	httpapi "switchyard/internal/transport/http"
 )
 
@@ -100,26 +101,43 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	defer listener.Close()
+	rpcListener, err := net.Listen("tcp", cfg.GRPCAddr)
+	if err != nil {
+		return err
+	}
+	defer rpcListener.Close()
+	rpcServer := grpcapi.NewServer(management.EvaluationService())
+	defer rpcServer.Stop()
 	done := make(chan error, 1)
+	rpcDone := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
-	logger.Info("api listening", "address", cfg.HTTPAddr)
+	go func() { rpcDone <- rpcServer.Serve(rpcListener) }()
+	logger.Info("api listening", "address", cfg.HTTPAddr, "grpc_address", cfg.GRPCAddr)
+	var serveErr error
 	select {
 	case err := <-done:
 		if !errors.Is(err, http.ErrServerClosed) {
-			return err
+			serveErr = err
 		}
-		return nil
+	case serveErr = <-rpcDone:
 	case <-ctx.Done():
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		if err := server.Shutdown(shutdownCtx); err != nil {
-			_ = server.Close()
-			return err
-		}
-		if err := <-done; !errors.Is(err, http.ErrServerClosed) {
-			return err
-		}
-		logger.Info("api shutdown complete")
-		return nil
 	}
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	rpcStopped := make(chan struct{})
+	go func() { rpcServer.GracefulStop(); close(rpcStopped) }()
+	shutdownErr := server.Shutdown(shutdownCtx)
+	if shutdownErr != nil {
+		_ = server.Close()
+	}
+	select {
+	case <-rpcStopped:
+	case <-shutdownCtx.Done():
+		rpcServer.Stop()
+		<-rpcStopped
+		shutdownErr = errors.Join(shutdownErr, shutdownCtx.Err())
+	}
+	logger.Info("api shutdown complete")
+	return errors.Join(serveErr, shutdownErr)
 }

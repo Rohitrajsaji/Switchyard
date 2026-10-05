@@ -16,6 +16,7 @@ func TestLoad(t *testing.T) {
 		{"valid", map[string]string{"DATABASE_URL": "postgres://localhost/switchyard"}, false},
 		{"invalid pool", map[string]string{"DATABASE_URL": "postgres://localhost/switchyard", "DB_MAX_CONNS": "0"}, true},
 		{"invalid address", map[string]string{"DATABASE_URL": "postgres://localhost/switchyard", "HTTP_ADDR": "bad"}, true},
+		{"invalid RPC address", map[string]string{"DATABASE_URL": "postgres://localhost/switchyard", "GRPC_ADDR": "bad"}, true},
 		{"invalid cache", map[string]string{"DATABASE_URL": "postgres://localhost/switchyard", "CACHE_ENABLED": "maybe"}, true},
 	}
 	for _, tt := range tests {
@@ -24,7 +25,7 @@ func TestLoad(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if err == nil && (cfg.MaxConns < 1 || cfg.HTTPAddr == "") {
+			if err == nil && (cfg.MaxConns < 1 || cfg.HTTPAddr == "" || cfg.GRPCAddr == "") {
 				t.Fatal("invalid defaults")
 			}
 		})

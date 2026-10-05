@@ -23,11 +23,11 @@ def main():
     # process claims one between discovery and startup.
     sockets = []
     try:
-        for _ in range(6):
+        for _ in range(7):
             listener = socket.socket()
             listener.bind(("127.0.0.1", 0))
             sockets.append(listener)
-        pg_port, api_port, web_port, redis_port, nats_port, monitor_port = [s.getsockname()[1] for s in sockets]
+        pg_port, api_port, web_port, redis_port, nats_port, monitor_port, grpc_port = [s.getsockname()[1] for s in sockets]
     finally:
         for listener in sockets:
             listener.close()
@@ -36,7 +36,7 @@ def main():
     web_url = f"http://localhost:{web_port}"
     env = {**os.environ, "POSTGRES_PORT": str(pg_port), "API_PORT": str(api_port),
            "WEB_PORT": str(web_port), "REDIS_PORT": str(redis_port), "NATS_PORT": str(nats_port),
-           "NATS_MONITOR_PORT": str(monitor_port), "SWITCHYARD_URL": api_url,
+           "NATS_MONITOR_PORT": str(monitor_port), "GRPC_PORT": str(grpc_port), "SWITCHYARD_URL": api_url,
            "SWITCHYARD_WEB_URL": web_url, "SWITCHYARD_ORIGIN": web_url,
            "SWITCHYARD_E2E_EXTERNAL": "true", "COMPOSE_PROJECT_NAME": project,
            "COMPOSE_FILE": str(ROOT / "compose.yaml"), "COMPOSE_PROFILES": "cache,async"}

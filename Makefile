@@ -116,3 +116,24 @@ event-drill:
 .PHONY: ingestion-trial
 ingestion-trial:
 	python3 scripts/ingestion_trial.py
+
+# Normal builds use checked-in generated sources. These targets are for contract edits.
+PROTOC ?= protoc
+.cache/proto-tools/.v1.36.12-v1.6.2:
+	mkdir -p .cache/proto-tools
+	GOBIN="$(CURDIR)/.cache/proto-tools" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.12
+	GOBIN="$(CURDIR)/.cache/proto-tools" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.2
+	touch $@
+.PHONY: proto-generate proto-check sdk-contract
+proto-generate: .cache/proto-tools/.v1.36.12-v1.6.2
+	@test "$$($(PROTOC) --version)" = 'libprotoc 33.1' || (echo 'Use protoc 33.1 for reproducible sources'; exit 1)
+	PATH="$(CURDIR)/.cache/proto-tools:$$PATH" $(PROTOC) --go_out=. --go_opt=module=switchyard --go-grpc_out=. --go-grpc_opt=module=switchyard api/proto/switchyard/v1/evaluation.proto
+proto-check: .cache/proto-tools/.v1.36.12-v1.6.2
+	@test "$$($(PROTOC) --version)" = 'libprotoc 33.1' || (echo 'Use protoc 33.1 for reproducible sources'; exit 1)
+	mkdir -p .cache/proto-check
+	PATH="$(CURDIR)/.cache/proto-tools:$$PATH" $(PROTOC) --go_out=.cache/proto-check --go_opt=module=switchyard --go-grpc_out=.cache/proto-check --go-grpc_opt=module=switchyard api/proto/switchyard/v1/evaluation.proto
+	diff -u pkg/api/switchyard/v1/evaluation.pb.go .cache/proto-check/pkg/api/switchyard/v1/evaluation.pb.go
+	diff -u pkg/api/switchyard/v1/evaluation_grpc.pb.go .cache/proto-check/pkg/api/switchyard/v1/evaluation_grpc.pb.go
+sdk-contract:
+	@test -n "$(TEST_DATABASE_URL)" || (echo 'Set TEST_DATABASE_URL to an isolated test database'; exit 1)
+	go test -p 1 -race -tags=integration -count=1 ./pkg/sdk ./internal/transport/grpc

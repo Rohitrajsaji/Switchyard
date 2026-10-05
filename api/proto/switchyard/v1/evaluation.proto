@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package switchyard.v1;
+option go_package = "switchyard/pkg/api/switchyard/v1;switchyardv1";
+
+// Unary application-key RPCs. Credentials use authorization metadata, never bodies.
+service EvaluationService {
+  rpc Evaluate(EvaluateRequest) returns (EvaluateResponse);
+  rpc EvaluateBatch(EvaluateBatchRequest) returns (EvaluateBatchResponse);
+  rpc GetSnapshot(GetSnapshotRequest) returns (GetSnapshotResponse);
+}
+
+// JSON bytes preserve the HTTP contract's exact decimal tokens. V1 types are
+// boolean and json; unsupported types are rejected by the shared evaluator.
+message Value {
+  string type = 1;
+  bytes json = 2;
+}
+message Evaluation {
+  string key = 1;
+  string user_id = 2;
+  map<string, bytes> attributes_json = 3;
+  Value fallback = 4;
+}
+message EvaluateRequest {
+  string project_id = 1;
+  string environment_id = 2;
+  Evaluation input = 3;
+}
+message EvaluateBatchRequest {
+  string project_id = 1;
+  string environment_id = 2;
+  // 1..100 ordered decisions in one authorized scope, within 64 KiB total input.
+  // Invalid input rejects the batch; no partial response is returned.
+  repeated Evaluation inputs = 3;
+}
+enum Availability {
+  AVAILABILITY_UNSPECIFIED = 0;
+  AVAILABILITY_AVAILABLE = 1;
+  AVAILABILITY_CONFIGURATION_UNAVAILABLE = 2;
+}
+message EvaluateResponse {
+  Value value = 1;
+  string reason = 2;
+  int64 revision = 3;
+  string run_id = 4;
+  string variant_id = 5;
+  string decision_id = 6;
+  // A valid authorized safe-fallback decision uses OK transport status with
+  // CONFIGURATION_UNAVAILABLE. Authentication/invalid-input errors use gRPC status
+  // and expose no decision. Clients must distinguish transport from availability.
+  Availability availability = 7;
+}
+message EvaluateBatchResponse { repeated EvaluateResponse decisions = 1; }
+message GetSnapshotRequest {
+  string project_id = 1;
+  string environment_id = 2;
+  string key = 3;
+}
+message GetSnapshotResponse {
+  // Exact pkg/snapshot v1 envelope. verified_at is the original authoritative
+  // proof time, not response time. A cache/intermediary never renews this proof.
+  // Maximum envelope: 1 MiB. Requires config:read, not evaluate permission.
+  bytes snapshot_json = 1;
+}

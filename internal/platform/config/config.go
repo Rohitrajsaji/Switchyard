@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	HTTPAddr               string
+	GRPCAddr               string
 	DatabaseURL            string
 	MaxConns               int32
 	CacheEnabled           bool
@@ -19,7 +20,7 @@ type Config struct {
 }
 
 func Load(getenv func(string) string) (Config, error) {
-	c := Config{HTTPAddr: getenv("HTTP_ADDR"), DatabaseURL: getenv("DATABASE_URL"), MaxConns: 10, CacheEnabled: true, RedisURL: getenv("REDIS_URL"), RawRetentionDays: 7, SummaryRetentionDays: 90}
+	c := Config{HTTPAddr: getenv("HTTP_ADDR"), GRPCAddr: getenv("GRPC_ADDR"), DatabaseURL: getenv("DATABASE_URL"), MaxConns: 10, CacheEnabled: true, RedisURL: getenv("REDIS_URL"), RawRetentionDays: 7, SummaryRetentionDays: 90}
 	if s := getenv("CACHE_ENABLED"); s != "" {
 		value, err := strconv.ParseBool(s)
 		if err != nil {
@@ -56,6 +57,12 @@ func Load(getenv func(string) string) (Config, error) {
 	}
 	if _, _, err := net.SplitHostPort(c.HTTPAddr); err != nil {
 		return Config{}, errors.New("HTTP_ADDR must be host:port")
+	}
+	if c.GRPCAddr == "" {
+		c.GRPCAddr = "127.0.0.1:9090"
+	}
+	if _, _, err := net.SplitHostPort(c.GRPCAddr); err != nil {
+		return Config{}, errors.New("GRPC_ADDR must be host:port")
 	}
 	if s := getenv("DB_MAX_CONNS"); s != "" {
 		n, err := strconv.Atoi(s)

@@ -16,15 +16,14 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"switchyard/internal/applicationeval"
 	"switchyard/internal/audit"
 	"switchyard/internal/auth"
 	"switchyard/internal/cache"
 	"switchyard/internal/experiments"
 	"switchyard/internal/flags"
 	"switchyard/internal/outbox"
-	"switchyard/internal/platform/identity"
 	"switchyard/internal/projects"
-	"switchyard/pkg/evaluation"
 	"switchyard/pkg/snapshot"
 )
 
@@ -40,6 +39,7 @@ type Management struct {
 	loginLimit   *Limiter
 	requestLimit *Limiter
 	snapshots    *cache.Coordinator
+	evaluator    *applicationeval.Service
 }
 
 func NewManagement(pool *pgxpool.Pool, logger *slog.Logger, origin string, secure bool, snapshots ...*cache.Coordinator) (*Management, error) {
@@ -58,6 +58,7 @@ func NewManagement(pool *pgxpool.Pool, logger *slog.Logger, origin string, secur
 	if len(snapshots) == 1 {
 		m.snapshots = snapshots[0]
 	}
+	m.evaluator = applicationeval.New(pool, a, m.snapshots)
 	return m, nil
 }
 
@@ -358,18 +359,11 @@ func (m *Management) getFlag(w http.ResponseWriter, r *http.Request, actor auth.
 	JSON(w, 200, d)
 }
 
-type evaluationInput struct {
-	ProjectID     string                     `json:"project_id"`
-	EnvironmentID string                     `json:"environment_id"`
-	Key           string                     `json:"key"`
-	UserID        string                     `json:"user_id"`
-	Attributes    map[string]json.RawMessage `json:"attributes"`
-	Fallback      evaluation.Value           `json:"fallback"`
-}
-type evaluationResponse struct {
-	evaluation.Result
-	DecisionID string `json:"decision_id"`
-}
+type evaluationInput = applicationeval.Input
+type evaluationResponse = applicationeval.Response
+
+// EvaluationService is shared with the gRPC adapter in the API composition root.
+func (m *Management) EvaluationService() *applicationeval.Service { return m.evaluator }
 
 func (m *Management) evaluate(w http.ResponseWriter, r *http.Request) {
 	var in evaluationInput
@@ -382,30 +376,9 @@ func (m *Management) evaluate(w http.ResponseWriter, r *http.Request) {
 		m.fail(w, r, auth.ErrUnauthorized)
 		return
 	}
-	if _, err := m.auth.AuthenticateApplication(r.Context(), token, in.ProjectID, in.EnvironmentID, "evaluate"); err != nil {
-		m.fail(w, r, err)
-		return
-	}
-	if m.snapshots != nil {
-		m.cachedEvaluateInput(w, r, in)
-		return
-	}
-	m.evaluateInput(w, r, in)
-}
-func (m *Management) invalidate(projectID, environmentID, key string) {
-	if m.snapshots != nil {
-		m.snapshots.Invalidate(snapshot.Key{ProjectID: projectID, EnvironmentID: environmentID, FlagKey: key})
-	}
-}
-func (m *Management) cachedEvaluateInput(w http.ResponseWriter, r *http.Request, in evaluationInput) {
+	response, err := m.evaluator.Evaluate(r.Context(), token, in)
 	w.Header().Set("Cache-Control", "no-store")
-	result, err := m.snapshots.Evaluate(r.Context(), snapshot.Key{ProjectID: in.ProjectID, EnvironmentID: in.EnvironmentID, FlagKey: in.Key}, in.UserID, in.Attributes, in.Fallback)
-	if errors.Is(err, cache.ErrInvalidFallback) || errors.Is(err, snapshot.ErrInvalid) {
-		m.fail(w, r, auth.ErrInvalid)
-		return
-	}
-	response := evaluationResponse{Result: result, DecisionID: identity.New("dec_")}
-	if err != nil {
+	if errors.Is(err, cache.ErrUnavailable) {
 		w.Header().Set("Retry-After", "1")
 		JSON(w, 503, struct {
 			evaluationResponse
@@ -413,7 +386,16 @@ func (m *Management) cachedEvaluateInput(w http.ResponseWriter, r *http.Request,
 		}{response, "configuration_unavailable"})
 		return
 	}
+	if err != nil {
+		m.fail(w, r, err)
+		return
+	}
 	JSON(w, 200, response)
+}
+func (m *Management) invalidate(projectID, environmentID, key string) {
+	if m.snapshots != nil {
+		m.snapshots.Invalidate(snapshot.Key{ProjectID: projectID, EnvironmentID: environmentID, FlagKey: key})
+	}
 }
 func (m *Management) previewFlag(w http.ResponseWriter, r *http.Request, actor auth.Actor) {
 	var in evaluationInput
@@ -430,35 +412,13 @@ func (m *Management) previewFlag(w http.ResponseWriter, r *http.Request, actor a
 	m.evaluateInput(w, r, in)
 }
 func (m *Management) evaluateInput(w http.ResponseWriter, r *http.Request, in evaluationInput) {
-	if evaluation.ValidateContext(in.UserID, in.Attributes) != nil || in.Fallback.Validate(in.Fallback.Type) != nil {
-		m.fail(w, r, auth.ErrInvalid)
-		return
-	}
-	d, err := flags.New(m.pool).Get(r.Context(), in.ProjectID, in.EnvironmentID, in.Key)
-	if errors.Is(err, flags.ErrNotFound) {
-		JSON(w, 200, evaluationResponse{Result: evaluation.Result{Value: in.Fallback, Reason: "flag_not_found"}, DecisionID: identity.New("dec_")})
-		return
-	}
+	result, err := m.evaluator.Preview(r.Context(), in)
 	if err != nil {
 		m.fail(w, r, err)
-		return
-	}
-	if !evaluation.Equal(in.Fallback, d.Safe) {
-		m.fail(w, r, auth.ErrInvalid)
-		return
-	}
-	c, err := evaluation.Compile(d)
-	if err != nil {
-		m.fail(w, r, err)
-		return
-	}
-	result, err := c.Evaluate(in.UserID, in.Attributes)
-	if err != nil {
-		m.fail(w, r, auth.ErrInvalid)
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")
-	JSON(w, 200, evaluationResponse{Result: result, DecisionID: identity.New("dec_")})
+	JSON(w, 200, result)
 }
 func DecodeJSON(w http.ResponseWriter, r *http.Request, target any, limit int64) error {
 	media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
