@@ -71,3 +71,9 @@ One optional fixed Go worker loop runs bounded summary expiry, raw folding, iden
 `WORKER_RETENTION_ENABLED` defaults false until the final M7 aggregate-read gate. Enabling it requires normal processing. `RAW_RETENTION_DAYS` accepts 2–7 (default 7), preserving the 24h30m finalization interval and keeping raw retention below the eight-day identity/receipt horizon. `SUMMARY_RETENTION_DAYS` accepts 8–365 (default 90). The operator's raw replay interval follows raw retention; publication/dead-letter repair retains its existing maximum seven-day source horizon. Event ingestion's maximum occurrence age stays seven days, independently of when a newly received fact expires.
 
 Late processing can leave raw facts outside the summary window. Folding deletes their delivered sources but does not recreate expired daily segments or reporting counts. The real cycle fixture verifies this tail cleanup after expiry. Queue failure/load gates and the HTTP read transition remain outstanding before M7 completion.
+
+## Fresh eligibility under the expiry lock
+
+A subsequent full-suite run exposed an intermittent concurrent-expiry selection issue. READ COMMITTED can acquire a user lock after another transaction commits while child-table predicates still reflect the candidate statement's earlier snapshot. The second caller could report expiry work and schedule reconciliation despite no eligible child rows remaining. Counter updates stayed transactional, but this was unnecessary mutation and incorrect progress reporting.
+
+Expiry now rechecks the same eligibility predicate in a fresh statement after acquiring the shared user lock. An already-drained candidate returns without floor/history/due changes. The existing eight-caller race fixture passed ten repeated race-enabled PostgreSQL runs after the fix. The final full-suite result is recorded in the milestone ledger.

@@ -26,6 +26,12 @@ func SummaryFloor(now time.Time, days int) (time.Time, error) {
 	return now.UTC().Truncate(24*time.Hour).AddDate(0, 0, -(days - 1)), nil
 }
 
+const expiryCandidateSQL = `EXISTS(SELECT 1 FROM metric_history_segments h WHERE h.project_id=s.project_id AND h.environment_id=s.environment_id AND h.run_id=s.run_id AND h.user_id=s.user_id AND h.receipt_day<($1 AT TIME ZONE 'UTC')::date)
+ OR EXISTS(SELECT 1 FROM metric_pending_outcomes p WHERE p.project_id=s.project_id AND p.environment_id=s.environment_id AND p.run_id=s.run_id AND p.user_id=s.user_id AND p.received_at<$1)
+ OR (s.reporting_since<$1 AND (EXISTS(SELECT 1 FROM raw_events e WHERE e.project_id=s.project_id AND e.environment_id=s.environment_id AND e.run_id=s.run_id AND e.user_id=s.user_id AND e.received_at<$1)
+ OR EXISTS(SELECT 1 FROM metric_archived_anchors a WHERE a.project_id=s.project_id AND a.environment_id=s.environment_id AND a.run_id=s.run_id AND a.user_id=s.user_id AND a.received_at<$1
+ AND jsonb_array_length(COALESCE(s.historical_contribution->'cohorts','[]'::jsonb))>0)))`
+
 // ExpireOne expires one user's reporting data under the shared user lock.
 // Each deletion group is bounded at 100; rebuilding uses at most days daily
 // summaries and one original anchor. Counters change in normal reconciliation.
@@ -43,17 +49,24 @@ func ExpireOne(ctx context.Context, pool *pgxpool.Pool, now time.Time, days int)
 	defer tx.Rollback(context.Background())
 	var project, env, run, user string
 	err = tx.QueryRow(ctx, `SELECT s.project_id,s.environment_id,s.run_id,s.user_id FROM metric_user_state s
- WHERE EXISTS(SELECT 1 FROM metric_history_segments h WHERE h.project_id=s.project_id AND h.environment_id=s.environment_id AND h.run_id=s.run_id AND h.user_id=s.user_id AND h.receipt_day<($1 AT TIME ZONE 'UTC')::date)
- OR EXISTS(SELECT 1 FROM metric_pending_outcomes p WHERE p.project_id=s.project_id AND p.environment_id=s.environment_id AND p.run_id=s.run_id AND p.user_id=s.user_id AND p.received_at<$1)
- OR (s.reporting_since<$1 AND (EXISTS(SELECT 1 FROM raw_events e WHERE e.project_id=s.project_id AND e.environment_id=s.environment_id AND e.run_id=s.run_id AND e.user_id=s.user_id AND e.received_at<$1)
- OR EXISTS(SELECT 1 FROM metric_archived_anchors a WHERE a.project_id=s.project_id AND a.environment_id=s.environment_id AND a.run_id=s.run_id AND a.user_id=s.user_id AND a.received_at<$1
- AND jsonb_array_length(COALESCE(s.historical_contribution->'cohorts','[]'::jsonb))>0)))
+ WHERE `+expiryCandidateSQL+`
  ORDER BY s.project_id,s.environment_id,s.run_id,s.user_id LIMIT 1 FOR UPDATE OF s SKIP LOCKED`, floor).Scan(&project, &env, &run, &user)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return result, nil
 	}
 	if err != nil {
 		return result, err
+	}
+	// The candidate query can see old child rows in its statement snapshot even
+	// when its user lock is acquired after another expiry commits. Revalidate in
+	// a fresh READ COMMITTED statement while holding that lock before mutating.
+	var eligible bool
+	if err = tx.QueryRow(ctx, `SELECT (`+expiryCandidateSQL+`) FROM metric_user_state s
+ WHERE s.project_id=$2 AND s.environment_id=$3 AND s.run_id=$4 AND s.user_id=$5`, floor, project, env, run, user).Scan(&eligible); err != nil {
+		return result, err
+	}
+	if !eligible {
+		return result, nil
 	}
 	var currentFloor time.Time
 	if err = tx.QueryRow(ctx, `UPDATE metric_user_state SET reporting_since=GREATEST(reporting_since,$5) WHERE project_id=$1 AND environment_id=$2 AND run_id=$3 AND user_id=$4 RETURNING reporting_since`, project, env, run, user, floor).Scan(&currentFloor); err != nil {

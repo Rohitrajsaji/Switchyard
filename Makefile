@@ -108,3 +108,7 @@ recovery-smoke:
 .PHONY: retention-smoke
 retention-smoke:
 	python3 scripts/retention_smoke.py
+
+.PHONY: event-drill
+event-drill:
+	python3 scripts/event_drill.py
