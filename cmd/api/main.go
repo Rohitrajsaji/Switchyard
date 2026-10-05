@@ -8,12 +8,17 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"google.golang.org/grpc"
 	"switchyard/internal/cache"
 	"switchyard/internal/platform/config"
 	"switchyard/internal/platform/postgres"
+	"switchyard/internal/platform/telemetry"
 	grpcapi "switchyard/internal/transport/grpc"
 	httpapi "switchyard/internal/transport/http"
 )
@@ -49,11 +54,23 @@ func run(logger *slog.Logger) error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+	shutdownTracing, err := telemetry.InitTracing(ctx, "switchyard-api")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		flush, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = shutdownTracing(flush)
+	}()
+	tracing := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != ""
+	metrics := telemetry.NewMetrics("api")
 	pool, err := postgres.Open(ctx, cfg.DatabaseURL, cfg.MaxConns)
 	if err != nil {
 		return err
 	}
 	defer pool.Close()
+	metrics.Registry.MustRegister(telemetry.PoolCollector(pool, "api"))
 	origin := os.Getenv("SWITCHYARD_ORIGIN")
 	if origin == "" {
 		origin = "http://localhost:3000"
@@ -91,11 +108,31 @@ func run(logger *slog.Logger) error {
 		}()
 		defer func() { cancelReport(); <-reportDone }()
 	}
+	if snapshots != nil {
+		metrics.Registry.MustRegister(telemetry.CacheCollector(func() telemetry.CacheStats {
+			s := snapshots.Stats()
+			return telemetry.CacheStats{MemoryHits: s.MemoryHits, RedisHits: s.RedisHits, SourceReads: s.SourceReads, SourceFailures: s.SourceFailures, StoreFailures: s.StoreFailures,
+				MemoryMisses: s.MemoryMisses, StaleHits: s.StaleHits, Coalesced: s.Coalesced, Backpressure: s.Backpressure, Evictions: s.Evictions,
+				Regressions: s.Regressions, Expired: s.Expired, Entries: s.Entries, OldestVerificationAge: s.OldestVerificationAge}
+		}, "api"))
+	}
+	stopMetrics, err := metrics.Serve(os.Getenv("METRICS_ADDR"), os.Getenv("ENABLE_PPROF") == "true")
+	if err != nil {
+		return err
+	}
+	defer stopMetrics()
 	management, err := httpapi.NewManagement(pool, logger, origin, os.Getenv("COOKIE_SECURE") == "true", snapshots)
 	if err != nil {
 		return err
 	}
-	h := httpapi.New(logger, func(ctx context.Context) error { return postgres.Ready(ctx, pool) }, management.Register)
+	management.SetMetrics(metrics)
+	var h http.Handler = httpapi.NewObserved(logger, func(ctx context.Context) error { return postgres.Ready(ctx, pool) }, metrics, management.Register)
+	var rpcOptions []grpc.ServerOption
+	if tracing {
+		// Health probes would drown real traces; trace everything else.
+		h = otelhttp.NewHandler(h, "http.server", otelhttp.WithFilter(func(r *http.Request) bool { return !strings.HasPrefix(r.URL.Path, "/health/") }))
+		rpcOptions = append(rpcOptions, grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	}
 	server := &http.Server{Addr: cfg.HTTPAddr, Handler: h, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 16}
 	listener, err := net.Listen("tcp", cfg.HTTPAddr)
 	if err != nil {
@@ -107,7 +144,7 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer rpcListener.Close()
-	rpcServer := grpcapi.NewServer(management.EvaluationService())
+	rpcServer := grpcapi.NewObservedServer(management.EvaluationService(), metrics, rpcOptions...)
 	defer rpcServer.Stop()
 	done := make(chan error, 1)
 	rpcDone := make(chan error, 1)

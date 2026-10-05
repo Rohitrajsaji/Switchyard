@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"switchyard/internal/platform/telemetry"
 	"switchyard/migrations"
 )
 
@@ -19,6 +20,8 @@ func Open(ctx context.Context, url string, maxConns int32) (*pgxpool.Pool, error
 	c.MaxConnLifetime = 30 * time.Minute
 	c.MaxConnIdleTime = 5 * time.Minute
 	c.ConnConfig.ConnectTimeout = 3 * time.Second
+	// Statement spans are created only inside already-sampled requests or jobs.
+	c.ConnConfig.Tracer = telemetry.PgxTracer{}
 	return pgxpool.NewWithConfig(ctx, c)
 }
 

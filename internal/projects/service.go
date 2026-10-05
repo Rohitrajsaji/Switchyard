@@ -28,7 +28,14 @@ type CreatedKey struct {
 	Token       string   `json:"token"`
 	Permissions []string `json:"permissions"`
 }
-type Service struct{ pool *pgxpool.Pool }
+type Service struct {
+	pool    *pgxpool.Pool
+	revoked func(keyID string)
+}
+
+// SetRevocationObserver registers a function called after a key revocation commits, so caches of
+// successful key lookups can forget it at once. It must be set before the service is shared.
+func (s *Service) SetRevocationObserver(f func(keyID string)) { s.revoked = f }
 
 func New(pool *pgxpool.Pool) *Service { return &Service{pool: pool} }
 
@@ -222,7 +229,13 @@ func (s *Service) RevokeKey(ctx context.Context, actor auth.Actor, projectID, ke
 	if err = audit.Record(ctx, tx, audit.Entry{ActorID: actor.ID, Source: "human", ProjectID: projectID, EnvironmentID: environmentID, Action: "application_key.revoked", RequestID: requestID, Reason: "revoke application credential", Details: details}); err != nil {
 		return err
 	}
-	return tx.Commit(ctx)
+	if err = tx.Commit(ctx); err != nil {
+		return err
+	}
+	if s.revoked != nil {
+		s.revoked(keyID) // after commit: caches must never forget a revocation that rolled back
+	}
+	return nil
 }
 func rollback(tx pgx.Tx) { _ = tx.Rollback(context.Background()) }
 func classify(err error) error {

@@ -1,0 +1,214 @@
+{
+  "name": "evaluation-http-baseline",
+  "workload": "evaluation",
+  "commit": "e5e1eec",
+  "dirty_tree": true,
+  "started_at": "2026-10-05T12:15:45.854362+00:00",
+  "host": {
+    "cpu": "Apple M1",
+    "cpus": 8,
+    "memory_gib": 8.0,
+    "docker_vm_memory_gib": 3.8
+  },
+  "docker_memory_limits_mib": {
+    "switchyard-api-1": 256,
+    "switchyard-worker-1": 384,
+    "switchyard-postgres-1": 768,
+    "switchyard-redis-1": 128,
+    "switchyard-nats-1": 256
+  },
+  "observability_profile_running": false,
+  "k6_image": "grafana/k6:2.3.0@sha256:9c2dee7f8ed74d317e4027c06a10f169b625638189de8d4555d0b3486a5aeb34",
+  "max_vus": 200,
+  "dataset": {
+    "flags": 100,
+    "experiments": 10,
+    "evaluation_user_space": 100000,
+    "event_user_pool": 20000
+  },
+  "generator_kind": "go",
+  "generator": {
+    "name": "cmd/loadgen",
+    "stderr_progress": [
+      "target 500/s: achieved 500/s p50 0.63ms p99 3.72ms dropped 0 failures 0 incorrect 0",
+      "target 1000/s: achieved 1000/s p50 0.60ms p99 3.27ms dropped 0 failures 0 incorrect 0",
+      "target 2000/s: achieved 2000/s p50 0.43ms p99 5.80ms dropped 0 failures 0 incorrect 0",
+      "target 4000/s: achieved 4001/s p50 0.27ms p99 3.07ms dropped 0 failures 0 incorrect 0",
+      "target 6000/s: achieved 6001/s p50 0.29ms p99 317.82ms dropped 0 failures 0 incorrect 0",
+      "target 8000/s: achieved 7855/s p50 0.34ms p99 628.15ms dropped 6526 failures 0 incorrect 0",
+      "target 10000/s: achieved 9642/s p50 0.68ms p99 1033.73ms dropped 35969 failures 0 incorrect 0"
+    ]
+  },
+  "generator_exit_codes": [
+    0
+  ],
+  "duration_seconds": 453.6,
+  "evaluation_steps": [
+    {
+      "target_requests_per_second": 500,
+      "transport": "http",
+      "requests": 25999,
+      "achieved_requests_per_second_during_hold": 500.0,
+      "latency_ms": {
+        "avg": 0.7848277626062541,
+        "med": 0.632,
+        "p(90)": 1.175,
+        "p(95)": 1.613,
+        "p(99)": 3.718,
+        "max": 27.645
+      },
+      "failure_rate": 0,
+      "dropped_iterations": 0,
+      "correctness_rate": 1,
+      "max_in_flight": 38
+    },
+    {
+      "target_requests_per_second": 1000,
+      "transport": "http",
+      "requests": 52499,
+      "achieved_requests_per_second_during_hold": 1000.0,
+      "latency_ms": {
+        "avg": 0.7046858035391151,
+        "med": 0.599,
+        "p(90)": 0.998,
+        "p(95)": 1.369,
+        "p(99)": 3.267,
+        "max": 43.579
+      },
+      "failure_rate": 0,
+      "dropped_iterations": 0,
+      "correctness_rate": 1,
+      "max_in_flight": 25
+    },
+    {
+      "target_requests_per_second": 2000,
+      "transport": "http",
+      "requests": 104997,
+      "achieved_requests_per_second_during_hold": 2000.0,
+      "latency_ms": {
+        "avg": 0.7665942645980361,
+        "med": 0.432,
+        "p(90)": 0.761,
+        "p(95)": 1.136,
+        "p(99)": 5.805,
+        "max": 93.975
+      },
+      "failure_rate": 0,
+      "dropped_iterations": 0,
+      "correctness_rate": 1,
+      "max_in_flight": 145
+    },
+    {
+      "target_requests_per_second": 4000,
+      "transport": "http",
+      "requests": 209999,
+      "achieved_requests_per_second_during_hold": 4000.6,
+      "latency_ms": {
+        "avg": 0.46060690289001377,
+        "med": 0.266,
+        "p(90)": 0.587,
+        "p(95)": 0.875,
+        "p(99)": 3.073,
+        "max": 59.605
+      },
+      "failure_rate": 0,
+      "dropped_iterations": 0,
+      "correctness_rate": 1,
+      "max_in_flight": 176
+    },
+    {
+      "target_requests_per_second": 6000,
+      "transport": "http",
+      "requests": 319999,
+      "achieved_requests_per_second_during_hold": 6000.9,
+      "latency_ms": {
+        "avg": 8.787205272516477,
+        "med": 0.289,
+        "p(90)": 1.32,
+        "p(95)": 8.482,
+        "p(99)": 317.825,
+        "max": 969.913
+      },
+      "failure_rate": 0,
+      "dropped_iterations": 0,
+      "correctness_rate": 1,
+      "max_in_flight": 3787
+    },
+    {
+      "target_requests_per_second": 8000,
+      "transport": "http",
+      "requests": 423473,
+      "achieved_requests_per_second_during_hold": 7855.2,
+      "latency_ms": {
+        "avg": 21.0305317836084,
+        "med": 0.345,
+        "p(90)": 3.697,
+        "p(95)": 43.795,
+        "p(99)": 628.155,
+        "max": 1530.193
+      },
+      "failure_rate": 0,
+      "dropped_iterations": 6526,
+      "correctness_rate": 1,
+      "max_in_flight": 4000
+    },
+    {
+      "target_requests_per_second": 10000,
+      "transport": "http",
+      "requests": 504025,
+      "achieved_requests_per_second_during_hold": 9641.6,
+      "latency_ms": {
+        "avg": 85.21458981399732,
+        "med": 0.683,
+        "p(90)": 319.388,
+        "p(95)": 459.209,
+        "p(99)": 1033.73,
+        "max": 1743.937
+      },
+      "failure_rate": 0,
+      "dropped_iterations": 35969,
+      "correctness_rate": 1,
+      "max_in_flight": 4000
+    }
+  ],
+  "resources": {
+    "switchyard-api-1": {
+      "samples": 77,
+      "cpu_percent_mean": 78.3,
+      "cpu_percent_max": 242.31,
+      "memory_mib_max": 247.3
+    },
+    "switchyard-loadgen-62b30e": {
+      "samples": 77,
+      "cpu_percent_mean": 51.5,
+      "cpu_percent_max": 190.07,
+      "memory_mib_max": 225.8
+    },
+    "switchyard-nats-1": {
+      "samples": 77,
+      "cpu_percent_mean": 1.1,
+      "cpu_percent_max": 4.21,
+      "memory_mib_max": 23.5
+    },
+    "switchyard-postgres-1": {
+      "samples": 77,
+      "cpu_percent_mean": 31.5,
+      "cpu_percent_max": 79.32,
+      "memory_mib_max": 82.0
+    },
+    "switchyard-redis-1": {
+      "samples": 77,
+      "cpu_percent_mean": 1.9,
+      "cpu_percent_max": 6.84,
+      "memory_mib_max": 12.1
+    },
+    "switchyard-worker-1": {
+      "samples": 77,
+      "cpu_percent_mean": 0.9,
+      "cpu_percent_max": 5.55,
+      "memory_mib_max": 25.3
+    }
+  },
+  "prometheus_peaks": null,
+  "finished_at": "2026-10-05T12:23:21.065340+00:00"
+}

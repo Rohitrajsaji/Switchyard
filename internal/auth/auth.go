@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/mail"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -42,14 +43,68 @@ type Application struct {
 type Service struct {
 	pool  *pgxpool.Pool
 	dummy []byte
+	apps  applicationCache
+	now   func() time.Time
 }
+
+// ApplicationCacheTTL bounds how long a revoked application key can keep authenticating
+// evaluation requests on an API instance that did not process the revocation. The instance that
+// processes a revocation forgets the key immediately (ForgetApplication). Event ingestion never
+// uses this cache: it authorizes inside its write transaction.
+const ApplicationCacheTTL = 2 * time.Second
+const applicationCacheMax = 4096
+
+type cachedApplication struct {
+	app     Application
+	expires time.Time
+}
+
+// applicationCache holds only successful lookups, so unknown or revoked tokens always reach the
+// database and cannot be answered from memory.
+type applicationCache struct {
+	mu      sync.RWMutex
+	entries map[string]cachedApplication
+}
+
+func (c *applicationCache) get(key string, now time.Time) (Application, bool) {
+	c.mu.RLock()
+	e, ok := c.entries[key]
+	c.mu.RUnlock()
+	if !ok || !now.Before(e.expires) {
+		return Application{}, false
+	}
+	return e.app, true
+}
+func (c *applicationCache) put(key string, app Application, expires time.Time) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.entries == nil || len(c.entries) >= applicationCacheMax {
+		c.entries = make(map[string]cachedApplication, 64) // bounded: start over rather than grow
+	}
+	c.entries[key] = cachedApplication{app: app, expires: expires}
+}
+func (c *applicationCache) forget(id string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for key, e := range c.entries {
+		if e.app.ID == id {
+			delete(c.entries, key)
+		}
+	}
+}
+
+// ForgetApplication drops a revoked key from this instance's cache immediately.
+func (s *Service) ForgetApplication(id string) { s.apps.forget(id) }
+
+// UseClock replaces the cache clock; tests use it to cross the TTL deterministically.
+func (s *Service) UseClock(now func() time.Time) { s.now = now }
 
 func New(pool *pgxpool.Pool) (*Service, error) {
 	dummy, err := bcrypt.GenerateFromPassword([]byte(identity.New("dummy_")), 12)
 	if err != nil {
 		return nil, err
 	}
-	return &Service{pool: pool, dummy: dummy}, nil
+	return &Service{pool: pool, dummy: dummy, now: time.Now}, nil
 }
 
 func ValidatePassword(password string) error {
@@ -145,15 +200,40 @@ func (s *Service) Current(ctx context.Context, token string) (Session, error) {
 	}
 	return Session{Actor: actor, CSRF: csrfFor(token), ExpiresAt: expiry}, nil
 }
+
+// AuthenticateApplication serves the evaluation, batch and snapshot paths. A successful key lookup
+// is remembered for ApplicationCacheTTL; scope and permission are checked on every call.
 func (s *Service) AuthenticateApplication(ctx context.Context, token, projectID, environmentID, permission string) (Application, error) {
-	return AuthorizeApplication(ctx, s.pool, token, projectID, environmentID, permission)
+	if len(token) != 68 || !strings.HasPrefix(token, "swk_") {
+		return Application{}, ErrUnauthorized
+	}
+	key := string(identity.Hash(token))
+	now := s.now()
+	app, ok := s.apps.get(key, now)
+	if !ok {
+		var err error
+		if app, err = lookupApplication(ctx, s.pool, token); err != nil {
+			return Application{}, err
+		}
+		s.apps.put(key, app, now.Add(ApplicationCacheTTL))
+	}
+	return checkApplicationScope(app, projectID, environmentID, permission)
 }
 
-// AuthorizeApplication allows ingestion to check scope inside its write transaction.
+// AuthorizeApplication allows ingestion to check scope inside its write transaction. It always
+// reads the database, so a revocation is effective for the very next accepted batch.
 func AuthorizeApplication(ctx context.Context, db Queryer, token, projectID, environmentID, permission string) (Application, error) {
 	if len(token) != 68 || !strings.HasPrefix(token, "swk_") {
 		return Application{}, ErrUnauthorized
 	}
+	app, err := lookupApplication(ctx, db, token)
+	if err != nil {
+		return Application{}, err
+	}
+	return checkApplicationScope(app, projectID, environmentID, permission)
+}
+
+func lookupApplication(ctx context.Context, db Queryer, token string) (Application, error) {
 	var a Application
 	err := db.QueryRow(ctx, `SELECT id,project_id,environment_id,permissions FROM application_keys WHERE token_hash=$1 AND revoked_at IS NULL`, identity.Hash(token)).Scan(&a.ID, &a.ProjectID, &a.EnvironmentID, &a.Permissions)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -162,6 +242,10 @@ func AuthorizeApplication(ctx context.Context, db Queryer, token, projectID, env
 	if err != nil {
 		return Application{}, err
 	}
+	return a, nil
+}
+
+func checkApplicationScope(a Application, projectID, environmentID, permission string) (Application, error) {
 	if a.ProjectID != projectID || a.EnvironmentID != environmentID {
 		return Application{}, ErrForbidden
 	}

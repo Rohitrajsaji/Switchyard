@@ -46,6 +46,10 @@ type Stats struct {
 	Coalesced, Backpressure, Evictions, Regressions, Expired          uint64
 	Entries                                                           int
 	Weight                                                            int64
+	// OldestVerificationAge is the age of the stalest snapshot read within the last thirty
+	// seconds (idle entries are excluded so they cannot look like violations). It is
+	// observational; expiry decisions never use it.
+	OldestVerificationAge time.Duration
 }
 type entry struct {
 	value   *snapshot.Snapshot
@@ -125,6 +129,14 @@ func (c *Coordinator) Stats() Stats {
 	s := c.stats
 	s.Entries = len(c.entries)
 	s.Weight = c.weight
+	now := c.options.Now()
+	for _, e := range c.entries {
+		if e.value != nil && now.Sub(e.access) <= 30*time.Second {
+			if age := now.Sub(e.value.VerifiedAt()); age > s.OldestVerificationAge {
+				s.OldestVerificationAge = age
+			}
+		}
+	}
 	return s
 }
 func usable(e *entry, now time.Time) bool {

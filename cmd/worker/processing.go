@@ -12,6 +12,7 @@ import (
 	"switchyard/internal/cache"
 	"switchyard/internal/metrics"
 	"switchyard/internal/outbox"
+	"switchyard/internal/platform/telemetry"
 	"switchyard/internal/processing"
 	"switchyard/internal/rollouts"
 	"switchyard/pkg/snapshot"
@@ -50,7 +51,7 @@ func refreshConfiguration(pool *pgxpool.Pool, store cache.Store) func(context.Co
 		return err
 	}
 }
-func consume(ctx context.Context, consumer jetstream.Consumer, store *processing.Store, refresh func(context.Context, outbox.Reference) error, logger *slog.Logger) {
+func consume(ctx context.Context, consumer jetstream.Consumer, store *processing.Store, refresh func(context.Context, outbox.Reference) error, logger *slog.Logger, metrics *telemetry.Metrics) {
 	var received, duplicates, dead, failed, cacheFailures uint64
 	nextReport := time.Now().Add(30 * time.Second)
 	for ctx.Err() == nil {
@@ -72,6 +73,19 @@ func consume(ctx context.Context, consumer jetstream.Consumer, store *processing
 			}
 			received++
 			outcome, err := processing.HandleWithRefresh(ctx, store, m, refresh)
+			switch {
+			case err != nil:
+				metrics.ObserveWork("failed")
+			case outcome.Dead:
+				metrics.ObserveWork("dead_letter")
+			case outcome.Duplicate:
+				metrics.ObserveWork("duplicate")
+			default:
+				metrics.ObserveWork("committed")
+			}
+			if outcome.CacheFailure {
+				metrics.ObserveWork("cache_failure")
+			}
 			if outcome.Duplicate {
 				duplicates++
 			}
@@ -129,7 +143,7 @@ func reconcile(ctx context.Context, pool *pgxpool.Pool, logger *slog.Logger) {
 // progressRollouts runs the approved-plan engine every ten seconds (the plan's check cadence).
 // One fixed loop with bounded cycles: a failing plan never blocks the others, and cancellation
 // stops the loop between cycles.
-func progressRollouts(ctx context.Context, pool *pgxpool.Pool, logger *slog.Logger) {
+func progressRollouts(ctx context.Context, pool *pgxpool.Pool, logger *slog.Logger, metrics *telemetry.Metrics) {
 	service := rollouts.New(pool, time.Now)
 	total := map[string]int{}
 	lastReport := time.Now()
@@ -142,6 +156,7 @@ func progressRollouts(ctx context.Context, pool *pgxpool.Pool, logger *slog.Logg
 				logger.Info("rollout outcome", "outcome", outcome, "plans", n)
 			}
 			total[outcome] += n
+			metrics.ObserveRollout(outcome, n)
 		}
 		if err != nil && ctx.Err() == nil {
 			logger.Warn("rollout cycle had failures", "failure", "database_unavailable_or_plan_error")

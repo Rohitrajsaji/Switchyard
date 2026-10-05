@@ -44,6 +44,12 @@ services:
       RAW_RETENTION_DAYS: ${RAW_RETENTION_DAYS:-7}
       SUMMARY_RETENTION_DAYS: ${SUMMARY_RETENTION_DAYS:-90}
       DB_MAX_CONNS: "6"
+      METRICS_ADDR: 0.0.0.0:9100
+      ENABLE_PPROF: ${ENABLE_PPROF:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_TRACES_SAMPLER_ARG: ${OTEL_TRACES_SAMPLER_ARG:-1}
+    ports:
+      - "127.0.0.1:${WORKER_METRICS_PORT:-9101}:9100"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -102,6 +108,10 @@ services:
       DATABASE_URL: postgres://switchyard:${POSTGRES_PASSWORD:?required}@postgres:5432/switchyard?sslmode=disable
       HTTP_ADDR: 0.0.0.0:8080
       GRPC_ADDR: 0.0.0.0:9090
+      METRICS_ADDR: 0.0.0.0:9100
+      ENABLE_PPROF: ${ENABLE_PPROF:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_TRACES_SAMPLER_ARG: ${OTEL_TRACES_SAMPLER_ARG:-1}
       DB_MAX_CONNS: "10"
       SWITCHYARD_ORIGIN: ${SWITCHYARD_ORIGIN:-http://localhost:3000}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
@@ -110,6 +120,7 @@ services:
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
       - "127.0.0.1:${GRPC_PORT:-9090}:9090"
+      - "127.0.0.1:${API_METRICS_PORT:-9100}:9100"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -141,6 +152,60 @@ services:
       timeout: 3s
       retries: 30
     restart: unless-stopped
+  # Optional observability profile: make observability-up. Not part of the default stack.
+  otel-collector:
+    profiles: [observability]
+    image: otel/opentelemetry-collector:0.162.0@sha256:310a800ad69ee430e7c541796852a242c9c7db97aaad4daa5ccf843c525fbdb2
+    command: [--config=/etc/otelcol/config.yaml]
+    volumes:
+      - ./deploy/observability/otel-collector.yaml:/etc/otelcol/config.yaml:ro
+    mem_limit: 128m
+    restart: unless-stopped
+  tempo:
+    profiles: [observability]
+    image: grafana/tempo:3.1.0@sha256:3076b8dcdfb32fd6bc5ccef85e7b7313e6199b9cb84366257fc17ecb696db5fd
+    command: [-config.file=/etc/tempo.yaml]
+    volumes:
+      - ./deploy/observability/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    ports:
+      - "127.0.0.1:${TEMPO_PORT:-3200}:3200"
+    mem_limit: 512m
+    restart: unless-stopped
+  prometheus:
+    profiles: [observability]
+    image: prom/prometheus:v3.15.0@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e
+    command: [--config.file=/etc/prometheus/prometheus.yml, --storage.tsdb.path=/prometheus, --storage.tsdb.retention.time=24h, --web.enable-lifecycle]
+    volumes:
+      - ./deploy/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9091}:9090"
+    mem_limit: 384m
+    restart: unless-stopped
+  grafana:
+    profiles: [observability]
+    image: grafana/grafana:13.2.3@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-switchyard-local-only}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes:
+      - ./deploy/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3001}:3000"
+    depends_on:
+      - prometheus
+      - tempo
+    mem_limit: 384m
+    restart: unless-stopped
 volumes:
   postgres_data:
   nats_data:
+  tempo_data:
+  prometheus_data:
+  grafana_data:

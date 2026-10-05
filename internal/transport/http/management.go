@@ -31,7 +31,14 @@ import (
 
 const SessionCookie = "switchyard_session"
 
+// Metrics receives event receipt and evaluation observations; telemetry.Metrics satisfies it.
+type Metrics interface {
+	applicationeval.Observer
+	ObserveEvent(status string, duplicate bool)
+}
+
 type Management struct {
+	metrics      Metrics
 	auth         *auth.Service
 	projects     *projects.Service
 	pool         *pgxpool.Pool
@@ -56,7 +63,9 @@ func NewManagement(pool *pgxpool.Pool, logger *slog.Logger, origin string, secur
 	if err != nil {
 		return nil, err
 	}
-	m := &Management{auth: a, projects: projects.New(pool), pool: pool, logger: logger, origin: origin, secure: secure, loginLimit: NewLimiter(10, time.Minute, time.Now), requestLimit: NewLimiter(600, time.Minute, time.Now)}
+	ps := projects.New(pool)
+	ps.SetRevocationObserver(a.ForgetApplication) // this instance denies a revoked key immediately
+	m := &Management{auth: a, projects: ps, pool: pool, logger: logger, origin: origin, secure: secure, loginLimit: NewLimiter(10, time.Minute, time.Now), requestLimit: NewLimiter(600, time.Minute, time.Now)}
 	if len(snapshots) == 1 {
 		m.snapshots = snapshots[0]
 	}
@@ -384,6 +393,15 @@ func (m *Management) getFlag(w http.ResponseWriter, r *http.Request, actor auth.
 
 type evaluationInput = applicationeval.Input
 type evaluationResponse = applicationeval.Response
+
+// ForgetApplication drops a revoked application key from this instance's authentication cache.
+func (m *Management) ForgetApplication(id string) { m.auth.ForgetApplication(id) }
+
+// SetMetrics wires optional observations before the server starts handling requests.
+func (m *Management) SetMetrics(metrics Metrics) {
+	m.metrics = metrics
+	m.evaluator.SetObserver(metrics)
+}
 
 // EvaluationService is shared with the gRPC adapter in the API composition root.
 func (m *Management) EvaluationService() *applicationeval.Service { return m.evaluator }

@@ -140,6 +140,7 @@ func TestEvaluationHTTPScopesSafeFallbackAndNoWrite(t *testing.T) {
 	if w := evaluate(dev, "listing", "true", k.Token); w.Code != 400 {
 		t.Fatal("known unsafe fallback accepted during outage")
 	}
+	ps.SetRevocationObserver(m.ForgetApplication) // the API instance that processes a revocation denies the key at once
 	if err := ps.RevokeKey(ctx, actor, p.ID, k.ID, "revoke"); err != nil {
 		t.Fatal(err)
 	}

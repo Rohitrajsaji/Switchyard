@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"switchyard/internal/platform/identity"
+	"switchyard/internal/platform/telemetry"
 )
 
 const MaxBatch = 100
@@ -47,9 +48,9 @@ func Record(ctx context.Context, tx pgx.Tx, r Reference) error {
 	if tx == nil || !r.Valid() {
 		return ErrInvalid
 	}
-	_, err := tx.Exec(ctx, `INSERT INTO outbox(kind,project_id,environment_id,object_id,revision)
-        VALUES($1,$2,$3,$4,$5) ON CONFLICT(kind,project_id,environment_id,object_id,revision) DO NOTHING`,
-		r.Kind, r.ProjectID, r.EnvironmentID, r.ObjectID, r.Revision)
+	_, err := tx.Exec(ctx, `INSERT INTO outbox(kind,project_id,environment_id,object_id,revision,traceparent)
+        VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(kind,project_id,environment_id,object_id,revision) DO NOTHING`,
+		r.Kind, r.ProjectID, r.EnvironmentID, r.ObjectID, r.Revision, telemetry.Traceparent(ctx))
 	return CapacityError(err)
 }
 
@@ -58,6 +59,8 @@ type Item struct {
 	Reference
 	ClaimToken string
 	Attempts   int
+	// Traceparent is the originating request's W3C trace context, or "".
+	Traceparent string
 }
 
 // MessageID remains the same through ambiguous acknowledgements and retries.
@@ -94,14 +97,14 @@ func (s *Store) Claim(ctx context.Context, limit int, lease time.Duration) ([]It
         ORDER BY available_at,id LIMIT $1 FOR UPDATE SKIP LOCKED)
         UPDATE outbox SET claim_token=$2,lease_until=clock_timestamp()+$3::bigint*interval '1 millisecond',attempts=attempts+1
         WHERE id IN (SELECT id FROM pending)
-        RETURNING id,kind,project_id,environment_id,object_id,revision,claim_token,attempts`, limit, token, lease.Milliseconds())
+        RETURNING id,kind,project_id,environment_id,object_id,revision,claim_token,attempts,traceparent`, limit, token, lease.Milliseconds())
 	if err != nil {
 		return nil, err
 	}
 	items := make([]Item, 0, limit)
 	for rows.Next() {
 		var item Item
-		if err = rows.Scan(&item.ID, &item.Kind, &item.ProjectID, &item.EnvironmentID, &item.ObjectID, &item.Revision, &item.ClaimToken, &item.Attempts); err != nil {
+		if err = rows.Scan(&item.ID, &item.Kind, &item.ProjectID, &item.EnvironmentID, &item.ObjectID, &item.Revision, &item.ClaimToken, &item.Attempts, &item.Traceparent); err != nil {
 			rows.Close()
 			return nil, err
 		}

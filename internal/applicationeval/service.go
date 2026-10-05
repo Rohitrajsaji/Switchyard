@@ -34,11 +34,18 @@ type Response struct {
 	DecisionID  string `json:"decision_id"`
 	Unavailable bool   `json:"-"`
 }
+
+// Observer receives the reason of every served application decision (bounded vocabulary).
+type Observer interface{ ObserveEvaluation(reason string) }
 type Service struct {
 	pool      *pgxpool.Pool
 	auth      *auth.Service
 	snapshots *cache.Coordinator
+	observer  Observer
 }
+
+// SetObserver must be called before the service handles traffic.
+func (s *Service) SetObserver(o Observer) { s.observer = o }
 
 func New(pool *pgxpool.Pool, a *auth.Service, snapshots *cache.Coordinator) *Service {
 	return &Service{pool: pool, auth: a, snapshots: snapshots}
@@ -92,6 +99,13 @@ func (s *Service) Batch(ctx context.Context, token string, inputs []Input) ([]Re
 	return responses, nil
 }
 func (s *Service) evaluate(ctx context.Context, in Input) (Response, error) {
+	response, err := s.decide(ctx, in)
+	if s.observer != nil && response.Reason != "" {
+		s.observer.ObserveEvaluation(response.Reason)
+	}
+	return response, err
+}
+func (s *Service) decide(ctx context.Context, in Input) (Response, error) {
 	if s.snapshots != nil {
 		result, err := s.snapshots.Evaluate(ctx, snapshot.Key{ProjectID: in.ProjectID, EnvironmentID: in.EnvironmentID, FlagKey: in.Key}, in.UserID, in.Attributes, in.Fallback)
 		if errors.Is(err, cache.ErrInvalidFallback) || errors.Is(err, snapshot.ErrInvalid) {

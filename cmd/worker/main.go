@@ -16,6 +16,7 @@ import (
 	"switchyard/internal/platform/config"
 	"switchyard/internal/platform/messaging"
 	"switchyard/internal/platform/postgres"
+	"switchyard/internal/platform/telemetry"
 	"switchyard/internal/processing"
 )
 
@@ -50,11 +51,27 @@ func run(logger *slog.Logger) error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+	shutdownTracing, err := telemetry.InitTracing(ctx, "switchyard-worker")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		flush, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = shutdownTracing(flush)
+	}()
+	metrics := telemetry.NewMetrics("worker")
 	pool, err := postgres.Open(ctx, cfg.DatabaseURL, cfg.MaxConns)
 	if err != nil {
 		return err
 	}
 	defer pool.Close()
+	metrics.Registry.MustRegister(telemetry.PoolCollector(pool, "worker"), telemetry.StateCollector(pool, "worker"))
+	stopMetrics, err := metrics.Serve(os.Getenv("METRICS_ADDR"), os.Getenv("ENABLE_PPROF") == "true")
+	if err != nil {
+		return err
+	}
+	defer stopMetrics()
 	url := os.Getenv("NATS_URL")
 	if url == "" {
 		url = "nats://127.0.0.1:42229"
@@ -84,10 +101,17 @@ func run(logger *slog.Logger) error {
 		if err != nil {
 			return err
 		}
+		metrics.Registry.MustRegister(telemetry.ConsumerCollector(func(ctx context.Context) (uint64, uint64, uint64, error) {
+			info, err := consumer.Info(ctx)
+			if err != nil {
+				return 0, 0, 0, err
+			}
+			return info.NumPending, uint64(info.NumAckPending), uint64(info.NumRedelivered), nil
+		}, "worker"))
 		tasks.Add(2)
 		go func() {
 			defer tasks.Done()
-			consume(ctx, consumer, processing.New(pool), refreshConfiguration(pool, cacheStore), logger)
+			consume(ctx, consumer, processing.New(pool), refreshConfiguration(pool, cacheStore), logger, metrics)
 		}()
 		go func() { defer tasks.Done(); reconcile(ctx, pool, logger) }()
 	}
@@ -97,7 +121,7 @@ func run(logger *slog.Logger) error {
 	}
 	if rolloutsEnabled {
 		tasks.Add(1)
-		go func() { defer tasks.Done(); progressRollouts(ctx, pool, logger) }()
+		go func() { defer tasks.Done(); progressRollouts(ctx, pool, logger, metrics) }()
 	}
 	store := outbox.New(pool)
 	logger.Info("worker started", "rollouts_enabled", rolloutsEnabled, "publication_batch_limit", 8, "lease_seconds", 30, "processing_enabled", processingEnabled, "retention_enabled", cfg.WorkerRetentionEnabled, "raw_retention_days", cfg.RawRetentionDays, "summary_retention_days", cfg.SummaryRetentionDays)
@@ -121,6 +145,7 @@ func run(logger *slog.Logger) error {
 			total.Published += stats.Published
 			total.Failed += stats.Failed
 			total.Lost += stats.Lost
+			metrics.ObservePublication(stats.Published, stats.Failed, stats.Lost)
 			if err != nil && ctx.Err() == nil {
 				logger.Warn("outbox publication interrupted", "failure", "database_or_transport_unavailable")
 			}

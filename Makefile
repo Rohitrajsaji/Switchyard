@@ -146,3 +146,31 @@ approval-drill:
 .PHONY: rollout-drill
 rollout-drill:
 	python3 scripts/rollout_drill.py
+.PHONY: observability-up observability-down observability-smoke
+# Optional profile: Collector, Tempo, Prometheus and Grafana. The API and worker are recreated with
+# OTLP export enabled; observability-down recreates them with export disabled again.
+observability-up:
+	@test -f .env || cp .env.example .env
+	docker compose build api
+	OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317 docker compose --profile cache --profile async --profile observability up --no-build -d --wait
+observability-down:
+	docker compose --profile observability stop otel-collector tempo prometheus grafana
+	docker compose --profile cache --profile async up --no-build -d --wait api worker
+observability-smoke:
+	python3 scripts/observability_smoke.py
+.PHONY: load-fixture load-evaluation load-events load-mixed load-soak failure-drills
+# Durations are the scaled local protocol recorded in docs/benchmark-report.md; override the
+# variables for the plan's longer runs. Results are written to docs/benchmarks/m10-*.json.
+LOAD_EVAL_STEPS ?= 500,1000,2000,4000,6000,8000,10000
+LOAD_STEP_SECONDS ?= 45
+load-fixture:
+	cd scripts && python3 load_fixture.py
+load-evaluation:
+	cd scripts && python3 load_run.py evaluation --steps $(LOAD_EVAL_STEPS) --step-seconds $(LOAD_STEP_SECONDS)
+load-events:
+	cd scripts && python3 load_run.py events --batch-rate 10 --seconds 120
+load-mixed:
+	cd scripts && python3 load_run.py mixed --steps 2000 --step-seconds 120 --batch-rate 10
+load-soak:
+	cd scripts && python3 load_run.py soak --steps 1000 --step-seconds 600 --batch-rate 5
+failure-drills: cache-drill event-drill rollout-drill

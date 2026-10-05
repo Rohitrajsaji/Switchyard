@@ -8,8 +8,10 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
+	"go.opentelemetry.io/otel/trace"
 	"switchyard/internal/outbox"
 	"switchyard/internal/platform/messaging"
+	"switchyard/internal/platform/telemetry"
 )
 
 type Persistence interface {
@@ -28,6 +30,9 @@ func Handle(ctx context.Context, s Persistence, m jetstream.Msg) (Outcome, error
 // apply the historical revision carried by a delayed message. Cache failure is
 // best effort: periodic API polling independently repairs disposable Redis.
 func HandleWithRefresh(ctx context.Context, s Persistence, m jetstream.Msg, refresh func(context.Context, outbox.Reference) error) (Outcome, error) {
+	// Continue the trace carried in the message header (a sampled parent stays sampled).
+	ctx, span := telemetry.Tracer().Start(telemetry.WithTraceparent(ctx, m.Headers().Get("traceparent")), "processing.consume", trace.WithSpanKind(trace.SpanKindConsumer))
+	defer span.End()
 	e, decodeErr := messaging.Decode(m.Data())
 	code := ""
 	if decodeErr != nil || m.Headers().Get(nats.MsgIdHdr) != e.MessageID || !strings.HasSuffix(m.Subject(), "."+e.Reference.Kind) {

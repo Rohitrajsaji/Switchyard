@@ -30,20 +30,38 @@ type adapter struct {
 	service *applicationeval.Service
 }
 
+// Observer receives one record per unary RPC (bounded method and code vocabularies).
+type Observer interface {
+	ObserveGRPC(fullMethod, code string, d time.Duration)
+}
+
 func NewServer(service *applicationeval.Service) *grpc.Server {
+	return NewObservedServer(service, nil)
+}
+
+// NewObservedServer is NewServer with request metrics and extra options (for example tracing).
+func NewObservedServer(service *applicationeval.Service, observer Observer, extra ...grpc.ServerOption) *grpc.Server {
 	slots := make(chan struct{}, 64)
 	interceptor := func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		select {
-		case slots <- struct{}{}:
-			defer func() { <-slots }()
-		default:
-			return nil, status.Error(codes.ResourceExhausted, "evaluation capacity exhausted")
+		started := time.Now()
+		result, err := func() (any, error) {
+			select {
+			case slots <- struct{}{}:
+				defer func() { <-slots }()
+			default:
+				return nil, status.Error(codes.ResourceExhausted, "evaluation capacity exhausted")
+			}
+			ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			defer cancel()
+			return handler(ctx, req)
+		}()
+		if observer != nil {
+			observer.ObserveGRPC(info.FullMethod, status.Code(err).String(), time.Since(started))
 		}
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-		defer cancel()
-		return handler(ctx, req)
+		return result, err
 	}
-	server := grpc.NewServer(grpc.MaxRecvMsgSize(MaxRequestBytes), grpc.MaxSendMsgSize(2<<20), grpc.MaxHeaderListSize(65536), grpc.MaxConcurrentStreams(64), grpc.UnaryInterceptor(interceptor))
+	options := append([]grpc.ServerOption{grpc.MaxRecvMsgSize(MaxRequestBytes), grpc.MaxSendMsgSize(2 << 20), grpc.MaxHeaderListSize(65536), grpc.MaxConcurrentStreams(64), grpc.UnaryInterceptor(interceptor)}, extra...)
+	server := grpc.NewServer(options...)
 	pb.RegisterEvaluationServiceServer(server, &adapter{service: service})
 	return server
 }

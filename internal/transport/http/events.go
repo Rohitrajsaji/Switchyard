@@ -24,6 +24,11 @@ func (m *Management) ingestEvents(w http.ResponseWriter, r *http.Request) {
 		m.fail(w, r, err)
 		return
 	}
+	if m.metrics != nil {
+		for _, r := range receipts {
+			m.metrics.ObserveEvent(r.Status, r.Duplicate)
+		}
+	}
 	w.Header().Set("Cache-Control", "no-store")
 	JSON(w, 200, map[string]any{"receipts": receipts})
 }

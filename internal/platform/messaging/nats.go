@@ -13,6 +13,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"switchyard/internal/outbox"
+	"switchyard/internal/platform/telemetry"
 )
 
 const StreamName = "SWITCHYARD_WORK_V1"
@@ -123,7 +124,11 @@ func (t *Transport) Publish(ctx context.Context, i outbox.Item) error {
 	if err != nil {
 		return err
 	}
-	_, err = t.js.Publish(ctx, t.prefix+"."+i.Kind, body, jetstream.WithMsgID(i.MessageID()), jetstream.WithExpectStream(t.stream.CachedInfo().Config.Name))
+	message := &nats.Msg{Subject: t.prefix + "." + i.Kind, Data: body, Header: nats.Header{}}
+	if traceparent := telemetry.Traceparent(ctx); traceparent != "" {
+		message.Header.Set("traceparent", traceparent)
+	}
+	_, err = t.js.PublishMsg(ctx, message, jetstream.WithMsgID(i.MessageID()), jetstream.WithExpectStream(t.stream.CachedInfo().Config.Name))
 	return err
 }
 func (t *Transport) Consumer(ctx context.Context, name string) (jetstream.Consumer, error) {
