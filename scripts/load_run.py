@@ -153,40 +153,55 @@ def main():
               "dataset": {"flags": len(fixture["flags"]), "experiments": sum(1 for f in fixture["flags"] if f["kind"] == "experiment"), "evaluation_user_space": 100000, "event_user_pool": len(fixture["users"])}}
     sampler = Sampler("switchyard-k6")
     started = time.time()
-    report["generator_kind"] = "go" if args.workload == "evaluation" and args.generator == "go" else "k6"
+    # k6 keeps every sample. A mixed scenario on this 3.8 GiB Docker VM was SIGKILL'd at 2993 MiB.
+    # Concurrent runs use the Go generator for evaluation and k6 only for events.
+    split_mixed = args.workload in ("mixed", "soak") and args.generator == "go"
+    report["generator_kind"] = "go+k6" if split_mixed else "go" if args.workload == "evaluation" and args.generator == "go" else "k6"
     summaries, exit_codes, step_rows = {}, [], []
-    go_generator = args.workload == "evaluation" and args.generator == "go"
-    if go_generator:
+    go_generator = (args.workload == "evaluation" and args.generator == "go") or split_mixed
+    go_proc = None
+    if split_mixed:
+        plans = [{"label": "run", "rate": steps[0], "workload": "events", "seconds": event_seconds_default, "stages": []}]
+    elif go_generator:
         plans = []
+    if go_generator:
         print(run(["docker", "build", "-q", "-t", "switchyard-loadgen:local", "-f", "deploy/docker/loadgen.Dockerfile", "."], cwd=str(ROOT)), flush=True)
         container = "switchyard-loadgen-" + uuid.uuid4().hex[:6]
         sampler.names = SERVICES + [container]
         sampler.start()
         label_file = f"{name}-{args.transport}"
+        go_label = label_file
         total = args.warmup_seconds + len(steps) * (10 + args.step_seconds + 3)
         command = ["docker", "run", "--rm", "--name", container, "--network", "switchyard_default", "-v", f"{ROOT / 'loadtest'}:/loadtest", "switchyard-loadgen:local",
                    "-transport", args.transport, "-rates", args.steps, "-hold", f"{args.step_seconds}s", "-ramp", "10s", "-warmup", f"{args.warmup_seconds}s",
                    "-max-in-flight", "4000", "-out", f"/loadtest/out/{label_file}.json"]
         print(f"running loadgen {args.transport} steps {args.steps} (~{total}s) ...", flush=True)
-        proc = subprocess.run(command, capture_output=True, text=True)
-        exit_codes.append(proc.returncode)
-        out_file = out_dir / f"{label_file}.json"
-        rows = json.loads(out_file.read_text()) if out_file.exists() else []
-        if not rows:
-            report["loadgen_stderr_tail"] = proc.stderr[-1500:]
-        for row in rows:
-            step_rows.append({"target_requests_per_second": row["target_requests_per_second"], "transport": row["transport"], "requests": row["requests"],
-                "achieved_requests_per_second_during_hold": round(row["achieved_requests_per_second_during_hold"], 1), "latency_ms": row["latency_ms"],
-                "failure_rate": row["failure_rate"], "dropped_iterations": row["dropped_iterations"], "correctness_rate": row["correctness_rate"], "max_in_flight": row["max_in_flight"]})
-        report["generator"] = {"name": "cmd/loadgen", "stderr_progress": proc.stderr.strip().splitlines()[-len(steps):]}
+        if split_mixed:
+            go_proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        else:
+            proc = subprocess.run(command, capture_output=True, text=True)
+            exit_codes.append(proc.returncode)
+            out_file = out_dir / f"{label_file}.json"
+            rows = json.loads(out_file.read_text()) if out_file.exists() else []
+            if not rows:
+                report["loadgen_stderr_tail"] = proc.stderr[-1500:]
+            for row in rows:
+                step_rows.append({"target_requests_per_second": row["target_requests_per_second"], "transport": row["transport"], "requests": row["requests"],
+                    "achieved_requests_per_second_during_hold": round(row["achieved_requests_per_second_during_hold"], 1), "latency_ms": row["latency_ms"],
+                    "failure_rate": row["failure_rate"], "dropped_iterations": row["dropped_iterations"], "correctness_rate": row["correctness_rate"], "max_in_flight": row["max_in_flight"]})
+            report["generator"] = {"name": "cmd/loadgen", "stderr_progress": proc.stderr.strip().splitlines()[-len(steps):]}
     for plan in plans:
         container = "switchyard-k6-" + uuid.uuid4().hex[:6]
+        previous = sampler.names
         sampler.names = SERVICES + [container]
+        if split_mixed:
+            sampler.names = list(dict.fromkeys([*previous, container]))
         if not sampler.is_alive():
             sampler.start()
         env = {"WORKLOAD": plan["workload"], "FIXTURE": "/loadtest/fixture.json", "BASE_URL": "http://api:8080", "NONCE": nonce,
                "EVAL_STAGES": json.dumps(plan["stages"]), "EVAL_START": str(min(plan["rate"], 200)), "EVAL_VUS": "40", "EVAL_MAX_VUS": str(args.max_vus),
-               "EVENT_BATCH_RATE": str(args.batch_rate), "EVENT_DURATION": f"{event_seconds}s"}
+               "EVENT_BATCH_RATE": str(args.batch_rate), "EVENT_DURATION": f"{event_seconds}s",
+               "EVENT_VUS": "20", "EVENT_MAX_VUS": "40"}
         label_file = f"{name}-{plan['label']}"
         command = ["docker", "run", "--rm", "--name", container, "--network", "switchyard_default", "-v", f"{ROOT / 'loadtest'}:/loadtest"]
         for key, value in env.items():
@@ -201,7 +216,7 @@ def main():
         summaries[plan["label"]] = summary
         if not summary:
             report.setdefault("k6_stderr_tail", proc.stderr[-1500:])
-        if evaluation:
+        if evaluation and plan["workload"] != "events":
             d = "http_req_duration{kind:evaluate}"
             hold = args.step_seconds
             count = metric(summary, "http_reqs", "count")
@@ -210,6 +225,18 @@ def main():
                 "failure_rate": metric(summary, "http_req_failed{kind:evaluate}", "value"), "dropped_iterations": metric(summary, "dropped_iterations", "count") or 0,
                 "correctness_rate": metric(summary, "evaluation_correct", "value"), "max_vus": metric(summary, "vus_max", "max"), "k6_exit_code": proc.returncode,
                 "seconds": plan["seconds"], "wall_seconds": round(time.time() - step_started, 1)})
+    if go_proc is not None:
+        _, stderr = go_proc.communicate()
+        exit_codes.append(go_proc.returncode)
+        out_file = out_dir / f"{go_label}.json"
+        rows = json.loads(out_file.read_text()) if out_file.exists() else []
+        if not rows:
+            report["loadgen_stderr_tail"] = stderr[-1500:]
+        for row in rows:
+            step_rows.append({"target_requests_per_second": row["target_requests_per_second"], "transport": row["transport"], "requests": row["requests"],
+                "achieved_requests_per_second_during_hold": round(row["achieved_requests_per_second_during_hold"], 1), "latency_ms": row["latency_ms"],
+                "failure_rate": row["failure_rate"], "dropped_iterations": row["dropped_iterations"], "correctness_rate": row["correctness_rate"], "max_in_flight": row["max_in_flight"]})
+        report["generator"] = {"name": "cmd/loadgen", "stderr_progress": stderr.strip().splitlines()[-len(steps):]}
     finished = time.time()
     sampler.stop_event.set()
     sampler.join(timeout=10)
@@ -237,13 +264,17 @@ def main():
             "http_status_counts": statuses}
         # Convergence and exact counts through the public results API, after the load ends.
         # A slow or refused read is a result, not a reason to discard the generator summary.
-        admin = Client("admin@example.test")
+        try:
+            admin = Client("admin@example.test")
+        except (TimeoutError, urllib.error.URLError, OSError) as error:
+            ingestion["results_error"] = f"{type(error).__name__}: {error}"
+            admin = None
         path = f"/v1/projects/{fixture['project_id']}/experiments/{fixture['run_id']}/results"
         distinct = min(batches * 33, len(fixture["users"]))
         deadline = time.monotonic() + 600
         converged_at, counts = None, [0, 0, 0]
         read_errors = 0
-        while time.monotonic() < deadline:
+        while admin is not None and time.monotonic() < deadline:
             try:
                 status, results = admin.call("GET", path, timeout=20)
             except (TimeoutError, urllib.error.URLError):
@@ -268,7 +299,8 @@ def main():
             ingestion["database_freshness_per_user_seconds"] = freshness(fixture["project_id"])
         except Exception as error:  # diagnostics only; the exact-count gate above is authoritative
             ingestion["database_freshness_error"] = type(error).__name__
-        admin.call("DELETE", "/v1/session")
+        if admin is not None:
+            admin.call("DELETE", "/v1/session")
     report["resources"] = sampler.summary()
     report["prometheus_peaks"] = prometheus_peaks(started, finished)
     report["finished_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()

@@ -1,0 +1,41 @@
+{
+  "name": "mixed-concurrent",
+  "note": "Go evaluation at 2000/s concurrent with k6 events at 10 batches/s. The API stopped accepting connections before the results poll, so this file is recovered from the generator summaries. It is not a freshness result.",
+  "commit": "6fc18d1",
+  "evaluation": [
+    {
+      "target_requests_per_second": 2000,
+      "transport": "http",
+      "seconds": 130.48251406,
+      "requests": 83634,
+      "achieved_requests_per_second_during_hold": 641.4735399249821,
+      "failures": 81657,
+      "incorrect": 0,
+      "dropped_iterations": 164673,
+      "max_in_flight": 4000,
+      "latency_ms": {
+        "avg": 4449.8461168437025,
+        "med": 4743.136,
+        "p(90)": 4999.361,
+        "p(95)": 5268.484,
+        "p(99)": 8185.923,
+        "max": 10086.238
+      },
+      "failure_rate": 0.976361288471196,
+      "correctness_rate": 1
+    }
+  ],
+  "ingestion": {
+    "accepted_events": 25443,
+    "accepted_batches": 257,
+    "rejected_batches": 472,
+    "dropped_iterations": 872,
+    "failure_rate": 0.6474622770919067,
+    "batch_latency_ms": {
+      "med": null,
+      "p(95)": null,
+      "p(99)": null,
+      "max": null
+    }
+  }
+}

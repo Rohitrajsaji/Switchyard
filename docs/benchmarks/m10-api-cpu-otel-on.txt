@@ -1,0 +1,399 @@
+File: api
+Build ID: 8d68a00623215f9f23f9441b7460314c128fe4a0
+Type: cpu
+Time: 2026-10-05 20:07:18 IST
+Duration: 20.43s, Total samples = 17.02s (83.30%)
+Showing nodes accounting for 11s, 64.63% of 17.02s total
+Dropped 974 nodes (cum <= 0.09s)
+      flat  flat%   sum%        cum   cum%
+     0.02s  0.12%  0.12%     12.41s 72.91%  net/http.(*conn).serve
+     0.02s  0.12%  0.24%      8.47s 49.76%  net/http.HandlerFunc.ServeHTTP
+         0     0%  0.24%      8.47s 49.76%  net/http.serverHandler.ServeHTTP
+     0.01s 0.059%  0.29%      8.42s 49.47%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp.NewMiddleware.func2.1
+     0.06s  0.35%  0.65%      8.41s 49.41%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp.(*middleware).serveHTTP
+     0.01s 0.059%  0.71%      6.24s 36.66%  switchyard/internal/transport/http.MiddlewareObserved.func1
+     0.01s 0.059%  0.76%      4.32s 25.38%  net/http.(*ServeMux).ServeHTTP
+     0.01s 0.059%  0.82%      4.19s 24.62%  switchyard/internal/transport/http.(*Management).evaluate
+     2.85s 16.75% 17.57%      2.85s 16.75%  internal/runtime/syscall/linux.Syscall6
+     0.02s  0.12% 17.69%      2.67s 15.69%  syscall.RawSyscall6
+     0.02s  0.12% 17.80%      2.67s 15.69%  syscall.Syscall
+     0.01s 0.059% 17.86%      2.54s 14.92%  runtime.systemstack
+         0     0% 17.86%      2.44s 14.34%  internal/poll.ignoringEINTRIO (inline)
+     0.13s  0.76% 18.63%      2.42s 14.22%  runtime.mallocgc
+         0     0% 18.63%      2.12s 12.46%  switchyard/internal/applicationeval.(*Service).Evaluate
+     0.01s 0.059% 18.68%      1.86s 10.93%  internal/poll.(*FD).Write
+     0.02s  0.12% 18.80%      1.80s 10.58%  bufio.(*Writer).Flush
+     0.01s 0.059% 18.86%      1.80s 10.58%  net/http.(*response).finishRequest
+         0     0% 18.86%      1.79s 10.52%  syscall.Write (inline)
+     0.03s  0.18% 19.04%      1.79s 10.52%  syscall.write
+         0     0% 19.04%      1.57s  9.22%  net.(*conn).Write
+         0     0% 19.04%      1.56s  9.17%  net.(*netFD).Write
+     0.01s 0.059% 19.10%      1.38s  8.11%  switchyard/internal/transport/http.MiddlewareObserved.func1.1
+         0     0% 19.10%      1.26s  7.40%  net/http.checkConnErrorWriter.Write
+         0     0% 19.10%      1.18s  6.93%  switchyard/internal/transport/http.DecodeJSON
+         0     0% 19.10%      1.15s  6.76%  runtime.gcBgMarkWorker
+         0     0% 19.10%      1.12s  6.58%  runtime.gcBgMarkWorker.func2
+     0.02s  0.12% 19.21%      1.12s  6.58%  runtime.gcDrain
+     0.01s 0.059% 19.27%      1.08s  6.35%  net/http.(*conn).readRequest
+     0.02s  0.12% 19.39%      1.08s  6.35%  switchyard/internal/applicationeval.(*Service).evaluate
+     0.01s 0.059% 19.45%      1.07s  6.29%  log/slog.(*Logger).log
+     0.01s 0.059% 19.51%      1.05s  6.17%  log/slog.(*Logger).Info
+         0     0% 19.51%      1.04s  6.11%  switchyard/internal/applicationeval.(*Service).decide
+         0     0% 19.51%      0.99s  5.82%  net.(*conn).Read
+         0     0% 19.51%      0.97s  5.70%  encoding/json.(*Decoder).Decode
+     0.02s  0.12% 19.62%      0.95s  5.58%  runtime.markroot
+     0.02s  0.12% 19.74%      0.94s  5.52%  log/slog.(*JSONHandler).Handle
+     0.01s 0.059% 19.80%      0.92s  5.41%  log/slog.(*commonHandler).handle
+     0.01s 0.059% 19.86%      0.91s  5.35%  switchyard/internal/cache.(*Coordinator).Evaluate
+     0.01s 0.059% 19.92%      0.89s  5.23%  encoding/json/v2.Unmarshal
+         0     0% 19.92%      0.88s  5.17%  runtime.gcDrainMarkWorkerDedicated (inline)
+         0     0% 19.92%      0.87s  5.11%  runtime.markroot.func1
+         0     0% 19.92%      0.82s  4.82%  encoding/json/v2.unmarshalDecode
+     0.01s 0.059% 19.98%      0.82s  4.82%  net.(*netFD).Read
+     0.01s 0.059% 20.04%      0.81s  4.76%  runtime.scanstack
+     0.01s 0.059% 20.09%      0.80s  4.70%  internal/poll.(*FD).Read
+     0.06s  0.35% 20.45%      0.76s  4.47%  switchyard/internal/auth.(*Service).AuthenticateApplication
+     0.02s  0.12% 20.56%      0.75s  4.41%  net/http.readRequestLimit
+         0     0% 20.56%      0.75s  4.41%  runtime.gcAssistAlloc
+     0.07s  0.41% 20.98%      0.73s  4.29%  runtime.mallocgcSmallScanNoHeader
+     0.72s  4.23% 25.21%      0.72s  4.23%  runtime.memclrNoHeapPointers
+     0.01s 0.059% 25.26%      0.69s  4.05%  runtime.(*mcache).nextFree
+     0.02s  0.12% 25.38%      0.68s  4.00%  encoding/json.(*Encoder).Encode
+         0     0% 25.38%      0.68s  4.00%  runtime.mcall
+     0.03s  0.18% 25.56%      0.67s  3.94%  runtime.newobject
+         0     0% 25.56%      0.66s  3.88%  runtime.(*mcache).refill
+         0     0% 25.56%      0.66s  3.88%  switchyard/internal/cache.(*Coordinator).refresh
+         0     0% 25.56%      0.66s  3.88%  switchyard/internal/cache.(*Coordinator).worker
+         0     0% 25.56%      0.65s  3.82%  go.opentelemetry.io/otel/sdk/trace.(*batchSpanProcessor).processQueue
+         0     0% 25.56%      0.65s  3.82%  go.opentelemetry.io/otel/sdk/trace.NewBatchSpanProcessor.func2
+         0     0% 25.56%      0.65s  3.82%  runtime.copystack
+         0     0% 25.56%      0.65s  3.82%  runtime.gcAssistAlloc.func2
+         0     0% 25.56%      0.65s  3.82%  runtime.gcAssistAlloc1
+     0.02s  0.12% 25.68%      0.65s  3.82%  runtime.schedule
+         0     0% 25.68%      0.65s  3.82%  sync.(*WaitGroup).Go.func1
+         0     0% 25.68%      0.64s  3.76%  github.com/jackc/pgx/v5/pgxpool.(*Pool).QueryRow
+     0.64s  3.76% 29.44%      0.64s  3.76%  runtime.memmove
+         0     0% 29.44%      0.63s  3.70%  go.opentelemetry.io/otel/exporters/otlp/otlptrace.(*Exporter).ExportSpans
+         0     0% 29.44%      0.63s  3.70%  go.opentelemetry.io/otel/sdk/trace.(*batchSpanProcessor).exportSpans
+     0.01s 0.059% 29.49%      0.63s  3.70%  runtime.gcDrainN
+     0.01s 0.059% 29.55%      0.63s  3.70%  syscall.Read (inline)
+     0.01s 0.059% 29.61%      0.62s  3.64%  go.opentelemetry.io/otel/sdk/trace.(*tracer).Start
+     0.01s 0.059% 29.67%      0.62s  3.64%  runtime.newstack
+         0     0% 29.67%      0.62s  3.64%  syscall.read
+     0.02s  0.12% 29.79%      0.61s  3.58%  runtime.findRunnable
+     0.03s  0.18% 29.96%      0.60s  3.53%  bufio.(*Reader).fill
+     0.01s 0.059% 30.02%      0.60s  3.53%  runtime.(*mcentral).cacheSpan
+         0     0% 30.02%      0.60s  3.53%  runtime.park_m
+     0.01s 0.059% 30.08%      0.59s  3.47%  runtime.growslice
+     0.05s  0.29% 30.38%      0.59s  3.47%  runtime.makeslice
+     0.56s  3.29% 33.67%      0.56s  3.29%  runtime.asyncPreempt
+     0.01s 0.059% 33.73%      0.55s  3.23%  net/http.(*connReader).Read
+         0     0% 33.73%      0.54s  3.17%  net/http.(*connReader).backgroundRead
+     0.03s  0.18% 33.90%      0.53s  3.11%  encoding/json/v2.makeStructArshaler.func3
+         0     0% 33.90%      0.53s  3.11%  runtime.(*mcentral).grow
+         0     0% 33.90%      0.53s  3.11%  switchyard/internal/auth.lookupApplication
+         0     0% 33.90%      0.52s  3.06%  switchyard/internal/transport/http.JSON
+     0.01s 0.059% 33.96%      0.49s  2.88%  encoding/json/v2.marshalEncode
+     0.46s  2.70% 36.66%      0.49s  2.88%  runtime.tryDeferToSpanScan
+     0.01s 0.059% 36.72%      0.48s  2.82%  runtime.mallocgcSmallScanHeader
+     0.01s 0.059% 36.78%      0.46s  2.70%  encoding/json/v2.MarshalEncode
+     0.27s  1.59% 38.37%      0.46s  2.70%  runtime.(*unwinder).resolveInternal
+         0     0% 38.37%      0.46s  2.70%  switchyard/pkg/evaluation.ValidateContext
+     0.01s 0.059% 38.43%      0.42s  2.47%  log/slog.(*handleState).appendNonBuiltIns
+     0.02s  0.12% 38.54%      0.41s  2.41%  log/slog.(*handleState).appendAttr
+         0     0% 38.54%      0.41s  2.41%  log/slog.(*handleState).appendNonBuiltIns.func1 (inline)
+         0     0% 38.54%      0.41s  2.41%  log/slog.Record.Attrs (inline)
+     0.03s  0.18% 38.72%      0.41s  2.41%  runtime.mallocgcSmallScanSlowPath
+         0     0% 38.72%      0.41s  2.41%  runtime.scanSpan
+     0.01s 0.059% 38.78%      0.40s  2.35%  runtime.(*mspan).initHeapBits
+     0.02s  0.12% 38.90%      0.39s  2.29%  bufio.(*Reader).Peek
+     0.03s  0.18% 39.07%      0.39s  2.29%  net/http.(*chunkWriter).Write
+     0.01s 0.059% 39.13%      0.38s  2.23%  switchyard/internal/transport/http.(*Management).fail
+     0.03s  0.18% 39.31%      0.37s  2.17%  encoding/json/jsontext.(*decoderState).ReadValue
+         0     0% 39.31%      0.37s  2.17%  go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc.(*client).UploadTraces
+     0.01s 0.059% 39.37%      0.37s  2.17%  go.opentelemetry.io/otel/sdk/trace.(*recordingSpan).End
+         0     0% 39.37%      0.36s  2.12%  log/slog.(*handleState).appendValue
+         0     0% 39.37%      0.36s  2.12%  log/slog.appendJSONValue
+     0.02s  0.12% 39.48%      0.36s  2.12%  net/http.(*chunkWriter).writeHeader
+         0     0% 39.48%      0.35s  2.06%  regexp.(*Regexp).MatchString (inline)
+         0     0% 39.48%      0.35s  2.06%  regexp.(*Regexp).doMatch (inline)
+     0.01s 0.059% 39.54%      0.35s  2.06%  regexp.(*Regexp).find
+     0.11s  0.65% 40.19%      0.34s  2.00%  regexp.(*Regexp).doOnePass
+     0.01s 0.059% 40.25%      0.33s  1.94%  github.com/jackc/pgx/v5.(*Conn).Query
+         0     0% 40.25%      0.33s  1.94%  github.com/jackc/pgx/v5.(*Conn).QueryRow (inline)
+         0     0% 40.25%      0.33s  1.94%  github.com/jackc/pgx/v5/pgxpool.(*Conn).QueryRow
+     0.05s  0.29% 40.54%      0.33s  1.94%  go.opentelemetry.io/otel/sdk/trace.(*recordingSpan).SetAttributes
+         0     0% 40.54%      0.31s  1.82%  encoding/json/jsontext.(*Decoder).ReadValue (inline)
+     0.01s 0.059% 40.60%      0.31s  1.82%  os.(*File).Write
+         0     0% 40.60%      0.31s  1.82%  slices.Grow[go.shape.[]go.opentelemetry.io/otel/attribute.KeyValue,go.shape.struct { Key go.opentelemetry.io/otel/attribute.Key; Value go.opentelemetry.io/otel/attribute.Value }] (inline)
+     0.05s  0.29% 40.89%      0.30s  1.76%  go.opentelemetry.io/otel/trace.NewSpanStartConfig
+         0     0% 40.89%      0.30s  1.76%  log/slog.appendJSONMarshal
+         0     0% 40.89%      0.30s  1.76%  os.(*File).write (inline)
+         0     0% 40.89%      0.30s  1.76%  runtime.(*unwinder).initAt
+     0.13s  0.76% 41.66%      0.30s  1.76%  runtime.scanObject
+         0     0% 41.66%      0.30s  1.76%  switchyard/pkg/evaluation.(*Compiled).Evaluate
+         0     0% 41.66%      0.30s  1.76%  switchyard/pkg/snapshot.(*Snapshot).Evaluate
+         0     0% 41.66%      0.29s  1.70%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/internal/semconv.HTTPServer.RecordMetrics
+     0.01s 0.059% 41.72%      0.29s  1.70%  io.ReadAll
+         0     0% 41.72%      0.29s  1.70%  runtime.stackalloc
+     0.01s 0.059% 41.77%      0.29s  1.70%  runtime.stackcacherefill
+     0.02s  0.12% 41.89%      0.28s  1.65%  encoding/json/jsontext.(*decoderState).consumeValue
+         0     0% 41.89%      0.28s  1.65%  go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc.(*client).UploadTraces.func2
+         0     0% 41.89%      0.28s  1.65%  go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/internal/retry.Config.RequestFunc.func2
+         0     0% 41.89%      0.28s  1.65%  go.opentelemetry.io/proto/otlp/collector/trace/v1.(*traceServiceClient).Export
+         0     0% 41.89%      0.28s  1.65%  google.golang.org/grpc.(*ClientConn).Invoke
+         0     0% 41.89%      0.28s  1.65%  google.golang.org/grpc.invoke
+         0     0% 41.89%      0.28s  1.65%  net/http.Header.Get (inline)
+     0.02s  0.12% 42.01%      0.28s  1.65%  net/textproto.MIMEHeader.Get
+     0.28s  1.65% 43.65%      0.28s  1.65%  runtime.nanotime (inline)
+     0.15s  0.88% 44.54%      0.28s  1.65%  runtime.scanObjectsSmall
+         0     0% 44.54%      0.28s  1.65%  switchyard/internal/applicationeval.validate
+     0.01s 0.059% 44.59%      0.27s  1.59%  encoding/json/v2.makeMapArshaler.func3
+         0     0% 44.59%      0.27s  1.59%  github.com/redis/go-redis/v9.(*Client).Process
+         0     0% 44.59%      0.27s  1.59%  github.com/redis/go-redis/v9.(*baseClient).process
+         0     0% 44.59%      0.27s  1.59%  github.com/redis/go-redis/v9.(*hooksMixin).processHook (inline)
+         0     0% 44.59%      0.27s  1.59%  main.run.func7
+         0     0% 44.59%      0.27s  1.59%  net/http.(*Server).Serve
+     0.11s  0.65% 45.24%      0.27s  1.59%  runtime.pcvalue
+     0.01s 0.059% 45.30%      0.27s  1.59%  runtime.scanframeworker
+         0     0% 45.30%      0.27s  1.59%  switchyard/pkg/evaluation.Equal
+         0     0% 45.30%      0.26s  1.53%  github.com/redis/go-redis/v9.(*baseClient)._process
+         0     0% 45.30%      0.26s  1.53%  github.com/redis/go-redis/v9.(*baseClient).processCommand
+         0     0% 45.30%      0.26s  1.53%  github.com/redis/go-redis/v9.(*baseClient).processWithRetry
+         0     0% 45.30%      0.26s  1.53%  go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform.Spans
+     0.05s  0.29% 45.59%      0.26s  1.53%  go.opentelemetry.io/otel/sdk/trace.(*tracer).newSpan
+         0     0% 45.59%      0.26s  1.53%  runtime.(*unwinder).init (inline)
+         0     0% 45.59%      0.26s  1.53%  runtime.(*unwinder).next
+     0.02s  0.12% 45.71%      0.26s  1.53%  runtime.mallocgcSmallNoscan
+     0.22s  1.29% 47.00%      0.26s  1.53%  runtime.stackpoolalloc
+     0.01s 0.059% 47.06%      0.25s  1.47%  bufio.(*Reader).ReadSlice
+         0     0% 47.06%      0.25s  1.47%  github.com/redis/go-redis/v9.(*baseClient).withConn
+         0     0% 47.06%      0.25s  1.47%  go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform.span
+         0     0% 47.06%      0.25s  1.47%  go.opentelemetry.io/otel/sdk/trace.(*recordingSpan).snapshot
+         0     0% 47.06%      0.25s  1.47%  google.golang.org/grpc.(*clientStream).SendMsg
+         0     0% 47.06%      0.25s  1.47%  google.golang.org/grpc.encode
+         0     0% 47.06%      0.25s  1.47%  google.golang.org/grpc.prepareMsg
+         0     0% 47.06%      0.25s  1.47%  google.golang.org/grpc/encoding/proto.(*codecV2).Marshal
+         0     0% 47.06%      0.25s  1.47%  switchyard/internal/cache.PostgresSource.func1
+         0     0% 47.06%      0.25s  1.47%  switchyard/internal/flags.(*Service).Get
+         0     0% 47.06%      0.24s  1.41%  bufio.(*Reader).ReadLine
+         0     0% 47.06%      0.24s  1.41%  github.com/jackc/pgx/v5/pgxpool.(*Pool).Acquire
+     0.01s 0.059% 47.12%      0.24s  1.41%  go.opentelemetry.io/otel/trace.attributeOption.applySpan (inline)
+         0     0% 47.12%      0.24s  1.41%  go.opentelemetry.io/otel/trace.attributeOption.applySpanStart
+         0     0% 47.12%      0.24s  1.41%  net/textproto.(*Reader).readLineSlice
+     0.02s  0.12% 47.24%      0.24s  1.41%  net/textproto.CanonicalMIMEHeaderKey
+         0     0% 47.24%      0.24s  1.41%  runtime.gcDrainMarkWorkerIdle (inline)
+         0     0% 47.24%      0.24s  1.41%  runtime.slicebytetostring
+     0.02s  0.12% 47.36%      0.23s  1.35%  encoding/json/jsontext.(*decoderState).reset
+         0     0% 47.36%      0.23s  1.35%  internal/runtime/maps.newGroups (inline)
+         0     0% 47.36%      0.23s  1.35%  internal/runtime/maps.newarray
+         0     0% 47.36%      0.23s  1.35%  net/textproto.(*Reader).ReadLine (inline)
+     0.04s  0.24% 47.59%      0.23s  1.35%  runtime.mallocgcSmallScanNoHeaderSC7
+     0.08s  0.47% 48.06%      0.23s  1.35%  runtime.mapaccess2_faststr
+     0.02s  0.12% 48.18%      0.23s  1.35%  runtime.mapassign_faststr
+         0     0% 48.18%      0.23s  1.35%  runtime.newarray
+         0     0% 48.18%      0.22s  1.29%  context.WithTimeout
+     0.01s 0.059% 48.24%      0.22s  1.29%  github.com/jackc/puddle/v2.(*Pool[go.shape.*uint8]).Acquire
+     0.20s  1.18% 49.41%      0.22s  1.29%  runtime.gopark
+     0.05s  0.29% 49.71%      0.22s  1.29%  runtime.scanblock
+         0     0% 49.71%      0.21s  1.23%  context.WithDeadline (inline)
+     0.02s  0.12% 49.82%      0.21s  1.23%  context.WithDeadlineCause
+         0     0% 49.82%      0.21s  1.23%  crypto/rand.Read
+         0     0% 49.82%      0.21s  1.23%  encoding/json.Unmarshal (inline)
+     0.01s 0.059% 49.88%      0.21s  1.23%  encoding/json/jsontext.(*decoderState).consumeObject
+         0     0% 49.88%      0.21s  1.23%  github.com/jackc/puddle/v2.(*Pool[go.shape.*uint8]).acquire
+     0.01s 0.059% 49.94%      0.21s  1.23%  net/http.(*maxBytesReader).Read
+         0     0% 49.94%      0.21s  1.23%  runtime.deductAssistCredit
+     0.07s  0.41% 50.35%      0.21s  1.23%  runtime.mallocgcSmallScanNoHeaderSC2
+     0.03s  0.18% 50.53%      0.21s  1.23%  runtime.mallocgcTinySC2
+         0     0% 50.53%      0.20s  1.18%  encoding/json/jsontext.export.GetBufferedDecoder (inline)
+         0     0% 50.53%      0.20s  1.18%  encoding/json/jsontext.getBufferedDecoder
+         0     0% 50.53%      0.20s  1.18%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/internal/request.(*BodyWrapper).Read
+     0.01s 0.059% 50.59%      0.20s  1.18%  go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform.KeyValues
+         0     0% 50.59%      0.20s  1.18%  net.(*TCPListener).Accept
+         0     0% 50.59%      0.20s  1.18%  net.(*TCPListener).accept
+     0.01s 0.059% 50.65%      0.20s  1.18%  net/textproto.readMIMEHeader
+     0.04s  0.24% 50.88%      0.20s  1.18%  runtime.(*sweepLocked).sweep
+         0     0% 50.88%      0.20s  1.18%  runtime.stringtoslicebyte
+         0     0% 50.88%      0.20s  1.18%  switchyard/internal/cache.(*Redis).Put
+         0     0% 50.88%      0.20s  1.18%  switchyard/pkg/evaluation.Value.Validate
+     0.01s 0.059% 50.94%      0.19s  1.12%  crypto/internal/fips140/drbg.Read
+         0     0% 50.94%      0.19s  1.12%  encoding/json.Valid (inline)
+     0.01s 0.059% 51.00%      0.19s  1.12%  encoding/json.checkValid
+         0     0% 51.00%      0.19s  1.12%  github.com/jackc/pgx/v5/pgconn.(*PgConn).ExecStatement
+         0     0% 51.00%      0.19s  1.12%  github.com/redis/go-redis/v9.cmdable.Eval (inline)
+         0     0% 51.00%      0.19s  1.12%  github.com/redis/go-redis/v9.cmdable.eval
+     0.01s 0.059% 51.06%      0.19s  1.12%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/internal/semconv.HTTPServer.RequestTraceAttrs
+         0     0% 51.06%      0.19s  1.12%  go.opentelemetry.io/otel/sdk/trace.(*recordingSpan).dedupeAttrs
+     0.01s 0.059% 51.12%      0.19s  1.12%  go.opentelemetry.io/otel/sdk/trace.(*tracer).newRecordingSpan
+     0.01s 0.059% 51.18%      0.19s  1.12%  internal/runtime/maps.NewMap
+     0.02s  0.12% 51.29%      0.19s  1.12%  net/http.(*body).Read
+         0     0% 51.29%      0.19s  1.12%  runtime.funcspdelta (inline)
+     0.19s  1.12% 52.41%      0.19s  1.12%  runtime.futex
+         0     0% 52.41%      0.19s  1.12%  runtime.makemap (partial-inline)
+     0.01s 0.059% 52.47%      0.19s  1.12%  runtime.mallocgcSmallScanNoHeaderSC5
+         0     0% 52.47%      0.19s  1.12%  runtime.sweepone
+         0     0% 52.47%      0.18s  1.06%  crypto/internal/sysrand.Read
+         0     0% 52.47%      0.18s  1.06%  crypto/internal/sysrand.read
+     0.02s  0.12% 52.59%      0.18s  1.06%  encoding/json/jsontext.(*decoderState).fetch
+     0.01s 0.059% 52.64%      0.18s  1.06%  go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform.KeyValue (inline)
+         0     0% 52.64%      0.18s  1.06%  go.opentelemetry.io/otel/propagation.HeaderCarrier.Get
+         0     0% 52.64%      0.18s  1.06%  go.opentelemetry.io/otel/propagation.TraceContext.Extract
+         0     0% 52.64%      0.18s  1.06%  go.opentelemetry.io/otel/propagation.TraceContext.extract
+         0     0% 52.64%      0.18s  1.06%  golang.org/x/sync/semaphore.(*Weighted).Acquire
+         0     0% 52.64%      0.18s  1.06%  google.golang.org/protobuf/internal/impl.(*MessageInfo).marshal
+     0.02s  0.12% 52.76%      0.18s  1.06%  google.golang.org/protobuf/internal/impl.(*MessageInfo).marshalAppendPointer
+         0     0% 52.76%      0.18s  1.06%  google.golang.org/protobuf/internal/impl.appendMessageSliceInfo
+         0     0% 52.76%      0.18s  1.06%  google.golang.org/protobuf/proto.MarshalOptions.MarshalAppend
+         0     0% 52.76%      0.18s  1.06%  google.golang.org/protobuf/proto.MarshalOptions.marshal
+         0     0% 52.76%      0.18s  1.06%  net.(*netFD).accept
+         0     0% 52.76%      0.18s  1.06%  runtime.bgsweep
+         0     0% 52.76%      0.18s  1.06%  runtime.convT
+     0.03s  0.18% 52.94%      0.18s  1.06%  runtime.mallocgcTinySlowPath
+     0.02s  0.12% 53.06%      0.18s  1.06%  runtime.netpoll
+     0.03s  0.18% 53.23%      0.18s  1.06%  time.Now
+         0     0% 53.23%      0.17s     1%  github.com/jackc/pgx/v5/pgconn.(*PgConn).execExtendedSuffix
+         0     0% 53.23%      0.17s     1%  go.opentelemetry.io/otel/attribute.NewSet (inline)
+         0     0% 53.23%      0.17s     1%  go.opentelemetry.io/otel/attribute.NewSetWithFiltered
+         0     0% 53.23%      0.17s     1%  internal/poll.setDeadlineImpl
+     0.01s 0.059% 53.29%      0.17s     1%  internal/syscall/unix.GetRandom
+     0.01s 0.059% 53.35%      0.17s     1%  net/http.(*body).readLocked
+         0     0% 53.35%      0.17s     1%  switchyard/internal/cache.(*Coordinator).Get
+     0.03s  0.18% 53.53%      0.16s  0.94%  encoding/json/jsontext.(*state).reset
+     0.01s 0.059% 53.58%      0.16s  0.94%  encoding/json/v2.makeInterfaceArshaler.func2
+         0     0% 53.58%      0.16s  0.94%  github.com/jackc/pgx/v5/pgconn.(*PgConn).flushWithPotentialWriteReadDeadlock
+         0     0% 53.58%      0.16s  0.94%  github.com/redis/go-redis/v9.(*baseClient)._process.func1
+         0     0% 53.58%      0.16s  0.94%  internal/runtime/syscall/linux.EpollWait
+         0     0% 53.58%      0.16s  0.94%  net/http.(*conn).serve.func1
+         0     0% 53.58%      0.16s  0.94%  runtime.(*mheap).allocSpan
+         0     0% 53.58%      0.16s  0.94%  runtime.newproc
+         0     0% 53.58%      0.16s  0.94%  runtime.newproc.func1
+     0.04s  0.24% 53.82%      0.16s  0.94%  runtime.selectgo
+     0.01s 0.059% 53.88%      0.15s  0.88%  bufio.(*Writer).WriteString
+     0.01s 0.059% 53.94%      0.15s  0.88%  context.(*cancelCtx).cancel
+         0     0% 53.94%      0.15s  0.88%  github.com/felixge/httpsnoop.(*rw509).Write
+         0     0% 53.94%      0.15s  0.88%  github.com/felixge/httpsnoop.(*rwState).doWrite
+         0     0% 53.94%      0.15s  0.88%  github.com/jackc/pgx/v5/pgproto3.(*Frontend).Flush
+     0.01s 0.059% 54.00%      0.15s  0.88%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/internal/request.(*RespWriterWrapper).Write
+         0     0% 54.00%      0.15s  0.88%  net.(*TCPAddr).String
+     0.12s  0.71% 54.70%      0.15s  0.88%  runtime.step
+     0.01s 0.059% 54.76%      0.15s  0.88%  runtime.wbBufFlush
+     0.04s  0.24% 54.99%      0.15s  0.88%  runtime.wbBufFlush1
+         0     0% 54.99%      0.15s  0.88%  switchyard/internal/transport/http.(*responseWriter).Write
+     0.11s  0.65% 55.64%      0.15s  0.88%  time.now
+         0     0% 55.64%      0.15s  0.88%  time.runtimeNow
+     0.01s 0.059% 55.70%      0.14s  0.82%  context.WithCancel.func1
+     0.03s  0.18% 55.88%      0.14s  0.82%  encoding/json/v2.makeStructArshaler.func2
+         0     0% 55.88%      0.14s  0.82%  github.com/redis/go-redis/v9/internal/pool.(*Conn).WithWriter
+         0     0% 55.88%      0.14s  0.82%  internal/runtime/maps.(*Map).growToSmall
+         0     0% 55.88%      0.14s  0.82%  net/http.writeStatusLine
+     0.07s  0.41% 56.29%      0.14s  0.82%  runtime.(*stkframe).getStackMap
+     0.01s 0.059% 56.35%      0.14s  0.82%  runtime.mapaccess1_faststr
+     0.02s  0.12% 56.46%      0.14s  0.82%  runtime.semacquire1
+     0.01s 0.059% 56.52%      0.14s  0.82%  runtime.stopm
+         0     0% 56.52%      0.14s  0.82%  runtime.wbBufFlush.func1
+     0.01s 0.059% 56.58%      0.13s  0.76%  context.(*cancelCtx).propagateCancel
+     0.01s 0.059% 56.64%      0.13s  0.76%  encoding/json/jsontext.(*decoderState).consumeString
+     0.02s  0.12% 56.76%      0.13s  0.76%  encoding/json/v2.makeStringArshaler.func2
+         0     0% 56.76%      0.13s  0.76%  internal/poll.(*FD).Close
+         0     0% 56.76%      0.13s  0.76%  internal/poll.(*FD).decref
+         0     0% 56.76%      0.13s  0.76%  internal/poll.(*FD).destroy
+     0.02s  0.12% 56.87%      0.13s  0.76%  internal/poll.(*pollDesc).wait
+         0     0% 56.87%      0.13s  0.76%  internal/poll.(*pollDesc).waitRead (inline)
+         0     0% 56.87%      0.13s  0.76%  internal/runtime/maps.(*table).reset
+         0     0% 56.87%      0.13s  0.76%  internal/runtime/maps.newTable
+         0     0% 56.87%      0.13s  0.76%  net/http.(*connReader).startBackgroundRead
+     0.02s  0.12% 56.99%      0.13s  0.76%  net/http.(*response).Write
+         0     0% 56.99%      0.13s  0.76%  net/http.Header.Set (partial-inline)
+     0.01s 0.059% 57.05%      0.13s  0.76%  net/textproto.MIMEHeader.Set (inline)
+         0     0% 57.05%      0.13s  0.76%  runtime.(*mheap).alloc
+         0     0% 57.05%      0.13s  0.76%  runtime.(*mheap).alloc.func1
+         0     0% 57.05%      0.13s  0.76%  switchyard/internal/platform/identity.New
+         0     0% 57.05%      0.13s  0.76%  switchyard/internal/transport/http.randBytes
+     0.01s 0.059% 57.11%      0.13s  0.76%  sync.(*Mutex).Lock (inline)
+     0.04s  0.24% 57.34%      0.13s  0.76%  sync.(*Pool).Get
+     0.03s  0.18% 57.52%      0.12s  0.71%  bufio.(*Writer).Write
+     0.01s 0.059% 57.58%      0.12s  0.71%  encoding/json.NewDecoder
+     0.02s  0.12% 57.70%      0.12s  0.71%  encoding/json/v2.lookupArshaler
+     0.01s 0.059% 57.76%      0.12s  0.71%  go.opentelemetry.io/otel/exporters/otlp/otlptrace/internal/tracetransform.Value
+     0.01s 0.059% 57.81%      0.12s  0.71%  google.golang.org/protobuf/internal/impl.(*MessageInfo).sizePointer
+     0.01s 0.059% 57.87%      0.12s  0.71%  google.golang.org/protobuf/internal/impl.appendMessageInfo
+         0     0% 57.87%      0.12s  0.71%  internal/poll.(*FD).SetReadDeadline (inline)
+         0     0% 57.87%      0.12s  0.71%  internal/poll.(*SysFile).destroy (inline)
+     0.06s  0.35% 58.23%      0.12s  0.71%  internal/sync.(*HashTrieMap[go.shape.interface {},go.shape.interface {}]).Load
+     0.04s  0.24% 58.46%      0.12s  0.71%  internal/sync.(*Mutex).Lock (inline)
+         0     0% 58.46%      0.12s  0.71%  net.(*conn).Close
+         0     0% 58.46%      0.12s  0.71%  net.(*conn).SetReadDeadline
+         0     0% 58.46%      0.12s  0.71%  net.(*netFD).Close
+         0     0% 58.46%      0.12s  0.71%  net.(*netFD).SetReadDeadline (inline)
+         0     0% 58.46%      0.12s  0.71%  net.IP.String
+         0     0% 58.46%      0.12s  0.71%  net.ipEmptyString (inline)
+         0     0% 58.46%      0.12s  0.71%  runtime.gcStart
+     0.11s  0.65% 59.11%      0.12s  0.71%  runtime.heapSetTypeSmallHeader (inline)
+     0.02s  0.12% 59.22%      0.12s  0.71%  runtime.mallocgcSmallScanNoHeaderSC6
+         0     0% 59.22%      0.12s  0.71%  runtime.mapIterStart
+     0.01s 0.059% 59.28%      0.12s  0.71%  runtime.newproc1
+     0.03s  0.18% 59.46%      0.12s  0.71%  runtime.scanObjectSmall
+         0     0% 59.46%      0.12s  0.71%  sync.(*Map).Load (inline)
+         0     0% 59.46%      0.12s  0.71%  syscall.Close
+         0     0% 59.46%      0.11s  0.65%  encoding/json/jsontext.NewDecoder (inline)
+         0     0% 59.46%      0.11s  0.65%  github.com/felixge/httpsnoop.(*rw509).WriteHeader
+     0.01s 0.059% 59.52%      0.11s  0.65%  github.com/felixge/httpsnoop.(*rwState).doWriteHeader
+     0.01s 0.059% 59.58%      0.11s  0.65%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/internal/semconv.HTTPServer.MetricAttributes
+         0     0% 59.58%      0.11s  0.65%  go.opentelemetry.io/otel/attribute.newSet
+         0     0% 59.58%      0.11s  0.65%  google.golang.org/protobuf/internal/impl.(*MessageInfo).size
+     0.01s 0.059% 59.64%      0.11s  0.65%  google.golang.org/protobuf/internal/impl.(*MessageInfo).sizePointerSlow
+     0.01s 0.059% 59.69%      0.11s  0.65%  google.golang.org/protobuf/internal/impl.sizeMessageSliceInfo
+         0     0% 59.69%      0.11s  0.65%  google.golang.org/protobuf/proto.MarshalOptions.Size
+         0     0% 59.69%      0.11s  0.65%  google.golang.org/protobuf/proto.MarshalOptions.size
+         0     0% 59.69%      0.11s  0.65%  google.golang.org/protobuf/proto.Size (inline)
+         0     0% 59.69%      0.11s  0.65%  internal/poll.runtime_pollWait
+         0     0% 59.69%      0.11s  0.65%  net/http.(*conn).close
+         0     0% 59.69%      0.11s  0.65%  net/http.(*connReader).handleReadErrorLocked
+         0     0% 59.69%      0.11s  0.65%  net/http.(*response).write
+         0     0% 59.69%      0.11s  0.65%  runtime.(*mspan).initInlineMarkBits (inline)
+     0.11s  0.65% 60.34%      0.11s  0.65%  runtime.(*spanInlineMarkBits).init
+     0.02s  0.12% 60.46%      0.11s  0.65%  runtime.bulkBarrierPreWrite
+     0.01s 0.059% 60.52%      0.11s  0.65%  runtime.callers
+     0.11s  0.65% 61.16%      0.11s  0.65%  runtime.memequal
+     0.02s  0.12% 61.28%      0.11s  0.65%  runtime.netpollblock
+     0.02s  0.12% 61.40%      0.11s  0.65%  runtime.wbMove
+         0     0% 61.40%      0.11s  0.65%  switchyard/internal/transport/http.(*responseWriter).WriteHeader
+         0     0% 61.40%      0.10s  0.59%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp.newTracer
+         0     0% 61.40%      0.10s  0.59%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/internal/request.(*RespWriterWrapper).WriteHeader
+     0.01s 0.059% 61.46%      0.10s  0.59%  google.golang.org/protobuf/internal/impl.(*MessageInfo).initOneofFieldCoders.func4
+         0     0% 61.46%      0.10s  0.59%  internal/runtime/maps.NewEmptyMap (inline)
+     0.01s 0.059% 61.52%      0.10s  0.59%  net/http.(*connReader).abortPendingRead
+     0.10s  0.59% 62.10%      0.10s  0.59%  runtime.(*mspan).moveInlineMarks
+         0     0% 62.10%      0.10s  0.59%  runtime.Callers (inline)
+     0.03s  0.18% 62.28%      0.10s  0.59%  runtime.adjustframe
+         0     0% 62.28%      0.10s  0.59%  runtime.callers.func1
+     0.10s  0.59% 62.87%      0.10s  0.59%  runtime.findfunc
+         0     0% 62.87%      0.10s  0.59%  runtime.futexsleep
+         0     0% 62.87%      0.10s  0.59%  runtime.gcMarkDone
+         0     0% 62.87%      0.10s  0.59%  runtime.gfget
+         0     0% 62.87%      0.10s  0.59%  runtime.makemap_small
+         0     0% 62.87%      0.10s  0.59%  switchyard/internal/cache.(*Coordinator).storeRead
+         0     0% 62.87%      0.10s  0.59%  switchyard/internal/cache.(*Redis).Get
+         0     0% 62.87%      0.10s  0.59%  switchyard/pkg/snapshot.New
+     0.03s  0.18% 63.04%      0.10s  0.59%  sync.(*Pool).Put
+         0     0% 63.04%      0.10s  0.59%  syscall.Syscall6
+         0     0% 63.04%      0.10s  0.59%  time.runtimeNano
+         0     0% 63.04%      0.09s  0.53%  context.(*timerCtx).cancel
+         0     0% 63.04%      0.09s  0.53%  context.WithCancel
+     0.03s  0.18% 63.22%      0.09s  0.53%  gcWriteBarrier
+     0.04s  0.24% 63.45%      0.09s  0.53%  github.com/felixge/httpsnoop.Wrap
+         0     0% 63.45%      0.09s  0.53%  github.com/redis/go-redis/v9.cmdable.HGet (inline)
+     0.01s 0.059% 63.51%      0.09s  0.53%  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/internal/request.(*RespWriterWrapper).writeHeader
+     0.02s  0.12% 63.63%      0.09s  0.53%  internal/poll.runtime_pollSetDeadline
+     0.05s  0.29% 63.92%      0.09s  0.53%  internal/runtime/maps.(*Map).getWithoutKeySmallFastStr
+         0     0% 63.92%      0.09s  0.53%  net/http.Header.WriteSubset (inline)
+         0     0% 63.92%      0.09s  0.53%  net/http.Header.writeSubset
+         0     0% 63.92%      0.09s  0.53%  runtime.(*mheap).initSpan
+         0     0% 63.92%      0.09s  0.53%  runtime.futexwakeup
+         0     0% 63.92%      0.09s  0.53%  runtime.mPark (inline)
+     0.04s  0.24% 64.16%      0.09s  0.53%  runtime.mallocgcSmallNoScanSC6
+     0.03s  0.18% 64.34%      0.09s  0.53%  runtime.notesleep
+         0     0% 64.34%      0.09s  0.53%  runtime.notewakeup
+     0.04s  0.24% 64.57%      0.09s  0.53%  runtime.stackfree
+     0.01s 0.059% 64.63%      0.09s  0.53%  switchyard/internal/platform/telemetry.PgxTracer.TraceQueryStart

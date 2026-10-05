@@ -13,8 +13,8 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M7 Durable worker | Complete | Durable publisher/consumer, replay/retention, failure drills and aggregate serving verified. First ingestion trial and missed freshness target documented before optimization; normal setup/restart and final parity across 40 runs passed. |
 | M8 gRPC / Go SDK | Complete | 5 Oct 2026: protobuf contract, gRPC adapter, remote and local SDK, bounded event helper, listing example and live drill. Local cached-read benchmark recorded; p99 distributions belong to M10. |
 | M9 Rollout / approval / safety | Complete | 5 Oct 2026: production proposals, rollout steps, guardrails, safety rollback, reviewer UI and live drill. Production experiment create/start/pause/complete remain denied by the generic gate. |
-| M10 Telemetry / performance | In progress | Observability stack, Go load generator and auth positive-cache are committed. HTTP evaluation steps and one 990 events/s run are recorded. Freshness p95 was 585 s. Mixed, soak, observability smoke and a CPU profile are not recorded yet. |
-| M11 Governed agent | In progress | Agent key, Go policy checks, mock client and tests are committed. Live `make agent-drill` is not recorded yet. |
+| M10 Telemetry / performance | In progress | Observability smoke, evaluation ladder, CPU profiles, and the user-receipt index are recorded. Freshness p95 improved from 585 s to 227 s and still misses 5 s. The 10-minute soak was not run after the 990-event offer failed most batches. |
+| M11 Governed agent | Complete | 5 Oct 2026: mock client, Go policy checks, seven agent tests, and live `make agent-drill` (cap, sensitive targeting, no direct mutation, second-person approval, one apply). |
 | M12 Portfolio-ready V2 | Pending | — |
 
 Approval authorizes local implementation/testing/commits only. No push, publication, paid service or external account changes are authorized.
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M9 is complete with the documented production-experiment limitation. M10 measurements are underway: evaluation steps and a 990 events/s ingestion run are recorded, and the five-second freshness target failed again (p95 585 s). Mixed, soak, observability smoke and a CPU profile remain. M11 agent code is committed and still needs the live drill.
+M11's live drill passed. M10 freshness p95 is 227 s and the 10-minute soak was not run. M12 (string and number flags, JavaScript SDK, interview package, and `v0.2.0`) is next.
 
 ## M6 verified checkpoints
 

@@ -1,0 +1,489 @@
+File: worker
+Build ID: 2bfbaa47589e73d7161bee6325b324d6890a7c13
+Type: cpu
+Time: 2026-10-05 20:13:40 IST
+Duration: 19.98s, Total samples = 1.71s ( 8.56%)
+Showing nodes accounting for 1.71s, 100% of 1.71s total
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%      0.51s 29.82%  main.reconcile.func1
+         0     0%     0%      0.45s 26.32%  switchyard/internal/metrics.ReconcileOne
+     0.37s 21.64% 21.64%      0.37s 21.64%  internal/runtime/syscall/linux.Syscall6
+     0.01s  0.58% 22.22%      0.34s 19.88%  github.com/jackc/pgx/v5.(*Conn).Exec
+         0     0% 22.22%      0.34s 19.88%  syscall.Syscall
+         0     0% 22.22%      0.32s 18.71%  internal/poll.ignoringEINTRIO (inline)
+         0     0% 22.22%      0.31s 18.13%  github.com/jackc/pgx/v5.(*Conn).exec
+         0     0% 22.22%      0.30s 17.54%  syscall.RawSyscall6
+         0     0% 22.22%      0.29s 16.96%  net.(*conn).Write
+     0.01s  0.58% 22.81%      0.29s 16.96%  net.(*netFD).Write
+         0     0% 22.81%      0.28s 16.37%  internal/poll.(*FD).Write
+         0     0% 22.81%      0.28s 16.37%  main.consume
+         0     0% 22.81%      0.28s 16.37%  main.run.func4
+         0     0% 22.81%      0.27s 15.79%  runtime.mallocgc
+         0     0% 22.81%      0.26s 15.20%  syscall.Write (inline)
+         0     0% 22.81%      0.26s 15.20%  syscall.write
+         0     0% 22.81%      0.25s 14.62%  runtime.mcall
+         0     0% 22.81%      0.24s 14.04%  github.com/jackc/pgx/v5.(*Conn).Query
+         0     0% 22.81%      0.24s 14.04%  runtime.park_m
+         0     0% 22.81%      0.24s 14.04%  runtime.schedule
+         0     0% 22.81%      0.23s 13.45%  github.com/jackc/pgx/v5.(*dbTx).Query
+         0     0% 22.81%      0.23s 13.45%  github.com/jackc/pgx/v5/pgconn.(*PgConn).flushWithPotentialWriteReadDeadlock
+     0.01s  0.58% 23.39%      0.23s 13.45%  runtime.findRunnable
+         0     0% 23.39%      0.23s 13.45%  switchyard/internal/processing.HandleWithRefresh
+         0     0% 23.39%      0.21s 12.28%  github.com/jackc/pgx/v5.(*dbTx).QueryRow
+         0     0% 23.39%      0.21s 12.28%  github.com/jackc/pgx/v5/pgconn.(*PgConn).ExecStatement
+         0     0% 23.39%      0.21s 12.28%  github.com/jackc/pgx/v5/pgproto3.(*Frontend).Flush
+         0     0% 23.39%      0.21s 12.28%  github.com/jackc/pgx/v5/pgxpool.(*Tx).QueryRow
+         0     0% 23.39%      0.19s 11.11%  github.com/jackc/pgx/v5/pgconn.(*PgConn).execExtendedSuffix
+         0     0% 23.39%      0.19s 11.11%  runtime.systemstack
+         0     0% 23.39%      0.19s 11.11%  switchyard/internal/processing.(*Store).Apply
+         0     0% 23.39%      0.17s  9.94%  github.com/jackc/pgx/v5.(*Conn).execSimpleProtocol
+         0     0% 23.39%      0.16s  9.36%  github.com/jackc/pgx/v5/pgconn.(*PgConn).Exec
+         0     0% 23.39%      0.14s  8.19%  runtime.(*mcache).nextFree
+         0     0% 23.39%      0.14s  8.19%  switchyard/internal/processing.applyTx
+         0     0% 23.39%      0.13s  7.60%  github.com/jackc/pgx/v5/pgxpool.(*Pool).Begin (inline)
+         0     0% 23.39%      0.13s  7.60%  github.com/jackc/pgx/v5/pgxpool.(*Pool).BeginTx
+         0     0% 23.39%      0.13s  7.60%  main.main
+         0     0% 23.39%      0.13s  7.60%  main.run
+     0.01s  0.58% 23.98%      0.13s  7.60%  runtime.(*mcache).refill
+         0     0% 23.98%      0.13s  7.60%  runtime.main
+         0     0% 23.98%      0.13s  7.60%  runtime.mallocgcSmallScanNoHeader
+         0     0% 23.98%      0.13s  7.60%  switchyard/internal/outbox.PublishBatch
+     0.01s  0.58% 24.56%      0.12s  7.02%  github.com/jackc/pgx/v5/pgconn.(*PgConn).peekMessage
+         0     0% 24.56%      0.12s  7.02%  runtime.gcBgMarkWorker
+         0     0% 24.56%      0.12s  7.02%  runtime.newobject
+         0     0% 24.56%      0.11s  6.43%  github.com/jackc/pgx/v5.(*dbTx).Exec
+         0     0% 24.56%      0.11s  6.43%  github.com/jackc/pgx/v5/pgxpool.(*Tx).Exec
+         0     0% 24.56%      0.10s  5.85%  github.com/jackc/pgx/v5.(*Conn).execPrepared
+         0     0% 24.56%      0.10s  5.85%  github.com/jackc/pgx/v5.ConnectConfig
+         0     0% 24.56%      0.10s  5.85%  github.com/jackc/pgx/v5.connect
+         0     0% 24.56%      0.10s  5.85%  github.com/jackc/pgx/v5/pgconn.(*PgConn).receiveMessage
+         0     0% 24.56%      0.10s  5.85%  github.com/jackc/pgx/v5/pgxpool.NewWithConfig.func3
+         0     0% 24.56%      0.10s  5.85%  github.com/jackc/puddle/v2.(*Pool[go.shape.*uint8]).initResourceValue.func1
+     0.10s  5.85% 30.41%      0.10s  5.85%  runtime.futex
+         0     0% 30.41%      0.10s  5.85%  runtime.gcBgMarkWorker.func2
+         0     0% 30.41%      0.10s  5.85%  runtime.gcDrain
+         0     0% 30.41%      0.09s  5.26%  github.com/jackc/pgx/v5.(*Conn).BeginTx
+         0     0% 30.41%      0.09s  5.26%  github.com/jackc/pgx/v5/pgconn.(*ResultReader).readUntilRowDescription
+         0     0% 30.41%      0.09s  5.26%  github.com/jackc/pgx/v5/pgconn.ConnectConfig
+     0.01s  0.58% 30.99%      0.09s  5.26%  github.com/jackc/pgx/v5/pgproto3.(*Frontend).Receive
+         0     0% 30.99%      0.09s  5.26%  github.com/jackc/pgx/v5/pgxpool.(*Conn).BeginTx
+     0.01s  0.58% 31.58%      0.09s  5.26%  runtime.(*mcentral).cacheSpan
+         0     0% 31.58%      0.08s  4.68%  github.com/jackc/pgx/v5/pgconn.(*ResultReader).receiveMessage
+         0     0% 31.58%      0.07s  4.09%  context.WithDeadline (inline)
+         0     0% 31.58%      0.07s  4.09%  context.WithDeadlineCause
+         0     0% 31.58%      0.07s  4.09%  context.WithTimeout
+         0     0% 31.58%      0.07s  4.09%  github.com/jackc/pgx/v5.(*dbTx).Rollback
+         0     0% 31.58%      0.07s  4.09%  github.com/jackc/pgx/v5/pgconn.(*PgConn).asyncClose.func1
+         0     0% 31.58%      0.07s  4.09%  github.com/jackc/pgx/v5/pgxpool.(*Tx).Rollback
+         0     0% 31.58%      0.07s  4.09%  runtime.copystack
+         0     0% 31.58%      0.07s  4.09%  runtime.futexwakeup
+         0     0% 31.58%      0.07s  4.09%  runtime.mallocgcSmallNoscan
+     0.01s  0.58% 32.16%      0.07s  4.09%  runtime.netpoll
+         0     0% 32.16%      0.07s  4.09%  runtime.newstack
+         0     0% 32.16%      0.06s  3.51%  github.com/jackc/pgx/v5/pgconn.(*PgConn).scramAuth
+         0     0% 32.16%      0.06s  3.51%  github.com/jackc/pgx/v5/pgconn.connectOne
+         0     0% 32.16%      0.06s  3.51%  github.com/jackc/pgx/v5/pgconn.connectPreferred
+         0     0% 32.16%      0.06s  3.51%  github.com/jackc/pgx/v5/pgconn/ctxwatch.(*ContextWatcher).Watch
+         0     0% 32.16%      0.06s  3.51%  github.com/jackc/pgx/v5/pgconn/internal/bgreader.(*BGReader).Read
+         0     0% 32.16%      0.06s  3.51%  github.com/jackc/pgx/v5/pgproto3.(*chunkReader).Next
+         0     0% 32.16%      0.06s  3.51%  github.com/jackc/pgx/v5/pgxpool.(*Tx).Commit
+         0     0% 32.16%      0.06s  3.51%  internal/poll.(*FD).Read
+         0     0% 32.16%      0.06s  3.51%  internal/runtime/syscall/linux.EpollWait
+         0     0% 32.16%      0.06s  3.51%  io.ReadAtLeast
+         0     0% 32.16%      0.06s  3.51%  net.(*conn).Read
+         0     0% 32.16%      0.06s  3.51%  net.(*netFD).Read
+         0     0% 32.16%      0.06s  3.51%  syscall.Read (inline)
+         0     0% 32.16%      0.06s  3.51%  syscall.read
+         0     0% 32.16%      0.05s  2.92%  context.AfterFunc
+         0     0% 32.16%      0.05s  2.92%  github.com/jackc/pgx/v5.(*Conn).getStatementDescription
+         0     0% 32.16%      0.05s  2.92%  github.com/jackc/pgx/v5.(*ExtendedQueryBuilder).Build
+         0     0% 32.16%      0.05s  2.92%  github.com/jackc/pgx/v5.(*ExtendedQueryBuilder).appendParam
+         0     0% 32.16%      0.05s  2.92%  github.com/jackc/pgx/v5.(*ExtendedQueryBuilder).encodeExtendedParamValue
+         0     0% 32.16%      0.05s  2.92%  github.com/jackc/pgx/v5.(*connRow).Scan
+         0     0% 32.16%      0.05s  2.92%  github.com/jackc/pgx/v5.(*dbTx).Commit
+         0     0% 32.16%      0.05s  2.92%  github.com/jackc/pgx/v5/pgconn.(*PgConn).CancelRequest
+         0     0% 32.16%      0.05s  2.92%  github.com/jackc/pgx/v5/pgconn.(*scramClient).clientFinalMessage
+         0     0% 32.16%      0.05s  2.92%  github.com/jackc/pgx/v5/pgtype.(*Map).Encode
+         0     0% 32.16%      0.05s  2.92%  github.com/nats-io/nats%2ego.(*Conn).flusher
+         0     0% 32.16%      0.05s  2.92%  github.com/nats-io/nats%2ego.(*natsWriter).flush
+         0     0% 32.16%      0.05s  2.92%  github.com/nats-io/nats%2ego.(*timeoutWriter).Write
+         0     0% 32.16%      0.05s  2.92%  runtime.gcDrainMarkWorkerDedicated (inline)
+         0     0% 32.16%      0.05s  2.92%  runtime.gcDrainMarkWorkerIdle (inline)
+         0     0% 32.16%      0.05s  2.92%  runtime.makeslice
+         0     0% 32.16%      0.05s  2.92%  runtime.notewakeup
+     0.02s  1.17% 33.33%      0.05s  2.92%  runtime.scanObject
+         0     0% 33.33%      0.05s  2.92%  switchyard/internal/outbox.(*Store).Claim
+     0.01s  0.58% 33.92%      0.04s  2.34%  crypto/internal/fips140/pbkdf2.Key[go.shape.interface { BlockSize int; Reset; Size int; Sum []uint8; Write  }]
+         0     0% 33.92%      0.04s  2.34%  crypto/pbkdf2.Key[go.shape.interface { BlockSize int; Reset; Size int; Sum []uint8; Write  }]
+         0     0% 33.92%      0.04s  2.34%  encoding/json/v2.Unmarshal
+         0     0% 33.92%      0.04s  2.34%  github.com/jackc/pgx/v5.(*Conn).Prepare
+         0     0% 33.92%      0.04s  2.34%  github.com/jackc/pgx/v5.(*baseRows).Scan
+         0     0% 33.92%      0.04s  2.34%  github.com/jackc/pgx/v5/pgtype.(*Map).PlanEncode (inline)
+         0     0% 33.92%      0.04s  2.34%  github.com/jackc/pgx/v5/pgtype.(*Map).planEncodeDepth
+         0     0% 33.92%      0.04s  2.34%  github.com/jackc/pgx/v5/pgxpool.(*Pool).Acquire
+         0     0% 33.92%      0.04s  2.34%  github.com/nats-io/nats.go/jetstream.(*pullConsumer).fetch.func1
+     0.01s  0.58% 34.50%      0.04s  2.34%  internal/runtime/maps.(*Map).Delete
+         0     0% 34.50%      0.04s  2.34%  main.retain
+         0     0% 34.50%      0.04s  2.34%  main.retentionStep
+         0     0% 34.50%      0.04s  2.34%  main.run.func6
+         0     0% 34.50%      0.04s  2.34%  net.(*Resolver).exchange
+         0     0% 34.50%      0.04s  2.34%  net.(*Resolver).goLookupIPCNAMEOrder.func3.1
+         0     0% 34.50%      0.04s  2.34%  net.(*Resolver).tryOneName
+     0.02s  1.17% 35.67%      0.04s  2.34%  runtime.(*spanSet).pop
+     0.03s  1.75% 37.43%      0.04s  2.34%  runtime.(*stkframe).getStackMap
+         0     0% 37.43%      0.04s  2.34%  runtime.entersyscall
+         0     0% 37.43%      0.04s  2.34%  runtime.markroot
+         0     0% 37.43%      0.04s  2.34%  runtime.pcvalue
+     0.01s  0.58% 38.01%      0.04s  2.34%  runtime.reentersyscall
+     0.01s  0.58% 38.60%      0.04s  2.34%  runtime.stealWork
+     0.04s  2.34% 40.94%      0.04s  2.34%  runtime.step
+     0.04s  2.34% 43.27%      0.04s  2.34%  runtime.tryDeferToSpanScan
+         0     0% 43.27%      0.03s  1.75%  context.removeChild
+         0     0% 43.27%      0.03s  1.75%  encoding/json.Unmarshal (inline)
+         0     0% 43.27%      0.03s  1.75%  encoding/json/v2.unmarshalDecode
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5.(*Conn).Ping (inline)
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5/internal/stmtcache.StatementName
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5/pgconn.(*MultiResultReader).NextResult
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5/pgconn.(*PgConn).Ping
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5/pgconn.(*PgConn).Prepare
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5/pgconn.buildConnectOneConfigs
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5/pgconn/ctxwatch.(*ContextWatcher).Unwatch
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5/pgxpool.(*Conn).Exec
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5/pgxpool.(*Pool).Acquire.func2
+         0     0% 43.27%      0.03s  1.75%  github.com/jackc/pgx/v5/pgxpool.(*Pool).Exec
+         0     0% 43.27%      0.03s  1.75%  github.com/nats-io/nats.go/jetstream.(*jetStream).PublishMsg
+         0     0% 43.27%      0.03s  1.75%  github.com/nats-io/nats.go/jetstream.(*pullConsumer).Fetch
+         0     0% 43.27%      0.03s  1.75%  internal/runtime/atomic.(*Pointer[go.shape.struct { runtime.spanSetBlockHeader2; runtime.spans [512]runtime.atomicMSpanPointer }]).Load (inline)
+     0.03s  1.75% 45.03%      0.03s  1.75%  internal/runtime/atomic.(*UnsafePointer).Load (inline)
+         0     0% 45.03%      0.03s  1.75%  internal/runtime/maps.(*Map).growToSmall
+     0.03s  1.75% 46.78%      0.03s  1.75%  internal/runtime/maps.memHashAES
+         0     0% 46.78%      0.03s  1.75%  internal/runtime/maps.newGroups (inline)
+         0     0% 46.78%      0.03s  1.75%  internal/runtime/maps.newarray
+     0.03s  1.75% 48.54%      0.03s  1.75%  runtime.(*mspan).typePointersOfUnchecked
+         0     0% 48.54%      0.03s  1.75%  runtime.(*unwinder).next
+         0     0% 48.54%      0.03s  1.75%  runtime.(*unwinder).resolveInternal
+         0     0% 48.54%      0.03s  1.75%  runtime.adjustframe
+         0     0% 48.54%      0.03s  1.75%  runtime.entersyscallWakeSysmon
+         0     0% 48.54%      0.03s  1.75%  runtime.funcspdelta (inline)
+         0     0% 48.54%      0.03s  1.75%  runtime.futexsleep
+         0     0% 48.54%      0.03s  1.75%  runtime.gcStart
+         0     0% 48.54%      0.03s  1.75%  runtime.mPark (inline)
+     0.01s  0.58% 49.12%      0.03s  1.75%  runtime.makechan
+     0.03s  1.75% 50.88%      0.03s  1.75%  runtime.mallocgcSmallScanNoHeaderSC4
+         0     0% 50.88%      0.03s  1.75%  runtime.mapdelete
+     0.03s  1.75% 52.63%      0.03s  1.75%  runtime.memmove
+     0.01s  0.58% 53.22%      0.03s  1.75%  runtime.newarray
+     0.03s  1.75% 54.97%      0.03s  1.75%  runtime.nextFreeFast (inline)
+         0     0% 54.97%      0.03s  1.75%  runtime.notesleep
+         0     0% 54.97%      0.03s  1.75%  runtime.scanSpan
+         0     0% 54.97%      0.03s  1.75%  runtime.selectgo
+     0.01s  0.58% 55.56%      0.03s  1.75%  runtime.startm
+         0     0% 55.56%      0.03s  1.75%  runtime.stopm
+         0     0% 55.56%      0.03s  1.75%  runtime.wakep
+         0     0% 55.56%      0.03s  1.75%  switchyard/internal/outbox.(*Store).Published
+         0     0% 55.56%      0.03s  1.75%  switchyard/internal/platform/messaging.(*Transport).Publish
+         0     0% 55.56%      0.03s  1.75%  switchyard/internal/platform/messaging.Decode
+         0     0% 55.56%      0.02s  1.17%  context.(*afterFuncCtx).cancel
+         0     0% 55.56%      0.02s  1.17%  context.(*cancelCtx).propagateCancel
+         0     0% 55.56%      0.02s  1.17%  context.AfterFunc.func1
+         0     0% 55.56%      0.02s  1.17%  crypto/internal/fips140/hmac.(*HMAC).Sum
+         0     0% 55.56%      0.02s  1.17%  crypto/internal/fips140/sha256.(*Digest).Sum
+     0.01s  0.58% 56.14%      0.02s  1.17%  crypto/internal/fips140/sha256.(*Digest).Write
+         0     0% 56.14%      0.02s  1.17%  crypto/internal/fips140/sha256.(*Digest).checkSum
+         0     0% 56.14%      0.02s  1.17%  encoding/json.(*Decoder).Decode
+         0     0% 56.14%      0.02s  1.17%  encoding/json/v2.makeStructArshaler.func3
+         0     0% 56.14%      0.02s  1.17%  errors.As
+         0     0% 56.14%      0.02s  1.17%  errors.as
+         0     0% 56.14%      0.02s  1.17%  github.com/jackc/pgx/v5.(*Conn).deallocateInvalidatedCachedStatements
+     0.01s  0.58% 56.73%      0.02s  1.17%  github.com/jackc/pgx/v5.(*baseRows).Close
+         0     0% 56.73%      0.02s  1.17%  github.com/jackc/pgx/v5.(*baseRows).Next
+         0     0% 56.73%      0.02s  1.17%  github.com/jackc/pgx/v5/pgconn.(*PgConn).enterPotentialWriteReadDeadlock (inline)
+         0     0% 56.73%      0.02s  1.17%  github.com/jackc/pgx/v5/pgconn.(*PgConn).execExtendedPrefix
+         0     0% 56.73%      0.02s  1.17%  github.com/jackc/pgx/v5/pgtype.(*Map).planEncode
+     0.01s  0.58% 57.31%      0.02s  1.17%  github.com/jackc/pgx/v5/pgtype.scanPlanString.Scan
+         0     0% 57.31%      0.02s  1.17%  github.com/jackc/pgx/v5/pgxpool.(*Tx).Query
+         0     0% 57.31%      0.02s  1.17%  github.com/nats-io/nats%2ego.(*Conn).RequestMsgWithContext
+         0     0% 57.31%      0.02s  1.17%  github.com/nats-io/nats%2ego.(*Conn).requestWithContext
+         0     0% 57.31%      0.02s  1.17%  github.com/nats-io/nats%2ego.(*Subscription).Unsubscribe
+     0.02s  1.17% 58.48%      0.02s  1.17%  github.com/nats-io/nats.go/jetstream.(*fetchResult).Error
+         0     0% 58.48%      0.02s  1.17%  github.com/nats-io/nats.go/jetstream.(*pullConsumer).fetch
+         0     0% 58.48%      0.02s  1.17%  internal/bytealg.MakeNoZero
+         0     0% 58.48%      0.02s  1.17%  internal/poll.(*FD).Close
+         0     0% 58.48%      0.02s  1.17%  internal/poll.(*FD).decref
+         0     0% 58.48%      0.02s  1.17%  internal/poll.(*FD).destroy
+         0     0% 58.48%      0.02s  1.17%  internal/reflectlite.rtype.AssignableTo
+     0.02s  1.17% 59.65%      0.02s  1.17%  internal/runtime/atomic.(*Uint32).Load (inline)
+         0     0% 59.65%      0.02s  1.17%  main.progressRollouts
+         0     0% 59.65%      0.02s  1.17%  main.run.func7
+         0     0% 59.65%      0.02s  1.17%  net.(*Dialer).DialContext
+         0     0% 59.65%      0.02s  1.17%  net.(*TCPAddr).String
+         0     0% 59.65%      0.02s  1.17%  net.(*conn).Close
+         0     0% 59.65%      0.02s  1.17%  net.(*netFD).Close
+         0     0% 59.65%      0.02s  1.17%  runtime.(*mcentral).uncacheSpan
+         0     0% 59.65%      0.02s  1.17%  runtime.(*mheap).allocSpan
+         0     0% 59.65%      0.02s  1.17%  runtime.(*mheap).initSpan
+     0.01s  0.58% 60.23%      0.02s  1.17%  runtime.(*mspan).refillAllocCache
+     0.02s  1.17% 61.40%      0.02s  1.17%  runtime.(*mspan).writeHeapBitsSmall
+         0     0% 61.40%      0.02s  1.17%  runtime.(*spanSet).push
+         0     0% 61.40%      0.02s  1.17%  runtime.(*spanSet).reset
+         0     0% 61.40%      0.02s  1.17%  runtime.(*timer).modify
+         0     0% 61.40%      0.02s  1.17%  runtime.(*timer).reset (inline)
+         0     0% 61.40%      0.02s  1.17%  runtime.acquireSudog
+         0     0% 61.40%      0.02s  1.17%  runtime.bgsweep
+         0     0% 61.40%      0.02s  1.17%  runtime.bulkBarrierPreWrite
+         0     0% 61.40%      0.02s  1.17%  runtime.deductAssistCredit
+         0     0% 61.40%      0.02s  1.17%  runtime.finishsweep_m
+         0     0% 61.40%      0.02s  1.17%  runtime.gcAssistAlloc
+         0     0% 61.40%      0.02s  1.17%  runtime.gcAssistAlloc.func2
+         0     0% 61.40%      0.02s  1.17%  runtime.gcAssistAlloc1
+         0     0% 61.40%      0.02s  1.17%  runtime.gcDrainN
+         0     0% 61.40%      0.02s  1.17%  runtime.gcStart.func3
+     0.02s  1.17% 62.57%      0.02s  1.17%  runtime.getGCMask (inline)
+         0     0% 62.57%      0.02s  1.17%  runtime.heapSetTypeNoHeader (inline)
+     0.01s  0.58% 63.16%      0.02s  1.17%  runtime.mallocgcSmallScanNoHeaderSC5
+     0.01s  0.58% 63.74%      0.02s  1.17%  runtime.mallocgcSmallScanNoHeaderSC6
+         0     0% 63.74%      0.02s  1.17%  runtime.mapaccess2_faststr
+         0     0% 63.74%      0.02s  1.17%  runtime.mapassign
+         0     0% 63.74%      0.02s  1.17%  runtime.mapassign_faststr
+         0     0% 63.74%      0.02s  1.17%  runtime.markroot.func1
+         0     0% 63.74%      0.02s  1.17%  runtime.markrootBlock
+     0.02s  1.17% 64.91%      0.02s  1.17%  runtime.nanotime (inline)
+         0     0% 64.91%      0.02s  1.17%  runtime.rawbyteslice
+     0.02s  1.17% 66.08%      0.02s  1.17%  runtime.releasem (inline)
+     0.01s  0.58% 66.67%      0.02s  1.17%  runtime.runqgrab
+         0     0% 66.67%      0.02s  1.17%  runtime.runqsteal
+     0.01s  0.58% 67.25%      0.02s  1.17%  runtime.scanObjectsSmall
+         0     0% 67.25%      0.02s  1.17%  runtime.scanblock
+         0     0% 67.25%      0.02s  1.17%  runtime.semawakeup (inline)
+         0     0% 67.25%      0.02s  1.17%  runtime.stringtoslicebyte
+         0     0% 67.25%      0.02s  1.17%  runtime.unlock (inline)
+         0     0% 67.25%      0.02s  1.17%  runtime.unlock2
+         0     0% 67.25%      0.02s  1.17%  runtime.unlock2Wake
+         0     0% 67.25%      0.02s  1.17%  runtime.unlockWithRank (inline)
+         0     0% 67.25%      0.02s  1.17%  runtime.wakeNetPoller
+         0     0% 67.25%      0.02s  1.17%  runtime.wbMove
+         0     0% 67.25%      0.02s  1.17%  runtime/pprof.newProfileBuilder
+         0     0% 67.25%      0.02s  1.17%  runtime/pprof.profileWriter
+         0     0% 67.25%      0.02s  1.17%  strings.Replace
+         0     0% 67.25%      0.02s  1.17%  switchyard/internal/metrics.EnqueueUser (inline)
+         0     0% 67.25%      0.02s  1.17%  switchyard/internal/metrics.ExpireOne
+         0     0% 67.25%      0.02s  1.17%  switchyard/internal/metrics.retainedUserSQL
+         0     0% 67.25%      0.02s  1.17%  switchyard/internal/processing.PruneCompleted
+     0.01s  0.58% 67.84%      0.02s  1.17%  sync.(*Mutex).Unlock
+         0     0% 67.84%      0.02s  1.17%  time.(*Timer).Reset
+         0     0% 67.84%      0.02s  1.17%  time.AfterFunc
+         0     0% 67.84%      0.02s  1.17%  time.newTimer
+         0     0% 67.84%      0.02s  1.17%  time.resetTimer
+         0     0% 67.84%      0.01s  0.58%  bytes.Join
+         0     0% 67.84%      0.01s  0.58%  compress/gzip.NewWriterLevel
+         0     0% 67.84%      0.01s  0.58%  context.(*timerCtx).cancel
+         0     0% 67.84%      0.01s  0.58%  context.WithDeadlineCause.func3
+     0.01s  0.58% 68.42%      0.01s  0.58%  crypto/internal/fips140/hmac.(*HMAC).Reset
+         0     0% 68.42%      0.01s  0.58%  encoding/hex.EncodeToString (inline)
+         0     0% 68.42%      0.01s  0.58%  encoding/json.(*Decoder).DisallowUnknownFields
+         0     0% 68.42%      0.01s  0.58%  encoding/json.Marshal (inline)
+     0.01s  0.58% 69.01%      0.01s  0.58%  encoding/json/internal/jsonopts.GetOption[go.shape.bool]
+         0     0% 69.01%      0.01s  0.58%  encoding/json/jsontext.(*Decoder).ReadValue (inline)
+         0     0% 69.01%      0.01s  0.58%  encoding/json/jsontext.(*Encoder).WriteToken
+         0     0% 69.01%      0.01s  0.58%  encoding/json/jsontext.(*decoderState).ReadValue
+         0     0% 69.01%      0.01s  0.58%  encoding/json/jsontext.(*decoderState).consumeObject
+         0     0% 69.01%      0.01s  0.58%  encoding/json/jsontext.(*decoderState).consumeString
+         0     0% 69.01%      0.01s  0.58%  encoding/json/jsontext.(*decoderState).consumeValue
+         0     0% 69.01%      0.01s  0.58%  encoding/json/jsontext.(*decoderState).fetch
+         0     0% 69.01%      0.01s  0.58%  encoding/json/jsontext.(*encoderState).WriteToken
+     0.01s  0.58% 69.59%      0.01s  0.58%  encoding/json/jsontext.(*stateMachine).pushObject (inline)
+     0.01s  0.58% 70.18%      0.01s  0.58%  encoding/json/jsontext.export.Decoder
+         0     0% 70.18%      0.01s  0.58%  encoding/json/jsontext.export.GetBufferedDecoder (inline)
+         0     0% 70.18%      0.01s  0.58%  encoding/json/jsontext.getBufferedDecoder
+         0     0% 70.18%      0.01s  0.58%  encoding/json/v2.GetOption[go.shape.bool] (inline)
+         0     0% 70.18%      0.01s  0.58%  encoding/json/v2.Marshal
+         0     0% 70.18%      0.01s  0.58%  encoding/json/v2.lookupArshaler
+         0     0% 70.18%      0.01s  0.58%  encoding/json/v2.makeSliceArshaler.func3
+         0     0% 70.18%      0.01s  0.58%  encoding/json/v2.makeStructArshaler.func1
+         0     0% 70.18%      0.01s  0.58%  encoding/json/v2.makeStructArshaler.func2
+         0     0% 70.18%      0.01s  0.58%  encoding/json/v2.makeStructFields
+         0     0% 70.18%      0.01s  0.58%  encoding/json/v2.marshalEncode
+         0     0% 70.18%      0.01s  0.58%  encoding/json/v2.parseFieldOptions
+     0.01s  0.58% 70.76%      0.01s  0.58%  fmt.(*pp).doPrintf
+         0     0% 70.76%      0.01s  0.58%  fmt.Errorf (inline)
+         0     0% 70.76%      0.01s  0.58%  fmt.errorf
+     0.01s  0.58% 71.35%      0.01s  0.58%  gcWriteBarrier
+         0     0% 71.35%      0.01s  0.58%  github.com/jackc/pgx/v5.(*Conn).getRows
+         0     0% 71.35%      0.01s  0.58%  github.com/jackc/pgx/v5/internal/stmtcache.(*LRUCache).Get
+     0.01s  0.58% 71.93%      0.01s  0.58%  github.com/jackc/pgx/v5/internal/stmtcache.(*LRUCache).Put
+         0     0% 71.93%      0.01s  0.58%  github.com/jackc/pgx/v5/internal/stmtcache.(*LRUCache).RemoveInvalidated
+         0     0% 71.93%      0.01s  0.58%  github.com/jackc/pgx/v5/pgconn.(*MultiResultReader).Close (inline)
+         0     0% 71.93%      0.01s  0.58%  github.com/jackc/pgx/v5/pgconn.(*MultiResultReader).receiveMessage
+         0     0% 71.93%      0.01s  0.58%  github.com/jackc/pgx/v5/pgconn.(*PgConn).rxSASLContinue
+         0     0% 71.93%      0.01s  0.58%  github.com/jackc/pgx/v5/pgconn.(*ResultReader).Close
+         0     0% 71.93%      0.01s  0.58%  github.com/jackc/pgx/v5/pgconn.combineFieldDescriptionsAndResultFormats
+         0     0% 71.93%      0.01s  0.58%  github.com/jackc/pgx/v5/pgproto3.(*DataRow).Decode
+     0.01s  0.58% 72.51%      0.01s  0.58%  github.com/jackc/pgx/v5/pgproto3.(*Frontend).SendQuery
+     0.01s  0.58% 73.10%      0.01s  0.58%  github.com/jackc/pgx/v5/pgproto3.(*RowDescription).Decode
+     0.01s  0.58% 73.68%      0.01s  0.58%  github.com/jackc/pgx/v5/pgtype.(*JSONBCodec).PlanEncode
+         0     0% 73.68%      0.01s  0.58%  github.com/jackc/pgx/v5/pgtype.(*Map).PlanScan (inline)
+         0     0% 73.68%      0.01s  0.58%  github.com/jackc/pgx/v5/pgtype.(*Map).TypeForOID (inline)
+         0     0% 73.68%      0.01s  0.58%  github.com/jackc/pgx/v5/pgtype.(*Map).planScan
+     0.01s  0.58% 74.27%      0.01s  0.58%  github.com/jackc/pgx/v5/pgtype.(*TimestamptzCodec).PlanScan
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/pgx/v5/pgtype.encodePlanStringToAnyTextFormat.Encode
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/pgx/v5/pgxpool.(*Conn).Conn (inline)
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/pgx/v5/pgxpool.(*Conn).Query
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/pgx/v5/pgxpool.(*Conn).Release
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/pgx/v5/pgxpool.(*Conn).connResource (inline)
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/pgx/v5/pgxpool.(*Pool).Query
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/pgx/v5/pgxpool.(*Pool).isExpired
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/pgx/v5/pgxpool.NewWithConfig.func4
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/puddle/v2.(*Pool[go.shape.*uint8]).destroyAcquiredResource
+         0     0% 74.27%      0.01s  0.58%  github.com/jackc/puddle/v2.(*Pool[go.shape.*uint8]).destructResourceValue
+     0.01s  0.58% 74.85%      0.01s  0.58%  github.com/jackc/puddle/v2.(*Resource[go.shape.*uint8]).Value (inline)
+     0.01s  0.58% 75.44%      0.01s  0.58%  github.com/nats-io/nats%2ego.(*Conn).IsClosed
+         0     0% 75.44%      0.01s  0.58%  github.com/nats-io/nats%2ego.(*Conn).createNewRequestAndSend
+         0     0% 75.44%      0.01s  0.58%  github.com/nats-io/nats%2ego.(*Conn).readLoop
+         0     0% 75.44%      0.01s  0.58%  github.com/nats-io/nats%2ego.(*Conn).removeSub
+         0     0% 75.44%      0.01s  0.58%  github.com/nats-io/nats%2ego.(*Conn).unsubscribe
+         0     0% 75.44%      0.01s  0.58%  github.com/nats-io/nats%2ego.(*Msg).Metadata
+         0     0% 75.44%      0.01s  0.58%  github.com/nats-io/nats%2ego.(*natsReader).Read
+         0     0% 75.44%      0.01s  0.58%  github.com/nats-io/nats.go/internal/parser.GetMetadataFields
+         0     0% 75.44%      0.01s  0.58%  github.com/nats-io/nats.go/jetstream.(*jetStream).toJSMsg (inline)
+     0.01s  0.58% 76.02%      0.01s  0.58%  github.com/nats-io/nats.go/jetstream.(*jetStreamMsg).Headers
+         0     0% 76.02%      0.01s  0.58%  github.com/nats-io/nats.go/jetstream.(*pullSubscription).pull
+         0     0% 76.02%      0.01s  0.58%  go.opentelemetry.io/otel/trace.SpanContextFromContext
+     0.01s  0.58% 76.61%      0.01s  0.58%  go.opentelemetry.io/otel/trace.SpanFromContext
+     0.01s  0.58% 77.19%      0.01s  0.58%  internal/abi.(*Type).IsDirectIface (inline)
+     0.01s  0.58% 77.78%      0.01s  0.58%  internal/abi.Name.Name
+         0     0% 77.78%      0.01s  0.58%  internal/poll.(*FD).writeLock (inline)
+         0     0% 77.78%      0.01s  0.58%  internal/poll.(*SysFile).destroy (inline)
+     0.01s  0.58% 78.36%      0.01s  0.58%  internal/poll.(*fdMutex).rwlock
+         0     0% 78.36%      0.01s  0.58%  internal/poll.(*pollDesc).close (inline)
+         0     0% 78.36%      0.01s  0.58%  internal/poll.(*pollDesc).prepare
+         0     0% 78.36%      0.01s  0.58%  internal/poll.(*pollDesc).prepareWrite (inline)
+         0     0% 78.36%      0.01s  0.58%  internal/poll.runtime_pollClose
+         0     0% 78.36%      0.01s  0.58%  internal/poll.runtime_pollReset
+     0.01s  0.58% 78.95%      0.01s  0.58%  internal/reflectlite.directlyAssignable
+         0     0% 78.95%      0.01s  0.58%  internal/reflectlite.implements
+         0     0% 78.95%      0.01s  0.58%  internal/runtime/atomic.(*Pointer[go.shape.struct { runtime.spanSetBlockHeader2; runtime.spans [512]runtime.atomicMSpanPointer }]).StoreNoWB (inline)
+     0.01s  0.58% 79.53%      0.01s  0.58%  internal/runtime/atomic.(*Uint64).Add (inline)
+     0.01s  0.58% 80.12%      0.01s  0.58%  internal/runtime/atomic.(*UnsafePointer).StoreNoWB (inline)
+     0.01s  0.58% 80.70%      0.01s  0.58%  internal/runtime/maps.(*Map).Clear
+     0.01s  0.58% 81.29%      0.01s  0.58%  internal/runtime/maps.(*Map).deleteSmall
+     0.01s  0.58% 81.87%      0.01s  0.58%  internal/runtime/maps.(*Map).getWithKeySmall
+     0.01s  0.58% 82.46%      0.01s  0.58%  internal/runtime/maps.(*groupsReference).group (inline)
+         0     0% 82.46%      0.01s  0.58%  internal/runtime/maps.NewEmptyMap (inline)
+         0     0% 82.46%      0.01s  0.58%  internal/runtime/syscall/linux.EpollCtl (inline)
+     0.01s  0.58% 83.04%      0.01s  0.58%  internal/strconv.FormatInt
+         0     0% 83.04%      0.01s  0.58%  internal/strconv.Itoa (inline)
+     0.01s  0.58% 83.63%      0.01s  0.58%  internal/sync.(*HashTrieMap[go.shape.interface {},go.shape.interface {}]).Load
+     0.01s  0.58% 84.21%      0.01s  0.58%  internal/sync.(*Mutex).Unlock (inline)
+         0     0% 84.21%      0.01s  0.58%  main.pause
+         0     0% 84.21%      0.01s  0.58%  net.(*Resolver).LookupHost
+         0     0% 84.21%      0.01s  0.58%  net.(*Resolver).dial
+         0     0% 84.21%      0.01s  0.58%  net.(*Resolver).internetAddrList
+         0     0% 84.21%      0.01s  0.58%  net.(*Resolver).resolveAddrList
+         0     0% 84.21%      0.01s  0.58%  net.(*netFD).connect
+         0     0% 84.21%      0.01s  0.58%  net.(*netFD).dial
+         0     0% 84.21%      0.01s  0.58%  net.(*sysDialer).dialParallel
+         0     0% 84.21%      0.01s  0.58%  net.(*sysDialer).dialSerial
+         0     0% 84.21%      0.01s  0.58%  net.(*sysDialer).dialSingle
+         0     0% 84.21%      0.01s  0.58%  net.(*sysDialer).dialTCP
+         0     0% 84.21%      0.01s  0.58%  net.(*sysDialer).doDialTCP (inline)
+         0     0% 84.21%      0.01s  0.58%  net.(*sysDialer).doDialTCPProto
+         0     0% 84.21%      0.01s  0.58%  net.IP.String
+         0     0% 84.21%      0.01s  0.58%  net.IP.appendTo
+         0     0% 84.21%      0.01s  0.58%  net.dnsPacketRoundTrip
+         0     0% 84.21%      0.01s  0.58%  net.filterAddrList
+         0     0% 84.21%      0.01s  0.58%  net.internetSocket
+         0     0% 84.21%      0.01s  0.58%  net.ipEmptyString (inline)
+         0     0% 84.21%      0.01s  0.58%  net.newRequest
+         0     0% 84.21%      0.01s  0.58%  net.socket
+         0     0% 84.21%      0.01s  0.58%  net/netip.Addr.AppendTo
+         0     0% 84.21%      0.01s  0.58%  net/netip.Addr.appendTo4
+     0.01s  0.58% 84.80%      0.01s  0.58%  net/netip.ParseAddr
+         0     0% 84.80%      0.01s  0.58%  os.ReadFile
+         0     0% 84.80%      0.01s  0.58%  os.readFileContents
+         0     0% 84.80%      0.01s  0.58%  reflect.StructTag.Lookup
+         0     0% 84.80%      0.01s  0.58%  runtime.(*atomicHeadTailIndex).incTail
+     0.01s  0.58% 85.38%      0.01s  0.58%  runtime.(*bucket).mp
+         0     0% 85.38%      0.01s  0.58%  runtime.(*consistentHeapStats).acquire
+     0.01s  0.58% 85.96%      0.01s  0.58%  runtime.(*gcBits).bytep (inline)
+     0.01s  0.58% 86.55%      0.01s  0.58%  runtime.(*limiterEvent).stop
+         0     0% 86.55%      0.01s  0.58%  runtime.(*mcentral).grow
+         0     0% 86.55%      0.01s  0.58%  runtime.(*mheap).alloc
+         0     0% 86.55%      0.01s  0.58%  runtime.(*mheap).alloc.func1
+         0     0% 86.55%      0.01s  0.58%  runtime.(*mheap).allocManual
+         0     0% 86.55%      0.01s  0.58%  runtime.(*mheap).nextSpanForSweep
+     0.01s  0.58% 87.13%      0.01s  0.58%  runtime.(*mheap).setSpans
+     0.01s  0.58% 87.72%      0.01s  0.58%  runtime.(*mspan).base (inline)
+         0     0% 87.72%      0.01s  0.58%  runtime.(*mspan).nextFreeIndex
+         0     0% 87.72%      0.01s  0.58%  runtime.(*timer).maybeAdd
+         0     0% 87.72%      0.01s  0.58%  runtime.(*timers).check
+     0.01s  0.58% 88.30%      0.01s  0.58%  runtime.(*timers).wakeTime (inline)
+     0.01s  0.58% 88.89%      0.01s  0.58%  runtime.(*wbBuf).get2 (inline)
+     0.01s  0.58% 89.47%      0.01s  0.58%  runtime.acquirep
+     0.01s  0.58% 90.06%      0.01s  0.58%  runtime.asyncPreempt
+     0.01s  0.58% 90.64%      0.01s  0.58%  runtime.checkIdleGCNoP
+     0.01s  0.58% 91.23%      0.01s  0.58%  runtime.deductSweepCredit
+         0     0% 91.23%      0.01s  0.58%  runtime.freeSomeWbufs
+     0.01s  0.58% 91.81%      0.01s  0.58%  runtime.freeSomeWbufs.func1
+         0     0% 91.81%      0.01s  0.58%  runtime.gcMarkDone
+         0     0% 91.81%      0.01s  0.58%  runtime.gcMarkTermination
+         0     0% 91.81%      0.01s  0.58%  runtime.gcPrepareMarkRoots
+     0.01s  0.58% 92.40%      0.01s  0.58%  runtime.gopark
+         0     0% 92.40%      0.01s  0.58%  runtime.growslice
+         0     0% 92.40%      0.01s  0.58%  runtime.ifaceeq
+     0.01s  0.58% 92.98%      0.01s  0.58%  runtime.interhash
+         0     0% 92.98%      0.01s  0.58%  runtime.mProf_Flush
+         0     0% 92.98%      0.01s  0.58%  runtime.mProf_FlushLocked
+         0     0% 92.98%      0.01s  0.58%  runtime.makemap_small
+     0.01s  0.58% 93.57%      0.01s  0.58%  runtime.mallocgcSmallNoScanSC5
+         0     0% 93.57%      0.01s  0.58%  runtime.mallocgcSmallScanHeader
+         0     0% 93.57%      0.01s  0.58%  runtime.mallocgcSmallScanNoHeaderSC2
+     0.01s  0.58% 94.15%      0.01s  0.58%  runtime.mallocgcTinySC2
+         0     0% 94.15%      0.01s  0.58%  runtime.mapaccess1
+         0     0% 94.15%      0.01s  0.58%  runtime.mapaccess2
+         0     0% 94.15%      0.01s  0.58%  runtime.mapaccess2_fast32
+         0     0% 94.15%      0.01s  0.58%  runtime.mapclear
+         0     0% 94.15%      0.01s  0.58%  runtime.mapdelete_fast64
+     0.01s  0.58% 94.74%      0.01s  0.58%  runtime.memequal
+     0.01s  0.58% 95.32%      0.01s  0.58%  runtime.moveSliceNoCap
+         0     0% 95.32%      0.01s  0.58%  runtime.netpollBreak
+     0.01s  0.58% 95.91%      0.01s  0.58%  runtime.netpollcheckerr (inline)
+         0     0% 95.91%      0.01s  0.58%  runtime.netpollclose
+     0.01s  0.58% 96.49%      0.01s  0.58%  runtime.newArenaMayUnlock
+         0     0% 96.49%      0.01s  0.58%  runtime.newMarkBits
+         0     0% 96.49%      0.01s  0.58%  runtime.pcdatavalue
+         0     0% 96.49%      0.01s  0.58%  runtime.pidleget
+         0     0% 96.49%      0.01s  0.58%  runtime.resetspinning
+         0     0% 96.49%      0.01s  0.58%  runtime.runSafePointFn
+     0.01s  0.58% 97.08%      0.01s  0.58%  runtime.save_g
+         0     0% 97.08%      0.01s  0.58%  runtime.scanObjectSmall
+         0     0% 97.08%      0.01s  0.58%  runtime.scanframeworker
+         0     0% 97.08%      0.01s  0.58%  runtime.scanstack
+     0.01s  0.58% 97.66%      0.01s  0.58%  runtime.sellock
+         0     0% 97.66%      0.01s  0.58%  runtime.slicebytetostring
+         0     0% 97.66%      0.01s  0.58%  runtime.stackalloc
+         0     0% 97.66%      0.01s  0.58%  runtime.stackcacherefill
+         0     0% 97.66%      0.01s  0.58%  runtime.stackpoolalloc
+         0     0% 97.66%      0.01s  0.58%  runtime.suspendG
+         0     0% 97.66%      0.01s  0.58%  runtime.sweepone
+     0.01s  0.58% 98.25%      0.01s  0.58%  runtime.traceEnabled (inline)
+     0.01s  0.58% 98.83%      0.01s  0.58%  runtime.usleep
+         0     0% 98.83%      0.01s  0.58%  runtime.write
+     0.01s  0.58% 99.42%      0.01s  0.58%  runtime.write1
+         0     0% 99.42%      0.01s  0.58%  runtime/pprof.(*profileBuilder).readMapping
+         0     0% 99.42%      0.01s  0.58%  slices.Grow[go.shape.[]uint8,go.shape.uint8] (inline)
+         0     0% 99.42%      0.01s  0.58%  strconv.Unquote
+         0     0% 99.42%      0.01s  0.58%  strconv.unquote
+         0     0% 99.42%      0.01s  0.58%  strings.(*Builder).Grow
+         0     0% 99.42%      0.01s  0.58%  strings.(*Builder).WriteString (inline)
+         0     0% 99.42%      0.01s  0.58%  strings.(*Builder).grow
+         0     0% 99.42%      0.01s  0.58%  switchyard/internal/metrics.EnqueueReferencingUsers (inline)
+         0     0% 99.42%      0.01s  0.58%  switchyard/internal/metrics.contributionCounts
+         0     0% 99.42%      0.01s  0.58%  switchyard/internal/platform/telemetry.PgxTracer.TraceQueryStart
+         0     0% 99.42%      0.01s  0.58%  switchyard/internal/rollouts.(*Service).RunOnce
+         0     0% 99.42%      0.01s  0.58%  sync.(*Map).Load (inline)
+         0     0% 99.42%      0.01s  0.58%  sync.(*Once).Do
+         0     0% 99.42%      0.01s  0.58%  sync.(*Once).doSlow
+     0.01s  0.58%   100%      0.01s  0.58%  sync.(*Pool).Get
+         0     0%   100%      0.01s  0.58%  syscall.Close
+         0     0%   100%      0.01s  0.58%  syscall.Connect
+         0     0%   100%      0.01s  0.58%  syscall.connect

@@ -1,0 +1,100 @@
+{
+  "name": "m10-eval-2000-after-index",
+  "workload": "evaluation",
+  "commit": "6fc18d1",
+  "dirty_tree": false,
+  "started_at": "2026-10-05T14:39:44.347465+00:00",
+  "host": {
+    "cpu": "Apple M1",
+    "cpus": 8,
+    "memory_gib": 8.0,
+    "docker_vm_memory_gib": 3.8
+  },
+  "docker_memory_limits_mib": {
+    "switchyard-api-1": 256,
+    "switchyard-worker-1": 384,
+    "switchyard-postgres-1": 768,
+    "switchyard-redis-1": 128,
+    "switchyard-nats-1": 256
+  },
+  "observability_profile_running": false,
+  "k6_image": "grafana/k6:2.3.0@sha256:9c2dee7f8ed74d317e4027c06a10f169b625638189de8d4555d0b3486a5aeb34",
+  "max_vus": 200,
+  "dataset": {
+    "flags": 100,
+    "experiments": 10,
+    "evaluation_user_space": 100000,
+    "event_user_pool": 20000
+  },
+  "generator_kind": "go",
+  "generator": {
+    "name": "cmd/loadgen",
+    "stderr_progress": [
+      "target 2000/s: achieved 2000/s p50 0.41ms p99 166.91ms dropped 0 failures 0 incorrect 0"
+    ]
+  },
+  "generator_exit_codes": [
+    0
+  ],
+  "duration_seconds": 167.9,
+  "evaluation_steps": [
+    {
+      "target_requests_per_second": 2000,
+      "transport": "http",
+      "requests": 70999,
+      "achieved_requests_per_second_during_hold": 2000.0,
+      "latency_ms": {
+        "avg": 4.696240609022662,
+        "med": 0.414,
+        "p(90)": 1.656,
+        "p(95)": 4.336,
+        "p(99)": 166.908,
+        "max": 594.011
+      },
+      "failure_rate": 0,
+      "dropped_iterations": 0,
+      "correctness_rate": 1,
+      "max_in_flight": 913
+    }
+  ],
+  "resources": {
+    "switchyard-api-1": {
+      "samples": 10,
+      "cpu_percent_mean": 55.6,
+      "cpu_percent_max": 94.15,
+      "memory_mib_max": 39.1
+    },
+    "switchyard-loadgen-0c143e": {
+      "samples": 10,
+      "cpu_percent_mean": 51.8,
+      "cpu_percent_max": 139.12,
+      "memory_mib_max": 37.9
+    },
+    "switchyard-nats-1": {
+      "samples": 10,
+      "cpu_percent_mean": 2.8,
+      "cpu_percent_max": 12.19,
+      "memory_mib_max": 49.8
+    },
+    "switchyard-postgres-1": {
+      "samples": 10,
+      "cpu_percent_mean": 57.5,
+      "cpu_percent_max": 101.33,
+      "memory_mib_max": 221.4
+    },
+    "switchyard-redis-1": {
+      "samples": 10,
+      "cpu_percent_mean": 5.1,
+      "cpu_percent_max": 11.09,
+      "memory_mib_max": 7.5
+    },
+    "switchyard-worker-1": {
+      "samples": 10,
+      "cpu_percent_mean": 4.8,
+      "cpu_percent_max": 18.17,
+      "memory_mib_max": 8.8
+    }
+  },
+  "prometheus_peaks": null,
+  "finished_at": "2026-10-05T14:42:34.050255+00:00"
+}

@@ -1,0 +1,106 @@
+{
+  "name": "m10-profile-eval",
+  "workload": "evaluation",
+  "commit": "6fc18d1",
+  "dirty_tree": false,
+  "started_at": "2026-10-05T14:32:38.089391+00:00",
+  "host": {
+    "cpu": "Apple M1",
+    "cpus": 8,
+    "memory_gib": 8.0,
+    "docker_vm_memory_gib": 3.8
+  },
+  "docker_memory_limits_mib": {
+    "switchyard-api-1": 256,
+    "switchyard-worker-1": 384,
+    "switchyard-postgres-1": 768,
+    "switchyard-redis-1": 128,
+    "switchyard-nats-1": 256
+  },
+  "observability_profile_running": true,
+  "k6_image": "grafana/k6:2.3.0@sha256:9c2dee7f8ed74d317e4027c06a10f169b625638189de8d4555d0b3486a5aeb34",
+  "max_vus": 200,
+  "dataset": {
+    "flags": 100,
+    "experiments": 10,
+    "evaluation_user_space": 100000,
+    "event_user_pool": 20000
+  },
+  "generator_kind": "go",
+  "generator": {
+    "name": "cmd/loadgen",
+    "stderr_progress": [
+      "target 2000/s: achieved 22/s p50 2.42ms p99 32057.14ms dropped 0 failures 1472 incorrect 0"
+    ]
+  },
+  "generator_exit_codes": [
+    0
+  ],
+  "duration_seconds": 349.2,
+  "evaluation_steps": [
+    {
+      "target_requests_per_second": 2000,
+      "transport": "http",
+      "requests": 12805,
+      "achieved_requests_per_second_during_hold": 22.0,
+      "latency_ms": {
+        "avg": 681.3796900202947,
+        "med": 2.425,
+        "p(90)": 83.234,
+        "p(95)": 196.182,
+        "p(99)": 32057.139,
+        "max": 35020.639
+      },
+      "failure_rate": 0.11495509566575557,
+      "dropped_iterations": 0,
+      "correctness_rate": 1,
+      "max_in_flight": 1448
+    }
+  ],
+  "resources": {
+    "switchyard-api-1": {
+      "samples": 8,
+      "cpu_percent_mean": 84.2,
+      "cpu_percent_max": 130.34,
+      "memory_mib_max": 80.8
+    },
+    "switchyard-loadgen-6ef16e": {
+      "samples": 8,
+      "cpu_percent_mean": 61.1,
+      "cpu_percent_max": 123.09,
+      "memory_mib_max": 70.2
+    },
+    "switchyard-nats-1": {
+      "samples": 8,
+      "cpu_percent_mean": 14.3,
+      "cpu_percent_max": 51.6,
+      "memory_mib_max": 51.3
+    },
+    "switchyard-postgres-1": {
+      "samples": 8,
+      "cpu_percent_mean": 92.5,
+      "cpu_percent_max": 138.41,
+      "memory_mib_max": 214.4
+    },
+    "switchyard-redis-1": {
+      "samples": 8,
+      "cpu_percent_mean": 9.0,
+      "cpu_percent_max": 17.85,
+      "memory_mib_max": 7.7
+    },
+    "switchyard-worker-1": {
+      "samples": 8,
+      "cpu_percent_mean": 29.5,
+      "cpu_percent_max": 104.97,
+      "memory_mib_max": 15.3
+    }
+  },
+  "prometheus_peaks": {
+    "consumer_pending_max": 0.0,
+    "outbox_oldest_age_seconds_max": 0.0,
+    "cache_oldest_verification_age_seconds_max": 37.633592337,
+    "db_pool_in_use_max": 6.0,
+    "goroutines_max": 1751.0
+  },
+  "finished_at": "2026-10-05T14:38:31.577115+00:00"
+}

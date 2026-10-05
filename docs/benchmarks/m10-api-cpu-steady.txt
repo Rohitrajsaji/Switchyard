@@ -1,0 +1,273 @@
+File: api
+Build ID: 8d68a00623215f9f23f9441b7460314c128fe4a0
+Type: cpu
+Time: 2026-10-05 20:11:45 IST
+Duration: 15s, Total samples = 4.20s (28.00%)
+Showing nodes accounting for 2.76s, 65.71% of 4.20s total
+Dropped 373 nodes (cum <= 0.02s)
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%      2.82s 67.14%  net/http.(*conn).serve
+         0     0%     0%      1.67s 39.76%  net/http.HandlerFunc.ServeHTTP
+         0     0%     0%      1.67s 39.76%  net/http.serverHandler.ServeHTTP
+     0.01s  0.24%  0.24%      1.67s 39.76%  switchyard/internal/transport/http.MiddlewareObserved.func1
+         0     0%  0.24%      1.09s 25.95%  net/http.(*ServeMux).ServeHTTP
+         0     0%  0.24%      1.07s 25.48%  switchyard/internal/transport/http.(*Management).evaluate
+     1.02s 24.29% 24.52%      1.02s 24.29%  internal/runtime/syscall/linux.Syscall6
+     0.01s  0.24% 24.76%      0.93s 22.14%  syscall.Syscall
+         0     0% 24.76%      0.91s 21.67%  internal/poll.ignoringEINTRIO (inline)
+         0     0% 24.76%      0.90s 21.43%  syscall.RawSyscall6
+         0     0% 24.76%      0.76s 18.10%  internal/poll.(*FD).Write
+         0     0% 24.76%      0.75s 17.86%  syscall.Write (inline)
+     0.02s  0.48% 25.24%      0.75s 17.86%  syscall.write
+         0     0% 25.24%      0.66s 15.71%  bufio.(*Writer).Flush
+         0     0% 25.24%      0.66s 15.71%  net/http.(*response).finishRequest
+         0     0% 25.24%      0.57s 13.57%  runtime.mcall
+         0     0% 25.24%      0.57s 13.57%  switchyard/internal/applicationeval.(*Service).Evaluate
+         0     0% 25.24%      0.56s 13.33%  runtime.systemstack
+     0.01s  0.24% 25.48%      0.54s 12.86%  runtime.park_m
+         0     0% 25.48%      0.54s 12.86%  runtime.schedule
+     0.01s  0.24% 25.71%      0.51s 12.14%  net.(*conn).Write
+         0     0% 25.71%      0.50s 11.90%  net.(*netFD).Write
+         0     0% 25.71%      0.47s 11.19%  runtime.findRunnable
+         0     0% 25.71%      0.45s 10.71%  net/http.checkConnErrorWriter.Write
+         0     0% 25.71%      0.45s 10.71%  switchyard/internal/transport/http.MiddlewareObserved.func1.1
+         0     0% 25.71%      0.40s  9.52%  log/slog.(*Logger).Info
+         0     0% 25.71%      0.40s  9.52%  log/slog.(*Logger).log
+         0     0% 25.71%      0.40s  9.52%  switchyard/internal/applicationeval.(*Service).evaluate
+         0     0% 25.71%      0.36s  8.57%  log/slog.(*JSONHandler).Handle
+         0     0% 25.71%      0.36s  8.57%  log/slog.(*commonHandler).handle
+         0     0% 25.71%      0.36s  8.57%  runtime.gcBgMarkWorker
+     0.01s  0.24% 25.95%      0.36s  8.57%  switchyard/internal/applicationeval.(*Service).decide
+         0     0% 25.95%      0.35s  8.33%  runtime.gcBgMarkWorker.func2
+         0     0% 25.95%      0.35s  8.33%  runtime.gcDrain
+     0.01s  0.24% 26.19%      0.35s  8.33%  switchyard/internal/transport/http.DecodeJSON
+     0.02s  0.48% 26.67%      0.32s  7.62%  runtime.mallocgc
+         0     0% 26.67%      0.32s  7.62%  switchyard/internal/cache.(*Coordinator).refresh
+         0     0% 26.67%      0.32s  7.62%  switchyard/internal/cache.(*Coordinator).worker
+     0.01s  0.24% 26.90%      0.31s  7.38%  net/http.(*conn).readRequest
+         0     0% 26.90%      0.29s  6.90%  encoding/json.(*Decoder).Decode
+     0.01s  0.24% 27.14%      0.29s  6.90%  encoding/json/v2.Unmarshal
+         0     0% 27.14%      0.28s  6.67%  switchyard/internal/cache.(*Coordinator).Evaluate
+         0     0% 27.14%      0.26s  6.19%  os.(*File).Write
+         0     0% 27.14%      0.26s  6.19%  os.(*File).write (inline)
+         0     0% 27.14%      0.25s  5.95%  encoding/json/v2.unmarshalDecode
+     0.24s  5.71% 32.86%      0.24s  5.71%  runtime.futex
+     0.01s  0.24% 33.10%      0.20s  4.76%  net/http.readRequestLimit
+         0     0% 33.10%      0.19s  4.52%  net.(*conn).Read
+     0.01s  0.24% 33.33%      0.19s  4.52%  net.(*netFD).Read
+         0     0% 33.33%      0.19s  4.52%  runtime.gcDrainMarkWorkerDedicated (inline)
+     0.01s  0.24% 33.57%      0.18s  4.29%  bufio.(*Reader).fill
+         0     0% 33.57%      0.18s  4.29%  internal/poll.(*FD).Read
+         0     0% 33.57%      0.18s  4.29%  runtime.markroot
+     0.01s  0.24% 33.81%      0.17s  4.05%  bufio.(*Reader).Peek
+         0     0% 33.81%      0.17s  4.05%  net/http.(*chunkWriter).Write
+         0     0% 33.81%      0.17s  4.05%  net/http.(*chunkWriter).writeHeader
+         0     0% 33.81%      0.17s  4.05%  runtime.futexwakeup
+         0     0% 33.81%      0.17s  4.05%  runtime.markroot.func1
+         0     0% 33.81%      0.16s  3.81%  runtime.gcDrainMarkWorkerIdle (inline)
+         0     0% 33.81%      0.16s  3.81%  runtime.notewakeup
+         0     0% 33.81%      0.16s  3.81%  syscall.Read (inline)
+         0     0% 33.81%      0.16s  3.81%  syscall.read
+     0.02s  0.48% 34.29%      0.15s  3.57%  net/http.(*connReader).Read
+     0.02s  0.48% 34.76%      0.15s  3.57%  runtime.netpoll
+     0.01s  0.24% 35.00%      0.15s  3.57%  runtime.scanstack
+     0.02s  0.48% 35.48%      0.14s  3.33%  encoding/json.(*Encoder).Encode
+         0     0% 35.48%      0.14s  3.33%  regexp.(*Regexp).MatchString (inline)
+     0.01s  0.24% 35.71%      0.14s  3.33%  regexp.(*Regexp).doMatch (inline)
+         0     0% 35.71%      0.14s  3.33%  switchyard/internal/applicationeval.validate
+         0     0% 35.71%      0.14s  3.33%  switchyard/internal/transport/http.JSON
+     0.01s  0.24% 35.95%      0.13s  3.10%  internal/runtime/syscall/linux.EpollWait
+         0     0% 35.95%      0.13s  3.10%  net/textproto.readMIMEHeader
+     0.03s  0.71% 36.67%      0.13s  3.10%  regexp.(*Regexp).find
+         0     0% 36.67%      0.13s  3.10%  runtime.startm
+         0     0% 36.67%      0.12s  2.86%  encoding/json/v2.makeStructArshaler.func3
+         0     0% 36.67%      0.12s  2.86%  encoding/json/v2.marshalEncode
+         0     0% 36.67%      0.12s  2.86%  switchyard/internal/cache.PostgresSource.func1
+         0     0% 36.67%      0.12s  2.86%  switchyard/internal/flags.(*Service).Get
+     0.01s  0.24% 36.90%      0.11s  2.62%  encoding/json/jsontext.(*decoderState).ReadValue
+         0     0% 36.90%      0.11s  2.62%  encoding/json/v2.MarshalEncode
+     0.01s  0.24% 37.14%      0.11s  2.62%  runtime.makeslice
+         0     0% 37.14%      0.11s  2.62%  runtime.mallocgcSmallScanNoHeader
+     0.11s  2.62% 39.76%      0.11s  2.62%  runtime.nanotime (inline)
+         0     0% 39.76%      0.11s  2.62%  switchyard/internal/cache.(*Redis).Put
+         0     0% 39.76%      0.11s  2.62%  switchyard/pkg/evaluation.Equal
+         0     0% 39.76%      0.11s  2.62%  switchyard/pkg/evaluation.ValidateContext
+         0     0% 39.76%      0.10s  2.38%  github.com/redis/go-redis/v9.(*Client).Process
+         0     0% 39.76%      0.10s  2.38%  github.com/redis/go-redis/v9.(*baseClient)._process
+         0     0% 39.76%      0.10s  2.38%  github.com/redis/go-redis/v9.(*baseClient).process
+         0     0% 39.76%      0.10s  2.38%  github.com/redis/go-redis/v9.(*baseClient).processCommand
+         0     0% 39.76%      0.10s  2.38%  github.com/redis/go-redis/v9.(*baseClient).processWithRetry
+         0     0% 39.76%      0.10s  2.38%  github.com/redis/go-redis/v9.(*baseClient).withConn
+         0     0% 39.76%      0.10s  2.38%  github.com/redis/go-redis/v9.(*hooksMixin).processHook (inline)
+         0     0% 39.76%      0.10s  2.38%  github.com/redis/go-redis/v9.cmdable.Eval (inline)
+         0     0% 39.76%      0.10s  2.38%  github.com/redis/go-redis/v9.cmdable.eval
+     0.06s  1.43% 41.19%      0.10s  2.38%  regexp.(*Regexp).doOnePass
+     0.01s  0.24% 41.43%      0.10s  2.38%  switchyard/pkg/evaluation.(*Compiled).Evaluate
+         0     0% 41.43%      0.10s  2.38%  switchyard/pkg/snapshot.(*Snapshot).Evaluate
+         0     0% 41.43%      0.09s  2.14%  encoding/json/jsontext.(*Decoder).ReadValue (inline)
+     0.03s  0.71% 42.14%      0.09s  2.14%  encoding/json/jsontext.(*decoderState).consumeValue
+         0     0% 42.14%      0.09s  2.14%  github.com/jackc/pgx/v5/pgxpool.(*Pool).QueryRow
+         0     0% 42.14%      0.09s  2.14%  io.ReadAll
+     0.03s  0.71% 42.86%      0.09s  2.14%  runtime.(*unwinder).resolveInternal
+         0     0% 42.86%      0.09s  2.14%  runtime.stopm
+     0.01s  0.24% 43.10%      0.08s  1.90%  crypto/rand.Read
+         0     0% 43.10%      0.08s  1.90%  encoding/json.Unmarshal (inline)
+     0.01s  0.24% 43.33%      0.08s  1.90%  net/http.(*body).Read
+         0     0% 43.33%      0.08s  1.90%  net/http.(*maxBytesReader).Read
+         0     0% 43.33%      0.08s  1.90%  runtime.mPark (inline)
+     0.01s  0.24% 43.57%      0.08s  1.90%  runtime.notesleep
+         0     0% 43.57%      0.08s  1.90%  runtime.scanSpan
+         0     0% 43.57%      0.08s  1.90%  runtime.wakep
+         0     0% 43.57%      0.07s  1.67%  crypto/internal/fips140/drbg.Read
+     0.01s  0.24% 43.81%      0.07s  1.67%  crypto/internal/sysrand.Read
+         0     0% 43.81%      0.07s  1.67%  encoding/json/v2.makeMapArshaler.func3
+     0.01s  0.24% 44.05%      0.07s  1.67%  encoding/json/v2.makeStringArshaler.func2
+         0     0% 44.05%      0.07s  1.67%  encoding/json/v2.makeStructArshaler.func2
+         0     0% 44.05%      0.07s  1.67%  github.com/redis/go-redis/v9.(*baseClient)._process.func1
+     0.01s  0.24% 44.29%      0.07s  1.67%  internal/poll.setDeadlineImpl
+         0     0% 44.29%      0.07s  1.67%  log/slog.(*handleState).appendAttr
+         0     0% 44.29%      0.07s  1.67%  log/slog.(*handleState).appendNonBuiltIns
+         0     0% 44.29%      0.07s  1.67%  log/slog.(*handleState).appendNonBuiltIns.func1 (inline)
+         0     0% 44.29%      0.07s  1.67%  log/slog.(*handleState).appendValue
+         0     0% 44.29%      0.07s  1.67%  log/slog.Record.Attrs (inline)
+         0     0% 44.29%      0.07s  1.67%  log/slog.appendJSONValue
+     0.01s  0.24% 44.52%      0.07s  1.67%  net/http.(*body).readLocked
+         0     0% 44.52%      0.07s  1.67%  runtime.(*mcache).nextFree
+         0     0% 44.52%      0.07s  1.67%  runtime.(*mcache).refill
+         0     0% 44.52%      0.07s  1.67%  runtime.(*mcentral).cacheSpan
+         0     0% 44.52%      0.07s  1.67%  runtime.futexsleep
+         0     0% 44.52%      0.07s  1.67%  runtime.injectglist
+     0.01s  0.24% 44.76%      0.07s  1.67%  runtime.mapassign_faststr
+     0.07s  1.67% 46.43%      0.07s  1.67%  runtime.memclrNoHeapPointers
+         0     0% 46.43%      0.07s  1.67%  runtime.newobject
+     0.01s  0.24% 46.67%      0.07s  1.67%  runtime.pcvalue
+         0     0% 46.67%      0.07s  1.67%  switchyard/internal/platform/identity.New
+     0.01s  0.24% 46.90%      0.07s  1.67%  switchyard/pkg/evaluation.Value.Validate
+         0     0% 46.90%      0.07s  1.67%  switchyard/pkg/snapshot.New
+         0     0% 46.90%      0.06s  1.43%  context.WithTimeout
+         0     0% 46.90%      0.06s  1.43%  crypto/internal/sysrand.read
+         0     0% 46.90%      0.06s  1.43%  encoding/json/jsontext.(*decoderState).consumeObject
+     0.01s  0.24% 47.14%      0.06s  1.43%  encoding/json/jsontext.(*decoderState).consumeWhitespace
+         0     0% 47.14%      0.06s  1.43%  encoding/json/v2.makeInterfaceArshaler.func2
+         0     0% 47.14%      0.06s  1.43%  internal/poll.(*FD).SetReadDeadline (inline)
+         0     0% 47.14%      0.06s  1.43%  internal/runtime/maps.(*Map).growToSmall
+         0     0% 47.14%      0.06s  1.43%  internal/runtime/maps.newGroups (inline)
+         0     0% 47.14%      0.06s  1.43%  internal/runtime/maps.newarray
+     0.01s  0.24% 47.38%      0.06s  1.43%  internal/syscall/unix.GetRandom
+         0     0% 47.38%      0.06s  1.43%  log/slog.appendJSONMarshal
+         0     0% 47.38%      0.06s  1.43%  net.(*conn).SetReadDeadline
+         0     0% 47.38%      0.06s  1.43%  net.(*netFD).SetReadDeadline (inline)
+         0     0% 47.38%      0.06s  1.43%  net/http.(*connReader).startBackgroundRead
+         0     0% 47.38%      0.06s  1.43%  net/http.(*response).WriteHeader
+         0     0% 47.38%      0.06s  1.43%  net/http.Header.Clone (inline)
+         0     0% 47.38%      0.06s  1.43%  net/http.Header.WriteSubset (inline)
+     0.01s  0.24% 47.62%      0.06s  1.43%  net/http.Header.writeSubset
+         0     0% 47.62%      0.06s  1.43%  runtime.(*unwinder).next
+         0     0% 47.62%      0.06s  1.43%  runtime.funcspdelta (inline)
+         0     0% 47.62%      0.06s  1.43%  runtime.injectglist.func1
+         0     0% 47.62%      0.06s  1.43%  runtime.newarray
+         0     0% 47.62%      0.06s  1.43%  runtime.newproc
+         0     0% 47.62%      0.06s  1.43%  runtime.newproc.func1
+     0.02s  0.48% 48.10%      0.06s  1.43%  runtime.scanObjectsSmall
+     0.01s  0.24% 48.33%      0.06s  1.43%  runtime.stealWork
+     0.06s  1.43% 49.76%      0.06s  1.43%  runtime.tryDeferToSpanScan
+         0     0% 49.76%      0.06s  1.43%  switchyard/internal/transport/http.(*responseWriter).WriteHeader
+         0     0% 49.76%      0.06s  1.43%  switchyard/pkg/evaluation.Compile
+         0     0% 49.76%      0.06s  1.43%  time.Time.AppendFormat
+         0     0% 49.76%      0.05s  1.19%  context.WithDeadline (inline)
+         0     0% 49.76%      0.05s  1.19%  context.WithDeadlineCause
+         0     0% 49.76%      0.05s  1.19%  encoding/json.NewDecoder
+         0     0% 49.76%      0.05s  1.19%  encoding/json/jsontext.(*decoderState).CheckNextValue
+         0     0% 49.76%      0.05s  1.19%  github.com/jackc/pgx/v5.(*Conn).Query
+         0     0% 49.76%      0.05s  1.19%  github.com/jackc/pgx/v5.(*Conn).QueryRow (inline)
+         0     0% 49.76%      0.05s  1.19%  github.com/jackc/pgx/v5/pgxpool.(*Conn).QueryRow
+         0     0% 49.76%      0.05s  1.19%  github.com/redis/go-redis/v9/internal/pool.(*Conn).WithWriter
+     0.01s  0.24% 50.00%      0.05s  1.19%  internal/poll.runtime_pollSetDeadline
+         0     0% 50.00%      0.05s  1.19%  net/http.(*connReader).backgroundRead
+         0     0% 50.00%      0.05s  1.19%  runtime.(*mcentral).grow
+         0     0% 50.00%      0.05s  1.19%  runtime.mallocgcSmallNoscan
+     0.04s  0.95% 50.95%      0.05s  1.19%  runtime.mallocgcSmallScanNoHeaderSC5
+     0.02s  0.48% 51.43%      0.05s  1.19%  runtime.mapaccess2_faststr
+     0.02s  0.48% 51.90%      0.05s  1.19%  runtime.scanObject
+         0     0% 51.90%      0.05s  1.19%  switchyard/internal/cache.(*Coordinator).Get
+     0.02s  0.48% 52.38%      0.05s  1.19%  switchyard/internal/platform/telemetry.(*Metrics).ObserveHTTP
+         0     0% 52.38%      0.05s  1.19%  switchyard/pkg/evaluation.primitive
+     0.03s  0.71% 53.10%      0.05s  1.19%  time.Time.appendFormat
+     0.01s  0.24% 53.33%      0.04s  0.95%  bufio.(*Reader).ReadSlice
+         0     0% 53.33%      0.04s  0.95%  encoding/json/internal/jsonwire.AppendFloat
+         0     0% 53.33%      0.04s  0.95%  encoding/json/jsontext.(*decoderState).fetch
+         0     0% 53.33%      0.04s  0.95%  encoding/json/v2.makeFloatArshaler.func1
+         0     0% 53.33%      0.04s  0.95%  github.com/jackc/pgx/v5/pgconn.(*PgConn).ExecStatement
+         0     0% 53.33%      0.04s  0.95%  github.com/jackc/pgx/v5/pgxpool.(*Pool).Acquire
+         0     0% 53.33%      0.04s  0.95%  github.com/prometheus/client_golang/prometheus.(*CounterVec).GetMetricWithLabelValues (inline)
+         0     0% 53.33%      0.04s  0.95%  github.com/prometheus/client_golang/prometheus.(*CounterVec).WithLabelValues
+         0     0% 53.33%      0.04s  0.95%  github.com/prometheus/client_golang/prometheus.(*MetricVec).GetMetricWithLabelValues
+         0     0% 53.33%      0.04s  0.95%  internal/strconv.AppendFloat
+         0     0% 53.33%      0.04s  0.95%  internal/strconv.ftoa64
+     0.01s  0.24% 53.57%      0.04s  0.95%  net/textproto.(*Reader).readLineSlice
+     0.01s  0.24% 53.81%      0.04s  0.95%  reflect.Value.Set
+         0     0% 53.81%      0.04s  0.95%  runtime.(*unwinder).initAt
+         0     0% 53.81%      0.04s  0.95%  runtime.entersyscall
+         0     0% 53.81%      0.04s  0.95%  runtime.growslice
+         0     0% 53.81%      0.04s  0.95%  runtime.mapIterStart
+         0     0% 53.81%      0.04s  0.95%  runtime.mapaccess1_faststr
+     0.03s  0.71% 54.52%      0.04s  0.95%  runtime.newproc1
+         0     0% 54.52%      0.04s  0.95%  runtime.pidleget
+     0.01s  0.24% 54.76%      0.04s  0.95%  runtime.reentersyscall
+         0     0% 54.76%      0.04s  0.95%  runtime.resetspinning
+         0     0% 54.76%      0.04s  0.95%  runtime.scanframeworker
+     0.01s  0.24% 55.00%      0.04s  0.95%  runtime.slicebytetostring
+     0.04s  0.95% 55.95%      0.04s  0.95%  runtime.step
+         0     0% 55.95%      0.04s  0.95%  strconv.AppendFloat (inline)
+         0     0% 55.95%      0.04s  0.95%  switchyard/internal/applicationeval.validScope
+     0.01s  0.24% 56.19%      0.04s  0.95%  switchyard/internal/platform/telemetry.(*Metrics).ObserveEvaluation
+         0     0% 56.19%      0.04s  0.95%  switchyard/internal/transport/http.randBytes
+     0.01s  0.24% 56.43%      0.03s  0.71%  bufio.(*Reader).ReadLine
+         0     0% 56.43%      0.03s  0.71%  encoding/hex.EncodeToString (inline)
+         0     0% 56.43%      0.03s  0.71%  encoding/json.Valid (inline)
+         0     0% 56.43%      0.03s  0.71%  encoding/json.checkValid
+     0.03s  0.71% 57.14%      0.03s  0.71%  encoding/json/internal/jsonwire.ConsumeWhitespace (inline)
+     0.03s  0.71% 57.86%      0.03s  0.71%  encoding/json/jsontext.(*decoderState).reset
+     0.01s  0.24% 58.10%      0.03s  0.71%  encoding/json/jsontext.NewDecoder (inline)
+     0.01s  0.24% 58.33%      0.03s  0.71%  encoding/json/jsontext.Value.Kind
+         0     0% 58.33%      0.03s  0.71%  encoding/json/jsontext.export.PutBufferedDecoder
+     0.01s  0.24% 58.57%      0.03s  0.71%  encoding/json/jsontext.putBufferedDecoder (inline)
+         0     0% 58.57%      0.03s  0.71%  github.com/jackc/pgx/v5/pgconn.(*PgConn).execExtendedSuffix
+         0     0% 58.57%      0.03s  0.71%  github.com/jackc/puddle/v2.(*Pool[go.shape.*uint8]).Acquire
+     0.01s  0.24% 58.81%      0.03s  0.71%  github.com/jackc/puddle/v2.(*Pool[go.shape.*uint8]).acquire
+         0     0% 58.81%      0.03s  0.71%  github.com/prometheus/client_golang/prometheus.(*MetricVec).hashLabelValues
+         0     0% 58.81%      0.03s  0.71%  github.com/redis/go-redis/v9.(*baseClient)._getConn
+         0     0% 58.81%      0.03s  0.71%  github.com/redis/go-redis/v9.(*baseClient).getConn
+         0     0% 58.81%      0.03s  0.71%  github.com/redis/go-redis/v9/internal/pool.(*ConnPool).Get
+         0     0% 58.81%      0.03s  0.71%  github.com/redis/go-redis/v9/internal/pool.(*ConnPool).getConn
+     0.03s  0.71% 59.52%      0.03s  0.71%  internal/bytealg.IndexByteString
+     0.02s  0.48% 60.00%      0.03s  0.71%  internal/runtime/maps.(*Iter).Next
+     0.03s  0.71% 60.71%      0.03s  0.71%  internal/runtime/maps.(*Map).getWithoutKeySmallFastStr
+         0     0% 60.71%      0.03s  0.71%  runtime.(*mspan).initHeapBits
+         0     0% 60.71%      0.03s  0.71%  runtime.(*spanSet).reset
+     0.02s  0.48% 61.19%      0.03s  0.71%  runtime.(*stkframe).getStackMap
+     0.01s  0.24% 61.43%      0.03s  0.71%  runtime.(*sweepLocked).sweep
+     0.01s  0.24% 61.67%      0.03s  0.71%  runtime.(*timers).check
+         0     0% 61.67%      0.03s  0.71%  runtime.(*unwinder).init (inline)
+         0     0% 61.67%      0.03s  0.71%  runtime.bgsweep
+         0     0% 61.67%      0.03s  0.71%  runtime.callers
+         0     0% 61.67%      0.03s  0.71%  runtime.callers.func1
+     0.03s  0.71% 62.38%      0.03s  0.71%  runtime.casgstatus
+         0     0% 62.38%      0.03s  0.71%  runtime.entersyscallWakeSysmon
+         0     0% 62.38%      0.03s  0.71%  runtime.execute
+         0     0% 62.38%      0.03s  0.71%  runtime.finishsweep_m
+         0     0% 62.38%      0.03s  0.71%  runtime.gcStart
+         0     0% 62.38%      0.03s  0.71%  runtime.gcStart.func3
+         0     0% 62.38%      0.03s  0.71%  runtime.goexit0
+     0.01s  0.24% 62.62%      0.03s  0.71%  runtime.mallocgcTinySC2
+     0.03s  0.71% 63.33%      0.03s  0.71%  runtime.memmove
+     0.03s  0.71% 64.05%      0.03s  0.71%  runtime.releasem (inline)
+     0.01s  0.24% 64.29%      0.03s  0.71%  runtime.scanblock
+         0     0% 64.29%      0.03s  0.71%  runtime.sweepone
+         0     0% 64.29%      0.03s  0.71%  strings.(*Replacer).Replace
+     0.03s  0.71% 65.00%      0.03s  0.71%  strings.(*byteReplacer).Replace
+         0     0% 65.00%      0.03s  0.71%  switchyard/internal/auth.(*Service).AuthenticateApplication
+     0.01s  0.24% 65.24%      0.03s  0.71%  sync.(*Pool).Put
+     0.02s  0.48% 65.71%      0.03s  0.71%  sync.(*Pool).pin
+         0     0% 65.71%      0.03s  0.71%  syscall.Syscall6
+         0     0% 65.71%      0.03s  0.71%  time.runtimeNano
