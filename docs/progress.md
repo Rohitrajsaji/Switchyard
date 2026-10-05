@@ -15,7 +15,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M9 Rollout / approval / safety | Complete | 5 Oct 2026: production proposals, rollout steps, guardrails, safety rollback, reviewer UI and live drill. Production experiment create/start/pause/complete remain denied by the generic gate. |
 | M10 Telemetry / performance | Complete | Observability smoke, the evaluation ladder, profiles, mixed saturation, and the 10-minute soak are recorded. Soak targets failed (799.5 of 1,000 evaluations/s, p99 4,874 ms, 202.5 of 495 events/s, freshness p95 93.0 s). After the outbox drained, zero users were overdue and host aggregate parity passed for 171 runs, including the soak run, in 23.5 s. |
 | M11 Governed agent | Complete | 5 Oct 2026: mock client, Go policy checks, seven agent tests, and live `make agent-drill` (cap, sensitive targeting, no direct mutation, second-person approval, one apply). |
-| M12 Portfolio-ready V2 | In progress | 5 Oct 2026: `make check`, `make race`, full `make integration`, `make web-check`, and `make e2e` (4 journeys, including a string-flag preview) passed on the rebuilt local stack with migration 0021. Cache drill passed (disable 1.83 s, Redis-outage refresh 1.54 s, fallback 28.76 s, observer revocation 0.037 s). Rollout drill passed (8,000 to 9,000, rollback after 19.4 s, safe value 0.94 s later). Event-drill recovery assertions passed earlier, then `make aggregation-parity` timed out at 30 s on the old worker image. After the image rebuild, container parity passed for 171 runs. The soak missed its latency and freshness targets. `v0.2.0` is not tagged. |
+| M12 Portfolio-ready V2 | In progress | 5 Oct 2026: `make check`, `make race`, full `make integration`, `make web-check`, and `make e2e` passed. Cache and rollout drills passed earlier. `make event-drill` then passed on the rebuilt image: broker recovery 0.636 s, worker recovery 0.440 s, exact 2/2/2 counts after SIGKILL, and container parity for 172 runs (`docs/benchmarks/m12-event-drill.json`). The soak missed its latency and freshness targets. `v0.2.0` is not tagged. |
 
 Approval authorizes local implementation/testing/commits only. No push, publication, paid service or external account changes are authorized.
 
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M10's measured limits are recorded and settled parity passed in the worker image. Rerun the event drill on that image, then finish the clean-machine rehearsal and the `v0.2.0` review. The tag stays off until those are done.
+Settled parity and the event drill passed on the rebuilt image. Run the clean-machine rehearsal, then review the exit criteria before tagging `v0.2.0`.
 
 ## M6 verified checkpoints
 

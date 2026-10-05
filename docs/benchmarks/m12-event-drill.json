@@ -1,0 +1,34 @@
+{
+  "observed_at": "2026-10-05T16:44:43.559408+00:00",
+  "broker_outage_counts": {
+    "raw": 3,
+    "intents": 5,
+    "published": 2,
+    "receipts": 2,
+    "exposed": 0,
+    "converted": 0,
+    "requests": 0
+  },
+  "broker_post_health_recovery_seconds": 0.6362,
+  "worker_outage_counts": {
+    "raw": 6,
+    "intents": 8,
+    "published": 5,
+    "receipts": 5,
+    "exposed": 1,
+    "converted": 1,
+    "requests": 1
+  },
+  "worker_post_health_recovery_seconds": 0.4403,
+  "final_fixture_counts": {
+    "raw": 6,
+    "intents": 8,
+    "published": 8,
+    "receipts": 8,
+    "exposed": 2,
+    "converted": 2,
+    "requests": 2
+  },
+  "parity": "Aggregate parity passed for 172 runs: cohorts, conversions, requests, histograms and quality",
+  "scope": "Real local outages/restarts; convergence timings begin after service health/startup and exclude restart time; these are single observations, not throughput or percentiles. Receipt body was deliberately discarded; exact commit-before-broker-ack disconnect is covered by real PostgreSQL/JetStream integration."
+}
