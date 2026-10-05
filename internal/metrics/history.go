@@ -6,21 +6,31 @@ import (
 	"strings"
 )
 
-// Raw facts remain the oracle. This variant adds only compact reference/anchor
-// metadata needed when older facts have been folded into historical summaries.
+const referenceSourceSQL = `(
+ SELECT project_id,environment_id,event_id,run_id,user_id,kind,status,variant_id,occurred_at,received_at FROM raw_events
+ UNION ALL SELECT r.project_id,r.environment_id,r.event_id,r.run_id,r.user_id,r.kind,r.status,r.variant_id,r.occurred_at,r.received_at
+ FROM metric_event_references r WHERE NOT EXISTS(SELECT 1 FROM raw_events f
+ WHERE f.project_id=r.project_id AND f.environment_id=r.environment_id AND f.event_id=r.event_id)
+)`
+const measurementSourceSQL = `(
+ SELECT * FROM raw_events
+ UNION ALL SELECT p.project_id,p.environment_id,p.event_id,p.run_id,p.user_id,p.kind,p.variant_id,p.revision,p.exposure_id,
+ p.occurred_at,p.received_at,p.status,p.quarantine_reason,p.is_error,p.latency_ms,NULL::jsonb,NULL::text
+ FROM metric_pending_outcomes p WHERE NOT EXISTS(SELECT 1 FROM raw_events f
+ WHERE f.project_id=p.project_id AND f.environment_id=p.environment_id AND f.event_id=p.event_id)
+)`
+
+// Compact unresolved outcomes stay in the replaceable contribution until their
+// references resolve. Only resolved facts are folded into historical segments.
 func retainedUserSQL() string {
-	sql := strings.Replace(attributionSQL, "AND received_at<=$4", "AND received_at<=$4 AND user_id=$5", 1)
+	sql := strings.Replace(attributionSQL, "SELECT * FROM raw_events", "SELECT * FROM "+measurementSourceSQL+" measurement_facts", 1)
+	sql = strings.Replace(sql, "AND received_at<=$4", "AND received_at<=$4 AND user_id=$5", 1)
 	sql = strings.Replace(sql, "FROM accepted WHERE kind='exposure'", `FROM (
  SELECT user_id,variant_id,event_id,occurred_at FROM accepted WHERE kind='exposure'
  UNION ALL SELECT user_id,variant_id,event_id,occurred_at FROM metric_archived_anchors
  WHERE project_id=$1 AND environment_id=$2 AND run_id=$3 AND user_id=$5 AND occurred_at<=$4
  ) anchor_sources`, 1)
-	return strings.Replace(sql, "LEFT JOIN raw_events x", `LEFT JOIN (
- SELECT project_id,environment_id,event_id,run_id,user_id,kind,status,variant_id,occurred_at,received_at FROM raw_events
- UNION ALL SELECT r.project_id,r.environment_id,r.event_id,r.run_id,r.user_id,r.kind,r.status,r.variant_id,r.occurred_at,r.received_at
- FROM metric_event_references r WHERE NOT EXISTS(SELECT 1 FROM raw_events f
- WHERE f.project_id=r.project_id AND f.environment_id=r.environment_id AND f.event_id=r.event_id)
- ) x`, 1)
+	return strings.Replace(sql, "LEFT JOIN raw_events x", "LEFT JOIN "+referenceSourceSQL+" x", 1)
 }
 
 // Each input belongs to the same single run/user. Requests and quality are

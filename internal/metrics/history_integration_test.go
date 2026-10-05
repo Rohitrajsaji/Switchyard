@@ -87,7 +87,7 @@ func TestConversionCrossesRetainedBoundaryWithoutDoubleNumerator(t *testing.T) {
 			if _, err = tx.Exec(ctx, `UPDATE metric_user_state SET historical_contribution=$2 WHERE user_id=$1`, exposure.UserID, baseline); err != nil {
 				t.Fatal(err)
 			}
-			if _, err = tx.Exec(ctx, `INSERT INTO metric_archived_anchors SELECT project_id,environment_id,run_id,user_id,event_id,variant_id,occurred_at FROM raw_events WHERE event_id='anchor'`); err != nil {
+			if _, err = tx.Exec(ctx, `INSERT INTO metric_archived_anchors(project_id,environment_id,run_id,user_id,event_id,variant_id,occurred_at,received_at) SELECT project_id,environment_id,run_id,user_id,event_id,variant_id,occurred_at,received_at FROM raw_events WHERE event_id='anchor'`); err != nil {
 				t.Fatal(err)
 			}
 			if _, err = tx.Exec(ctx, `INSERT INTO metric_event_references SELECT project_id,environment_id,event_id,run_id,user_id,kind,status,variant_id,occurred_at,received_at FROM raw_events WHERE received_at<$1`, cutoff); err != nil {
@@ -155,7 +155,7 @@ func TestHistoricalContributionSurvivesRawDeletionAndReturningUser(t *testing.T)
 	if _, err = tx.Exec(ctx, `UPDATE metric_user_state SET historical_contribution=$2 WHERE user_id=$1`, exposure.UserID, baseline); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO metric_archived_anchors SELECT project_id,environment_id,run_id,user_id,event_id,variant_id,occurred_at FROM raw_events WHERE event_id='old_exposure'`); err != nil {
+	if _, err = tx.Exec(ctx, `INSERT INTO metric_archived_anchors(project_id,environment_id,run_id,user_id,event_id,variant_id,occurred_at,received_at) SELECT project_id,environment_id,run_id,user_id,event_id,variant_id,occurred_at,received_at FROM raw_events WHERE event_id='old_exposure'`); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = tx.Exec(ctx, `INSERT INTO metric_event_references SELECT project_id,environment_id,event_id,run_id,user_id,kind,status,variant_id,occurred_at,received_at FROM raw_events WHERE received_at<$1`, f.now.Add(-7*24*time.Hour)); err != nil {

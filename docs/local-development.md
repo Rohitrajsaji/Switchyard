@@ -213,3 +213,9 @@ Migration 0011 adds a historical contribution field, archived user anchors and c
 Migration 0012 provides a retained identity archive for the forthcoming folding worker. During the eight-day receipt interval, ingestion returns the original accepted/quarantined receipt even after the raw fact was folded; equivalent decimals/timestamp zones remain duplicate identities. Payload changes return conflict. Once the receipt is unavailable, an original occurrence older than seven days is rejected rather than inserted again, and an identity still known to publication/reference state cannot be reused with a fresh timestamp.
 
 Normalized identity payload is retained for eight days to support exact semantic equality, one day beyond the default analytical raw window. Expiry is exactly 192 hours from original receipt, independent of daylight-saving/calendar arithmetic. Preservation and pruning primitives are bounded but are not automatically scheduled yet; normal raw cleanup remains disabled.
+
+### Bounded folding primitive
+
+Migration 0013 supports folding at most 100 delivered facts from one user's original UTC receipt day. The internal `metrics.FoldOne` transaction preserves duplicate identities and reference metadata, updates historical contributions, keeps unresolved outcomes compact, and deletes the selected raw facts atomically. Reconciliation updates materialized counters afterward. Facts without a durable processing receipt remain raw. Concurrent folding/reconciliation share the user lock.
+
+The worker does not schedule this primitive yet, so normal demo data remains raw. Its deletion/rollback/parity checks run in disposable integration schemas. Daily historical segments support the next summary-expiry phase; ninety-day expiry, bounded receipt cleanup and final M7 recovery/load/read-transition verification remain pending. There is no operator purge command to bypass these gates.

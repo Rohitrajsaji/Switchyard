@@ -27,7 +27,8 @@ func EnqueueReferencingUsers(ctx context.Context, tx pgx.Tx, project, env, event
 	_, err := tx.Exec(ctx, `INSERT INTO metric_user_state(project_id,environment_id,run_id,user_id,due_at)
 		SELECT project_id,environment_id,run_id,user_id,clock_timestamp()
 		FROM (SELECT DISTINCT project_id,environment_id,run_id,user_id
-		FROM raw_events WHERE project_id=$1 AND environment_id=$2 AND exposure_id=$3) affected
+		FROM (SELECT project_id,environment_id,run_id,user_id FROM raw_events WHERE project_id=$1 AND environment_id=$2 AND exposure_id=$3
+ UNION ALL SELECT project_id,environment_id,run_id,user_id FROM metric_pending_outcomes WHERE project_id=$1 AND environment_id=$2 AND exposure_id=$3) sources) affected
         ORDER BY project_id,environment_id,run_id,user_id
         ON CONFLICT(project_id,environment_id,run_id,user_id)
         DO UPDATE SET due_at=LEAST(metric_user_state.due_at,excluded.due_at)`, project, env, event)
@@ -92,8 +93,8 @@ func ReconcileOne(ctx context.Context, pool *pgxpool.Pool, now time.Time) (bool,
 	var newBody []byte
 	var next *time.Time
 	err = tx.QueryRow(ctx, userSQL+`SELECT (`+resultsSQL+`), LEAST(
-		(SELECT min(received_at) FROM raw_events WHERE project_id=$1 AND environment_id=$2 AND run_id=$3 AND user_id=$5 AND received_at>$4),
-		(SELECT min(x.received_at) FROM facts e JOIN raw_events x ON x.project_id=e.project_id AND x.environment_id=e.environment_id
+		(SELECT min(received_at) FROM `+measurementSourceSQL+` source WHERE project_id=$1 AND environment_id=$2 AND run_id=$3 AND user_id=$5 AND received_at>$4),
+		(SELECT min(x.received_at) FROM facts e JOIN `+referenceSourceSQL+` x ON x.project_id=e.project_id AND x.environment_id=e.environment_id
 		 AND x.event_id=e.exposure_id WHERE e.status='accepted' AND x.received_at>$4),
 		(SELECT min(occurred_at) FROM facts WHERE status='accepted' AND occurred_at>$4),
         (SELECT min(occurred_at+interval '24 hours 30 minutes'+interval '1 microsecond') FROM anchors

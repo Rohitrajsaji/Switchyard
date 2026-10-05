@@ -1,6 +1,6 @@
 # ADR 0009: Historical contributions and retained attribution metadata
 
-Status: accepted as an M7 retention foundation. Automatic folding/deletion, identity expiry and 90-day summary expiry are not yet implemented.
+Status: accepted as an M7 retention foundation. Bounded folding and identity preservation/expiry primitives are implemented and tested; automatic scheduling and 90-day summary expiry remain pending.
 
 ## Decision
 
@@ -27,3 +27,15 @@ Migration 0012 adds an identity archive copied only by a bounded raw-folding pri
 Ingestion checks raw/archived receipts before validating a new fact. Identical post-folding retries receive the old receipt and do not add raw facts/outbox intent. Changed identities conflict. After receipt expiry, an original occurrence older than seven days rejects the batch. A new timestamp cannot reuse an identity still known through publication/reference state. These checks prevent expired replay becoming a new accepted fact.
 
 The preservation primitive shares the folding transaction. A separate prune primitive deletes at most one hundred expired identities using row locks and SKIP LOCKED, with expiry based on original receipt rather than retry/folding time. Neither primitive is automatically scheduled yet; the full folding/expiry transaction and unresolved-outcome handling are the next phase.
+
+## Bounded folding checkpoint
+
+Migration 0013 adds compact unresolved outcomes and contributions partitioned by original UTC receipt day. `FoldOne` locks one user and selects at most 100 delivered facts from that user's earliest eligible receipt day. A durable processing receipt is required before deleting a raw source. The same user lock serializes folding, reconciliation and arrival notifications. It copies identity/reference projections, updates historical state and deletes selected sources in one transaction. A failed delete leaves all sources and projections unchanged. Existing processing receipts remain intact.
+
+An outcome whose exposure reference has not arrived keeps its measurement fields in a compact pending table. It contributes through the same attribution query, can schedule its referencing user on later exposure arrival, and folds into history only after resolution. Original payload and application credential identifiers are omitted. A still-present raw fact shadows its compact projection. Pending and future counts are never added to frozen historical totals.
+
+Each day's request/histogram/resolved-quality segment owns disjoint facts; cohort identity belongs to one archived anchor rather than each day. The fold transaction first preserves the global earliest finalized anchor, even if an earlier exposure arrived late on a different receipt day. It merges exposed/converted users once and carries duplicate-completion corrections into the owning segment. This gives the next expiry phase a bounded historical unit without creating extra cohorts per day.
+
+The source checks and complete PostgreSQL/Redis/NATS race integration suite passed. Independent full-raw oracle fixtures verify 108 facts across 100/8 pages, rollback after a late deletion failure, late earlier anchors across UTC receipt days, compact pending resolution, undelivered-source exclusion and concurrent folders. Reconciliation is checked after each fold against a separate table retaining the full original raw history.
+
+This primitive is not scheduled by the normal worker yet. The development database retains all raw facts. Ninety-day summary expiry, bounded processing/publication cleanup, configurable retention, retained replay/parity and final fault/load/read-transition gates remain required before M7 completion.

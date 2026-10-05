@@ -1,0 +1,21 @@
+{
+  "observed_at": "2026-10-05T05:03:58.059300+00:00",
+  "counts": {
+    "raw_events": 251,
+    "retained_identities": 0,
+    "compact_pending": 0,
+    "historical_segments": 0,
+    "historical_users": 0,
+    "due_users": 0
+  },
+  "live_replay": {
+    "observed_at": "2026-10-05T05:02:40.974064+00:00",
+    "replayed_events": 7,
+    "pages": 1,
+    "inspected_failures": 0,
+    "parity": "docker compose --profile async run --rm --no-deps --entrypoint /app/check-metrics worker\nAggregate parity passed for 25 runs: cohorts, conversions, requests, histograms and quality"
+  },
+  "cleanup_enabled": false,
+  "scope": "Bounded folding/deletion and compact pending attribution are verified in disposable integration schemas; normal raw cleanup is not scheduled.",
+  "final_live_parity_runs": 26
+}
