@@ -15,7 +15,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M9 Rollout / approval / safety | Complete | 5 Oct 2026: production proposals, rollout steps, guardrails, safety rollback, reviewer UI and live drill. Production experiment create/start/pause/complete remain denied by the generic gate. |
 | M10 Telemetry / performance | In progress | Observability smoke, evaluation ladder, CPU profiles, and the user-receipt index are recorded. Freshness p95 improved from 585 s to 227 s and still misses 5 s. The 10-minute soak was not run after the 990-event offer failed most batches. |
 | M11 Governed agent | Complete | 5 Oct 2026: mock client, Go policy checks, seven agent tests, and live `make agent-drill` (cap, sensitive targeting, no direct mutation, second-person approval, one apply). |
-| M12 Portfolio-ready V2 | In progress | String and number flags, shared golden fixtures, and the JavaScript remote client are implemented. `go test ./pkg/evaluation`, `node --test sdk/javascript/evaluate.test.mjs`, and `go test -tags=integration ./internal/flags` passed. Architecture, operations, interview, and demo notes are written. Full `make check`, race, integration, e2e, drills, and `v0.2.0` are not done. |
+| M12 Portfolio-ready V2 | In progress | 5 Oct 2026: `make check`, `make race`, full `make integration`, `make web-check`, and `make e2e` (4 journeys, including a string-flag preview) passed on the rebuilt local stack with migration 0021. Cache drill passed (disable 1.83 s, Redis-outage refresh 1.54 s, fallback 28.76 s, observer revocation 0.037 s). Rollout drill passed (8,000 to 9,000, rollback after 19.4 s, safe value 0.94 s later). Event-drill recovery assertions passed, then `make aggregation-parity` timed out at 30 s against 160 runs and 287,346 raw events. The 10-minute soak is still not run. `v0.2.0` is not tagged. |
 
 Approval authorizes local implementation/testing/commits only. No push, publication, paid service or external account changes are authorized.
 
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M11's live drill passed. M10 freshness p95 is 227 s and the 10-minute soak was not run. M12 string/number flags, the JavaScript client, and the interview notes are in the tree. Full verification and `v0.2.0` are still open.
+M11's live drill passed. M10 freshness p95 is 227 s and the 10-minute soak was not run. M12 checks, race, integration, browser journeys, cache drill, and rollout drill passed. Event-drill recovery passed, then aggregate parity timed out at 30 s on the load-test database. `v0.2.0` is still open.
 
 ## M6 verified checkpoints
 
