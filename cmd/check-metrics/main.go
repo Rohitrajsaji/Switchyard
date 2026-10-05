@@ -25,7 +25,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 	pool, err := postgres.Open(ctx, cfg.DatabaseURL, 2)
 	if err != nil {
@@ -65,12 +65,18 @@ func run() error {
 		if r.actor == nil {
 			return errors.New("parity scope has no active human member")
 		}
-		equal, err := service.Compare(ctx, auth.Actor{ID: *r.actor}, r.project, r.run)
+		started := time.Now()
+		runCtx, runCancel := context.WithTimeout(ctx, 3*time.Minute)
+		equal, err := service.Compare(runCtx, auth.Actor{ID: *r.actor}, r.project, r.run)
+		runCancel()
 		if err != nil {
-			return err
+			return fmt.Errorf("run %s: %w", r.run, err)
 		}
 		if !equal {
 			return fmt.Errorf("aggregate parity mismatch for run %s", r.run)
+		}
+		if elapsed := time.Since(started); elapsed > 2*time.Second {
+			fmt.Fprintf(os.Stderr, "run %s compared in %s\n", r.run, elapsed.Round(time.Millisecond))
 		}
 	}
 	fmt.Printf("Aggregate parity passed for %d runs: cohorts, conversions, requests, histograms and quality\n", len(scopes))

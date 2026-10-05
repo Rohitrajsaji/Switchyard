@@ -13,7 +13,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M7 Durable worker | Complete | Durable publisher/consumer, replay/retention, failure drills and aggregate serving verified. First ingestion trial and missed freshness target documented before optimization; normal setup/restart and final parity across 40 runs passed. |
 | M8 gRPC / Go SDK | Complete | 5 Oct 2026: protobuf contract, gRPC adapter, remote and local SDK, bounded event helper, listing example and live drill. Local cached-read benchmark recorded; p99 distributions belong to M10. |
 | M9 Rollout / approval / safety | Complete | 5 Oct 2026: production proposals, rollout steps, guardrails, safety rollback, reviewer UI and live drill. Production experiment create/start/pause/complete remain denied by the generic gate. |
-| M10 Telemetry / performance | In progress | Observability smoke, evaluation ladder, CPU profiles, mixed saturation, and the 10-minute soak are recorded. Soak on `521358d`: 799.5 evaluations/s of 1,000 offered, p99 4,874 ms, failure rate 0.538; 202.5 accepted events/s of 495 offered; freshness p95 93.0 s. The 5 s freshness and 50 ms p99 targets failed. `make failure-drills` is not green: cache and rollout passed, and event recovery passed, then aggregate parity timed out at 30 s. |
+| M10 Telemetry / performance | In progress | Observability smoke, the evaluation ladder, profiles, mixed saturation, and the 10-minute soak are recorded. Soak targets failed (799.5 of 1,000 evaluations/s, p99 4,874 ms, 202.5 of 495 events/s, freshness p95 93.0 s). A longer parity check then mismatched soak run `run_5e2ebad0…` (`Load load_000`, 129,888 facts) while every one of its users was still due. About 73,000 outbox rows were still unpublished and the due-user set was still growing. |
 | M11 Governed agent | Complete | 5 Oct 2026: mock client, Go policy checks, seven agent tests, and live `make agent-drill` (cap, sensitive targeting, no direct mutation, second-person approval, one apply). |
 | M12 Portfolio-ready V2 | In progress | 5 Oct 2026: `make check`, `make race`, full `make integration`, `make web-check`, and `make e2e` (4 journeys, including a string-flag preview) passed on the rebuilt local stack with migration 0021. Cache drill passed (disable 1.83 s, Redis-outage refresh 1.54 s, fallback 28.76 s, observer revocation 0.037 s). Rollout drill passed (8,000 to 9,000, rollback after 19.4 s, safe value 0.94 s later). Event-drill recovery assertions passed, then `make aggregation-parity` timed out at 30 s against 160 runs and 287,346 raw events. The 10-minute soak ran and missed its latency and freshness targets. `v0.2.0` is not tagged. |
 
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M11's live drill passed. The 10-minute soak ran at 799.5 evaluations/s and 202.5 accepted events/s; freshness p95 was 93.0 s and the 5-second target still failed. Event-drill recovery passed, then aggregate parity timed out at 30 s on the load-test database. `v0.2.0` is still open.
+M11's live drill passed. The soak missed its targets. Aggregate parity, given long enough to finish, mismatches the soak run while its users are still due and the outbox is still unpublished. `v0.2.0` is still open.
 
 ## M6 verified checkpoints
 
