@@ -11,7 +11,7 @@ service EvaluationService {
 }
 
 // JSON bytes preserve the HTTP contract's exact decimal tokens. V1 types are
-// boolean and json; unsupported types are rejected by the shared evaluator.
+// boolean, string, number, and json; unsupported types are rejected by the shared evaluator.
 message Value {
   string type = 1;
   bytes json = 2;

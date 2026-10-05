@@ -1,0 +1,6 @@
+{
+  "name": "@switchyard/sdk",
+  "private": true,
+  "type": "module",
+  "description": "Tiny remote client for Switchyard evaluation. Buckets are published so another language can check the golden vectors; the server remains the authority for flag values."
+}

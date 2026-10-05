@@ -138,12 +138,23 @@ function FlagEditor({
               value={type}
               disabled={!!flag}
               onChange={(e) => {
-                setType(e.target.value as Value["type"]);
-                setNormal(e.target.value === "boolean" ? "false" : "{}");
-                setSafe(e.target.value === "boolean" ? "false" : "{}");
+                const next = e.target.value as Value["type"];
+                const starter =
+                  next === "boolean"
+                    ? "false"
+                    : next === "string"
+                      ? '""'
+                      : next === "number"
+                        ? "0"
+                        : "{}";
+                setType(next);
+                setNormal(starter);
+                setSafe(starter);
               }}
             >
               <option value="boolean">Boolean</option>
+              <option value="string">String</option>
+              <option value="number">Number</option>
               <option value="json">JSON</option>
             </select>
           </label>

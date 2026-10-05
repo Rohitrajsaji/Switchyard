@@ -85,21 +85,38 @@ func (v Value) Validate(kind string) error {
 	if v.Type != kind || len(v.Data) == 0 || len(v.Data) > 16384 || !json.Valid(v.Data) {
 		return ErrInvalidDefinition
 	}
-	if kind == "boolean" {
+	switch kind {
+	case "boolean":
 		var value bool
 		if bytes.Equal(bytes.TrimSpace(v.Data), []byte("null")) || json.Unmarshal(v.Data, &value) != nil {
 			return ErrInvalidDefinition
 		}
-	} else if kind != "json" {
-		return ErrInvalidDefinition
-	}
-	if kind == "json" {
+	case "string":
+		var value string
+		trimmed := bytes.TrimSpace(v.Data)
+		if len(trimmed) < 2 || trimmed[0] != '"' || json.Unmarshal(v.Data, &value) != nil || len(value) > 1024 {
+			return ErrInvalidDefinition
+		}
+	case "number":
+		decoder := json.NewDecoder(bytes.NewReader(v.Data))
+		decoder.UseNumber()
+		var data any
+		if decoder.Decode(&data) != nil || decoder.More() {
+			return ErrInvalidDefinition
+		}
+		number, ok := data.(json.Number)
+		if !ok || !boundedJSON(number) {
+			return ErrInvalidDefinition
+		}
+	case "json":
 		var data any
 		decoder := json.NewDecoder(bytes.NewReader(v.Data))
 		decoder.UseNumber()
 		if decoder.Decode(&data) != nil || !boundedJSON(data) {
 			return ErrInvalidDefinition
 		}
+	default:
+		return ErrInvalidDefinition
 	}
 	return nil
 }

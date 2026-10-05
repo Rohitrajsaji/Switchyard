@@ -15,7 +15,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M9 Rollout / approval / safety | Complete | 5 Oct 2026: production proposals, rollout steps, guardrails, safety rollback, reviewer UI and live drill. Production experiment create/start/pause/complete remain denied by the generic gate. |
 | M10 Telemetry / performance | In progress | Observability smoke, evaluation ladder, CPU profiles, and the user-receipt index are recorded. Freshness p95 improved from 585 s to 227 s and still misses 5 s. The 10-minute soak was not run after the 990-event offer failed most batches. |
 | M11 Governed agent | Complete | 5 Oct 2026: mock client, Go policy checks, seven agent tests, and live `make agent-drill` (cap, sensitive targeting, no direct mutation, second-person approval, one apply). |
-| M12 Portfolio-ready V2 | Pending | — |
+| M12 Portfolio-ready V2 | In progress | String and number flags, shared golden fixtures, and the JavaScript remote client are implemented. `go test ./pkg/evaluation`, `node --test sdk/javascript/evaluate.test.mjs`, and `go test -tags=integration ./internal/flags` passed. Architecture, operations, interview, and demo notes are written. Full `make check`, race, integration, e2e, drills, and `v0.2.0` are not done. |
 
 Approval authorizes local implementation/testing/commits only. No push, publication, paid service or external account changes are authorized.
 
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M11's live drill passed. M10 freshness p95 is 227 s and the 10-minute soak was not run. M12 (string and number flags, JavaScript SDK, interview package, and `v0.2.0`) is next.
+M11's live drill passed. M10 freshness p95 is 227 s and the 10-minute soak was not run. M12 string/number flags, the JavaScript client, and the interview notes are in the tree. Full verification and `v0.2.0` are still open.
 
 ## M6 verified checkpoints
 

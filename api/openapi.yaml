@@ -266,7 +266,7 @@ paths:
               schema: {type: array, items: {$ref: '#/components/schemas/FlagDefinition'}}
         '403': {$ref: '#/components/responses/Forbidden'}
     post:
-      summary: Create a boolean or JSON flag and its initial environment revision
+      summary: Create a boolean, string, number, or JSON flag and its initial environment revision
       parameters:
         - $ref: '#/components/parameters/Origin'
         - $ref: '#/components/parameters/CSRF'
@@ -1340,7 +1340,7 @@ components:
             required: [key, type, revision, killed, default, safe, rules]
             properties:
               key: {type: string}
-              type: {type: string, enum: [boolean, json]}
+              type: {type: string, enum: [boolean, json, string, number]}
               revision: {type: integer}
               killed: {type: boolean}
               traffic_bp: {type: integer, minimum: 0, maximum: 10000}
@@ -1357,7 +1357,7 @@ components:
             environment_id: {type: string, description: A production environment}
             key: {type: string, pattern: '^[a-z][a-z0-9_-]{0,63}$'}
             kind: {type: string, enum: [create, update]}
-            type: {type: string, enum: [boolean, json], description: Required for create}
+            type: {type: string, enum: [boolean, json, string, number], description: Required for create}
             expected_revision: {type: integer, minimum: 0, description: Base revision; must be 0 for create}
             rationale: {type: string, minLength: 1, maxLength: 512}
       unevaluatedProperties: false
@@ -1370,7 +1370,7 @@ components:
         environment_id: {type: string}
         flag_key: {type: string}
         kind: {type: string, enum: [create, update]}
-        type: {type: string, enum: [boolean, json]}
+        type: {type: string, enum: [boolean, json, string, number]}
         base_revision: {type: integer, minimum: 0}
         configuration: {$ref: '#/components/schemas/FlagConfiguration'}
         diff: {type: object, description: Exact reviewed change (scope, base revision, before and after configurations)}
@@ -1393,7 +1393,7 @@ components:
           properties:
             environment_id: {type: string}
             key: {type: string, pattern: '^[a-z][a-z0-9_-]{0,63}$'}
-            type: {type: string, enum: [boolean, json]}
+            type: {type: string, enum: [boolean, json, string, number]}
             reason: {type: string, minLength: 1, maxLength: 512}
       unevaluatedProperties: false
     FlagUpdate:
@@ -1416,7 +1416,7 @@ components:
             environment_id: {type: string}
             flag_id: {type: string}
             key: {type: string}
-            type: {type: string, enum: [boolean, json]}
+            type: {type: string, enum: [boolean, json, string, number]}
             revision: {type: integer, minimum: 1}
             experiment: {$ref: '#/components/schemas/ExperimentAssignment'}
     EvaluationInput:

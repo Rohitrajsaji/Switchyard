@@ -71,7 +71,7 @@ func (Availability) EnumDescriptor() ([]byte, []int) {
 }
 
 // JSON bytes preserve the HTTP contract's exact decimal tokens. V1 types are
-// boolean and json; unsupported types are rejected by the shared evaluator.
+// boolean, string, number, and json; unsupported types are rejected by the shared evaluator.
 type Value struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`

@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"testing"
 
@@ -124,5 +125,43 @@ func TestFlagRevisionConflictScopeAndAtomicity(t *testing.T) {
 	}
 	if d, err := s.Get(ctx, p.ID, dev, "new_listing"); err != nil || d.Revision != 2 {
 		t.Fatal("outbox failure did not roll back revision")
+	}
+}
+
+func TestStringAndNumberFlagRevisions(t *testing.T) {
+	pool := testutil.Database(t)
+	ctx := context.Background()
+	if err := postgres.Migrate(ctx, pool, migrations.Files); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO users(id,email,password_hash,role) VALUES('admin','admin@example.test','unused','admin')`); err != nil {
+		t.Fatal(err)
+	}
+	actor := auth.Actor{ID: "admin"}
+	p, err := projects.New(pool).Create(ctx, actor, "Typed", "typed-project")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var dev string
+	if err := pool.QueryRow(ctx, `SELECT id FROM environments WHERE project_id=$1 AND name='development'`, p.ID).Scan(&dev); err != nil {
+		t.Fatal(err)
+	}
+	s := flags.New(pool)
+	text := func(v string) evaluation.Value {
+		return evaluation.Value{Type: "string", Data: json.RawMessage(fmt.Sprintf("%q", v))}
+	}
+	created, err := s.Create(ctx, actor, p.ID, flags.CreateInput{EnvironmentID: dev, Key: "copy", Type: "string", Configuration: flags.Configuration{Default: text("control"), Safe: text("safe")}, Reason: "string copy"}, "string-flag")
+	if err != nil || created.Type != "string" || string(created.Default.Data) != `"control"` {
+		t.Fatalf("string flag: %+v %v", created, err)
+	}
+	number := func(raw string) evaluation.Value {
+		return evaluation.Value{Type: "number", Data: json.RawMessage(raw)}
+	}
+	created, err = s.Create(ctx, actor, p.ID, flags.CreateInput{EnvironmentID: dev, Key: "timeout", Type: "number", Configuration: flags.Configuration{Default: number("1.5"), Safe: number("0")}, Reason: "number timeout"}, "number-flag")
+	if err != nil || created.Type != "number" || string(created.Default.Data) != "1.5" {
+		t.Fatalf("number flag: %+v %v", created, err)
+	}
+	if _, err := s.Create(ctx, actor, p.ID, flags.CreateInput{EnvironmentID: dev, Key: "bad_number", Type: "number", Configuration: flags.Configuration{Default: number(`"1"`), Safe: number("0")}, Reason: "quoted number"}, "bad-number"); !errors.Is(err, auth.ErrInvalid) {
+		t.Fatalf("quoted number accepted: %v", err)
 	}
 }

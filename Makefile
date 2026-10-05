@@ -148,6 +148,7 @@ agent-test:
 	@test -x .cache/agent-venv/bin/python || python3 -m venv .cache/agent-venv
 	@.cache/agent-venv/bin/python -c 'import pydantic,pytest' || .cache/agent-venv/bin/pip install pydantic pytest
 	cd agent && ../.cache/agent-venv/bin/python -m pytest -q
+	node --test sdk/javascript/evaluate.test.mjs
 agent-drill:
 	@test -n "$(SWITCHYARD_DEMO_PASSWORD)" || (echo 'Set SWITCHYARD_DEMO_PASSWORD explicitly'; exit 1)
 	python3 scripts/agent_drill.py

@@ -1,4 +1,7 @@
-export type Value = { type: "boolean" | "json"; data: unknown };
+export type Value = {
+  type: "boolean" | "string" | "number" | "json";
+  data: unknown;
+};
 export type Rule = {
   attribute: string;
   operator: string;

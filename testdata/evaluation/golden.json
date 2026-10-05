@@ -1,0 +1,35 @@
+{
+  "buckets": [
+    {
+      "project_id": "prj_demo",
+      "environment_id": "env_demo",
+      "flag_id": "flag_demo",
+      "run_id": "run_demo",
+      "purpose": "eligibility",
+      "salt": "salt_demo",
+      "user_id": "user_123",
+      "bucket": 8811
+    },
+    {
+      "project_id": "prj_demo",
+      "environment_id": "env_demo",
+      "flag_id": "flag_demo",
+      "run_id": "run_demo",
+      "purpose": "variant",
+      "salt": "salt_demo",
+      "user_id": "user_123",
+      "bucket": 3818
+    }
+  ],
+  "values": [
+    {"type": "string", "data": "\"checkout\"", "valid": true},
+    {"type": "string", "data": "\"\"", "valid": true},
+    {"type": "string", "data": "true", "valid": false},
+    {"type": "string", "data": "null", "valid": false},
+    {"type": "number", "data": "0", "valid": true},
+    {"type": "number", "data": "0.1234567890123456789", "valid": true},
+    {"type": "number", "data": "\"1\"", "valid": false},
+    {"type": "number", "data": "true", "valid": false},
+    {"type": "number", "data": "1e309", "valid": false}
+  ]
+}

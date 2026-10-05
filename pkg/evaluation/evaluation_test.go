@@ -3,6 +3,7 @@ package evaluation_test
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 
 	"switchyard/pkg/evaluation"
@@ -249,5 +250,76 @@ func TestJSONSafetyAndBoundedNumbers(t *testing.T) {
 	r, err := c.Evaluate("user", nil)
 	if err != nil || !evaluation.Equal(r.Value, a) {
 		t.Fatalf("JSON kill safety: %+v %v", r, err)
+	}
+}
+
+func TestSharedGoldenFixtures(t *testing.T) {
+	raw, err := os.ReadFile("../../testdata/evaluation/golden.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var golden struct {
+		Buckets []struct {
+			ProjectID     string `json:"project_id"`
+			EnvironmentID string `json:"environment_id"`
+			FlagID        string `json:"flag_id"`
+			RunID         string `json:"run_id"`
+			Purpose       string `json:"purpose"`
+			Salt          string `json:"salt"`
+			UserID        string `json:"user_id"`
+			Bucket        int    `json:"bucket"`
+		} `json:"buckets"`
+		Values []struct {
+			Type  string `json:"type"`
+			Data  string `json:"data"`
+			Valid bool   `json:"valid"`
+		} `json:"values"`
+	}
+	if err := json.Unmarshal(raw, &golden); err != nil {
+		t.Fatal(err)
+	}
+	if len(golden.Buckets) == 0 || len(golden.Values) == 0 {
+		t.Fatal("golden fixtures empty")
+	}
+	for _, row := range golden.Buckets {
+		got := evaluation.Bucket(row.ProjectID, row.EnvironmentID, row.FlagID, row.RunID, row.Purpose, row.Salt, row.UserID)
+		if got != row.Bucket {
+			t.Fatalf("%s bucket=%d want=%d", row.Purpose, got, row.Bucket)
+		}
+	}
+	for _, row := range golden.Values {
+		err := (evaluation.Value{Type: row.Type, Data: json.RawMessage(row.Data)}).Validate(row.Type)
+		if row.Valid != (err == nil) {
+			t.Fatalf("%s %s valid=%v err=%v", row.Type, row.Data, row.Valid, err)
+		}
+	}
+	d := base()
+	d.Type = "string"
+	d.Rollout = nil
+	text := func(s string) evaluation.Value {
+		return evaluation.Value{Type: "string", Data: json.RawMessage(fmt.Sprintf("%q", s))}
+	}
+	d.Default = text("control")
+	d.Safe = text("safe")
+	d.Rules = []evaluation.Rule{{Attribute: "country", Operator: "eq", Values: []json.RawMessage{json.RawMessage(`"JP"`)}, Value: text("checkout")}}
+	c, err := evaluation.Compile(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := c.Evaluate("user_123", map[string]json.RawMessage{"country": json.RawMessage(`"JP"`)})
+	if err != nil || got.Reason != "targeting" || string(got.Value.Data) != `"checkout"` {
+		t.Fatalf("string targeting: %+v %v", got, err)
+	}
+	d.Type = "number"
+	d.Rules = nil
+	d.Default = evaluation.Value{Type: "number", Data: json.RawMessage("1.5")}
+	d.Safe = evaluation.Value{Type: "number", Data: json.RawMessage("0")}
+	c, err = evaluation.Compile(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err = c.Evaluate("user_123", nil)
+	if err != nil || string(got.Value.Data) != "1.5" {
+		t.Fatalf("number default: %+v %v", got, err)
 	}
 }

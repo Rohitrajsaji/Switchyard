@@ -14,8 +14,20 @@ MAX_INCREASE_BP = 1000
 
 class FlagValue(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    type: Literal["boolean", "json"]
-    data: bool | dict | list | None
+    type: Literal["boolean", "string", "number", "json"]
+    data: bool | str | int | float | dict | list | None
+
+    @model_validator(mode="after")
+    def data_matches_type(self):
+        if self.type == "boolean" and not isinstance(self.data, bool):
+            raise ValueError("boolean data required")
+        if self.type == "string" and (not isinstance(self.data, str) or len(self.data.encode()) > 1024):
+            raise ValueError("string data required")
+        if self.type == "number" and (isinstance(self.data, bool) or not isinstance(self.data, (int, float))):
+            raise ValueError("number data required")
+        if self.type == "json" and not isinstance(self.data, (dict, list, type(None))):
+            raise ValueError("json data required")
+        return self
 
 
 class Rule(BaseModel):
@@ -43,7 +55,7 @@ class Rollout(BaseModel):
 class FlagContext(BaseModel):
     model_config = ConfigDict(extra="forbid")
     key: str
-    type: Literal["boolean", "json"]
+    type: Literal["boolean", "string", "number", "json"]
     revision: int
     killed: bool
     traffic_bp: int | None = None
@@ -69,7 +81,7 @@ class ProposalDraft(BaseModel):
     environment_id: str
     key: str = Field(pattern=r"^[a-z][a-z0-9_-]{0,63}$")
     kind: Literal["create", "update"]
-    type: Literal["boolean", "json"] | None = None
+    type: Literal["boolean", "string", "number", "json"] | None = None
     expected_revision: int = Field(ge=0)
     default: FlagValue
     safe: FlagValue
