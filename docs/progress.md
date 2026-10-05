@@ -15,7 +15,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M9 Rollout / approval / safety | Complete | 5 Oct 2026: production proposals, rollout steps, guardrails, safety rollback, reviewer UI and live drill. Production experiment create/start/pause/complete remain denied by the generic gate. |
 | M10 Telemetry / performance | Complete | Observability smoke, the evaluation ladder, profiles, mixed saturation, and the 10-minute soak are recorded. Soak targets failed (799.5 of 1,000 evaluations/s, p99 4,874 ms, 202.5 of 495 events/s, freshness p95 93.0 s). After the outbox drained, zero users were overdue and host aggregate parity passed for 171 runs, including the soak run, in 23.5 s. |
 | M11 Governed agent | Complete | 5 Oct 2026: mock client, Go policy checks, seven agent tests, and live `make agent-drill` (cap, sensitive targeting, no direct mutation, second-person approval, one apply). |
-| M12 Portfolio-ready V2 | In progress | 5 Oct 2026: `make check`, `make race`, full `make integration`, `make web-check`, and `make e2e` passed. Cache and rollout drills passed earlier. `make event-drill` then passed on the rebuilt image: broker recovery 0.636 s, worker recovery 0.440 s, exact 2/2/2 counts after SIGKILL, and container parity for 172 runs (`docs/benchmarks/m12-event-drill.json`). The soak missed its latency and freshness targets. `v0.2.0` is not tagged. |
+| M12 Portfolio-ready V2 | Complete | 5 Oct 2026: `make check`, `make race`, full `make integration`, `make web-check`, and `make e2e` passed. Cache, rollout, and event drills passed (broker recovery 0.636 s, worker recovery 0.440 s, exact counts after SIGKILL, container parity for 172 runs). Fresh-volume `make mvp-drill` passed on ARM64: seed idempotence, browser journeys, and restart persistence. Image review: Compose digest-pins NATS, Redis, the collector, Tempo, Prometheus, Grafana, and the Go/distroless images. PostgreSQL 17.11-bookworm stays tag-pinned in Compose and CI; CI Redis 8.10.2 is tag-pinned to the release Compose pins by digest. No `latest` tags. GitHub Actions is defined and has not run remotely. The soak missed its latency and freshness targets. Local tag `v0.2.0`. |
 
 Approval authorizes local implementation/testing/commits only. No push, publication, paid service or external account changes are authorized.
 
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-Settled parity and the event drill passed on the rebuilt image. Run the clean-machine rehearsal, then review the exit criteria before tagging `v0.2.0`.
+M1–M12 have recorded local evidence. `v0.2.0` is a local tag on this checkpoint and has not been pushed. The soak's missed latency and freshness targets stay documented findings.
 
 ## M6 verified checkpoints
 

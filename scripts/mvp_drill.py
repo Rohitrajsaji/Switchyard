@@ -23,11 +23,11 @@ def main():
     # process claims one between discovery and startup.
     sockets = []
     try:
-        for _ in range(7):
+        for _ in range(9):
             listener = socket.socket()
             listener.bind(("127.0.0.1", 0))
             sockets.append(listener)
-        pg_port, api_port, web_port, redis_port, nats_port, monitor_port, grpc_port = [s.getsockname()[1] for s in sockets]
+        pg_port, api_port, web_port, redis_port, nats_port, monitor_port, grpc_port, api_metrics_port, worker_metrics_port = [s.getsockname()[1] for s in sockets]
     finally:
         for listener in sockets:
             listener.close()
@@ -36,7 +36,9 @@ def main():
     web_url = f"http://localhost:{web_port}"
     env = {**os.environ, "POSTGRES_PORT": str(pg_port), "API_PORT": str(api_port),
            "WEB_PORT": str(web_port), "REDIS_PORT": str(redis_port), "NATS_PORT": str(nats_port),
-           "NATS_MONITOR_PORT": str(monitor_port), "GRPC_PORT": str(grpc_port), "SWITCHYARD_URL": api_url,
+           "NATS_MONITOR_PORT": str(monitor_port), "GRPC_PORT": str(grpc_port),
+           "API_METRICS_PORT": str(api_metrics_port), "WORKER_METRICS_PORT": str(worker_metrics_port),
+           "SWITCHYARD_URL": api_url,
            "SWITCHYARD_WEB_URL": web_url, "SWITCHYARD_ORIGIN": web_url,
            "SWITCHYARD_E2E_EXTERNAL": "true", "COMPOSE_PROJECT_NAME": project,
            "COMPOSE_FILE": str(ROOT / "compose.yaml"), "COMPOSE_PROFILES": "cache,async"}
@@ -49,6 +51,7 @@ def main():
     def counts():
         sql = """SELECT json_build_object(
           'users',(SELECT count(*) FROM users),
+          'active_users',(SELECT count(*) FROM users WHERE active),
           'projects',(SELECT count(*) FROM projects),
           'memberships',(SELECT count(*) FROM project_memberships),
           'flags',(SELECT count(*) FROM flags),
@@ -68,7 +71,7 @@ def main():
         run([sys.executable, "scripts/smoke.py"])
         run(["make", "seed-demo"])
         initial = counts()
-        expected = {"users": 4, "projects": 1, "memberships": 4, "flags": 2, "runs": 1,
+        expected = {"users": 5, "active_users": 4, "projects": 1, "memberships": 4, "flags": 2, "runs": 1,
                     "events": 150, "exposures": 100, "completions": 50, "requests": 0, "active_keys": 0}
         if any(initial[key] != value for key, value in expected.items()):
             raise RuntimeError(f"Unexpected initial fixture counts: {initial}")
