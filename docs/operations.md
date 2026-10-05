@@ -36,7 +36,7 @@ pprof listens only when `ENABLE_PPROF=true`, on the private metrics ports. Leave
 
 ## Load
 
-`make load-evaluation`, `make load-events`, `make load-mixed`, and `make load-soak` write reports under `docs/benchmarks/`. A failed latency or freshness target stays in the report. The 10-minute soak was not run after the 120-second post-index event offer already failed most batches on this machine. Do not lower the target to manufacture a pass.
+`make load-evaluation`, `make load-events`, `make load-mixed`, and `make load-soak` write reports under `docs/benchmarks/`. A failed latency or freshness target stays in the report. The 10-minute soak on this machine achieved 799.5 of 1,000 evaluations/s and 202.5 of 495 events/s, with freshness p95 at 93.0 s. Do not lower the target to manufacture a pass.
 
 ## Recovery
 

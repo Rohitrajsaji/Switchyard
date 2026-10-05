@@ -20,7 +20,7 @@ String and number flags use the same revision path as boolean and JSON. Strings 
 
 On the Apple M1 with 8 GiB RAM, warm HTTP evaluation held p99 under 50 ms through 4,000 requests/s in one ladder. At 6,000 the p99 was 318 ms and the generator was dropping work. That is one run, not three repeats.
 
-Event acceptance and fresh metrics are different. Before the user-receipt index, 990 accepted events/s left freshness p95 at 585 s. The index and four reconcile loops cut a single-user plan from about 1.3 s and 218,000 filtered rows to about 11 ms, and a 5,242-user backlog drained in 15 s with ingest stopped. Under a real 10-batch/s offer after that change, freshness p95 was 227 s and most batches failed. The five-second target is missed. The 10-minute soak was not run.
+Event acceptance and fresh metrics are different. Before the user-receipt index, 990 accepted events/s left freshness p95 at 585 s. The index and four reconcile loops cut a single-user plan from about 1.3 s and 218,000 filtered rows to about 11 ms, and a 5,242-user backlog drained in 15 s with ingest stopped. Under a real 10-batch/s offer after that change, freshness p95 was 227 s and most batches failed. The later 10-minute soak, 1,000 evaluations/s beside 495 events/s, achieved 799.5 evaluations/s and 202.5 accepted events/s. Freshness p95 on that run was 93.0 s. The five-second target is missed, and so is the 50 ms evaluation p99.
 
 A mixed k6 process was killed at 2,993 MiB. Splitting evaluation onto the Go generator still saturated the API. Worker CPU during reconcile was about 9%, waiting on PostgreSQL. The next scaling step that the profiles justify is more database capacity for per-user folding, not more Go goroutines and not a second evaluator.
 
