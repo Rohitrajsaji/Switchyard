@@ -47,6 +47,22 @@ func ExpireOne(ctx context.Context, pool *pgxpool.Pool, now time.Time, days int)
 		return result, err
 	}
 	defer tx.Rollback(context.Background())
+	// reporting_since starts at -infinity, so the per-user candidate below
+	// evaluates a contribution predicate for every user. On the measured
+	// database that was 1.9s for 89,059 rows and consumed the worker's
+	// two-second retention budget before folding could run. No user can match
+	// unless one of these facts is already older than the summary floor.
+	var oldEnough bool
+	err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM metric_history_segments WHERE receipt_day<($1 AT TIME ZONE 'UTC')::date)
+ OR EXISTS(SELECT 1 FROM metric_pending_outcomes WHERE received_at<$1)
+ OR EXISTS(SELECT 1 FROM raw_events WHERE received_at<$1)
+ OR EXISTS(SELECT 1 FROM metric_archived_anchors WHERE received_at<$1)`, floor).Scan(&oldEnough)
+	if err != nil {
+		return result, err
+	}
+	if !oldEnough {
+		return result, nil
+	}
 	var project, env, run, user string
 	err = tx.QueryRow(ctx, `SELECT s.project_id,s.environment_id,s.run_id,s.user_id FROM metric_user_state s
  WHERE `+expiryCandidateSQL+`
