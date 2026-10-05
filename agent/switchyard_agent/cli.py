@@ -57,7 +57,7 @@ def main(argv=None):
         summary = fetch_context(args.base_url, args.token, args.project, args.environment)
     draft = provider_from_env().suggest(summary)
     if args.dry_run:
-        print(draft.model_dump_json(indent=2))
+        print(json.dumps(draft.request_body(), indent=2))
         return 0
     if not args.token:
         raise SystemExit("set --token or SWITCHYARD_AGENT_TOKEN")

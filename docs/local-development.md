@@ -266,3 +266,12 @@ SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make rollout-drill    # healthy 
 ```
 
 `make rollout-drill` uses the default guardrails (1,000 eligible requests per evaluated variant, two consecutive breaches). Guardrail thresholds are tunable engineering defaults, not statistically validated limits.
+
+## Governed agent (M11)
+
+The agent is a Python client with a deterministic mock. It reads `GET /v1/projects/{project}/agent/context` and submits `POST /v1/projects/{project}/agent/proposals` with a production key that has only `context:read` and `proposals:submit`. The proposer is the human who created that key. A different admin approves in the Reviews tab, where agent proposals are labeled. The key cannot edit flags or apply a proposal. Go rejects a rollout increase above 10 percentage points and sensitive targeting. No model is called unless `SWITCHYARD_AGENT_PROVIDER=hosted` and `SWITCHYARD_AGENT_MODEL_URL` are both set, and the shipped adapter still refuses that call. See [ADR 0012](adr/0012-agent-proposals.md).
+
+```sh
+make agent-test
+SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make agent-drill
+```
