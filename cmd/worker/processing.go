@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -116,28 +118,44 @@ func consume(ctx context.Context, consumer jetstream.Consumer, store *processing
 		}
 	}
 }
+
+// Four fixed loops match the measured single-user query cost. ReconcileOne locks
+// one user (SKIP LOCKED), so the loops do not create a goroutine per event.
+const reconcileParallelism = 4
+
 func reconcile(ctx context.Context, pool *pgxpool.Pool, logger *slog.Logger) {
-	var applied, failed uint64
+	var applied, failed atomic.Uint64
+	var loops sync.WaitGroup
+	for range reconcileParallelism {
+		loops.Add(1)
+		go func() {
+			defer loops.Done()
+			for ctx.Err() == nil {
+				call, cancel := context.WithTimeout(ctx, 2*time.Second)
+				worked, err := metrics.ReconcileOne(call, pool, time.Now())
+				cancel()
+				if err != nil {
+					failed.Add(1)
+				} else if worked {
+					applied.Add(1)
+				}
+				if err != nil || !worked {
+					if !pause(ctx, 250*time.Millisecond) {
+						return
+					}
+				}
+			}
+		}()
+	}
 	nextReport := time.Now().Add(30 * time.Second)
 	for ctx.Err() == nil {
-		call, cancel := context.WithTimeout(ctx, 2*time.Second)
-		worked, err := metrics.ReconcileOne(call, pool, time.Now())
-		cancel()
-		if err != nil {
-			failed++
-		} else if worked {
-			applied++
+		if !pause(ctx, time.Until(nextReport)) {
+			break
 		}
-		if time.Now().After(nextReport) {
-			logger.Info("metric reconciliation statistics", "applied", applied, "failed", failed)
-			nextReport = time.Now().Add(30 * time.Second)
-		}
-		if err != nil || !worked {
-			if !pause(ctx, 250*time.Millisecond) {
-				return
-			}
-		}
+		logger.Info("metric reconciliation statistics", "applied", applied.Load(), "failed", failed.Load(), "loops", reconcileParallelism)
+		nextReport = time.Now().Add(30 * time.Second)
 	}
+	loops.Wait()
 }
 
 // progressRollouts runs the approved-plan engine every ten seconds (the plan's check cadence).

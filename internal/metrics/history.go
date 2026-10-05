@@ -26,7 +26,9 @@ const reportingFloorSQL = `(SELECT reporting_since FROM metric_user_state WHERE 
 
 func retainedUserSQL() string {
 	sql := strings.Replace(attributionSQL, "SELECT * FROM raw_events", "SELECT * FROM "+measurementSourceSQL+" measurement_facts", 1)
-	sql = strings.Replace(sql, "AND received_at<=$4", "AND received_at<=$4 AND user_id=$5 AND received_at>=COALESCE("+reportingFloorSQL+",'-infinity'::timestamptz)", 1)
+	// A null reporting floor must not become received_at >= -infinity. That range
+	// makes the generic plan walk raw_events_retention_idx and filter every fact.
+	sql = strings.Replace(sql, "AND received_at<=$4", "AND received_at<=$4 AND user_id=$5 AND ("+reportingFloorSQL+" IS NULL OR received_at>="+reportingFloorSQL+")", 1)
 	sql = strings.Replace(sql, "user_id,variant_id,event_id,occurred_at\n", "user_id,variant_id,event_id,occurred_at,received_at\n", 1)
 	sql = strings.Replace(sql, "FROM accepted WHERE kind='exposure'", `FROM (
  SELECT user_id,variant_id,event_id,occurred_at,received_at FROM raw_events
