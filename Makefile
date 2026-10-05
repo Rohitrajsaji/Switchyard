@@ -137,3 +137,6 @@ proto-check: .cache/proto-tools/.v1.36.12-v1.6.2
 sdk-contract:
 	@test -n "$(TEST_DATABASE_URL)" || (echo 'Set TEST_DATABASE_URL to an isolated test database'; exit 1)
 	go test -p 1 -race -tags=integration -count=1 ./pkg/sdk ./internal/transport/grpc
+.PHONY: sdk-drill
+sdk-drill:
+	python3 scripts/sdk_drill.py

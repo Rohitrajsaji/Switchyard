@@ -1,0 +1,12 @@
+goos: darwin
+goarch: arm64
+pkg: switchyard/pkg/sdk
+cpu: Apple M1
+BenchmarkLocalBoolean-8           	 1333533	      1780 ns/op	    1448 B/op	      25 allocs/op
+BenchmarkLocalBoolean-8           	 1337916	      1784 ns/op	    1448 B/op	      25 allocs/op
+BenchmarkLocalBoolean-8           	 1365874	      1738 ns/op	    1448 B/op	      25 allocs/op
+BenchmarkLocalBooleanParallel-8   	 1912532	      1282 ns/op	    1449 B/op	      25 allocs/op
+BenchmarkLocalBooleanParallel-8   	 1890867	      1387 ns/op	    1449 B/op	      25 allocs/op
+BenchmarkLocalBooleanParallel-8   	 1604670	      1256 ns/op	    1449 B/op	      25 allocs/op
+PASS
+ok  	switchyard/pkg/sdk	18.881s
