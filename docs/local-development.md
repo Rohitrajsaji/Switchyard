@@ -153,7 +153,7 @@ Viewers can inspect flags, previews, runs and results but cannot create runs, tr
 
 ```sh
 TEST_REDIS_URL='redis://127.0.0.1:63799/0' make cache-storage-check
-TEST_DATABASE_URL='postgres://switchyard:switchyard-local-only@127.0.0.1:54329/switchyard_test?sslmode=disable' TEST_REDIS_URL='redis://127.0.0.1:63799/0' make integration
+TEST_DATABASE_URL='postgres://switchyard:switchyard-local-only@127.0.0.1:54329/switchyard_test?sslmode=disable' TEST_REDIS_URL='redis://127.0.0.1:63799/0' TEST_NATS_URL='nats://127.0.0.1:42229' make integration
 SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make cache-drill
 ```
 
@@ -162,3 +162,19 @@ Tests use their own Redis keys and isolated PostgreSQL schemas; they never flush
 Application evaluations share immutable snapshots, refresh active flags every two seconds and expire thirty seconds after the authoritative read began. Redis relay never renews age. Configuration expiry returns the safe fallback with HTTP 503; callers must handle that response. Per-request key checks remain in PostgreSQL, so complete database outage prevents authorization. Dashboard previews read PostgreSQL directly.
 
 For host development set `REDIS_URL=redis://127.0.0.1:63799/0`; omit it for bounded PostgreSQL-only loading. `CACHE_ENABLED=false` restores direct PostgreSQL evaluation for diagnosis. See [ADR 0006](adr/0006-configuration-snapshots.md). Counters are logged every thirty seconds; metrics export follows in M10.
+
+## M7 durable publication checkpoint
+
+After `make up` has built the current Go image, explicitly start the optional asynchronous services:
+
+```sh
+make async-up
+TEST_NATS_URL='nats://127.0.0.1:42229' make messaging-check
+SWITCHYARD_DEMO_PASSWORD='switchyard-demo-only' make publication-drill
+```
+
+NATS binds to localhost:42229; its read-only monitoring endpoint binds to localhost:18229. The pinned NATS 2.15.0 Alpine image runs as UID 1000 with a 256 MiB limit. A one-shot initializer sets ownership only on the named `nats_data` volume. JetStream uses file storage, a 192 MiB server disk ceiling, and a 128 MiB/200,000-message work stream. New publication fails when capacity is reached; PostgreSQL keeps its publication intent. The local server has one replica and is not an HA deployment. Both database and NATS volumes survive `make down`.
+
+The Go worker currently publishes references only; it does not acknowledge consumer work or change results. Messages remain in JetStream until the M7 processor is implemented. Do not purge the stream to hide the resulting backlog. This checkpoint intentionally keeps metrics on the existing raw SQL path. Admission/replay/retention and aggregate parity remain M7 work.
+
+Run the publication drill separately from integration tests: it stops/restarts NATS and the worker, records a new project/configuration fixture, and restores services on exit. It verifies broker acknowledgements, durable pending intent and retained messages across restart; it is not the final consumer/event-failure drill. The complete integration command now requires all three explicit test URLs; messaging tests use small isolated streams and delete only their own stream.

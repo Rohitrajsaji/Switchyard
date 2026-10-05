@@ -18,16 +18,19 @@ build:
 	go build -o bin/api ./cmd/api
 	go build -o bin/migrate ./cmd/migrate
 	go build -o bin/seed ./cmd/seed
+	go build -o bin/worker ./cmd/worker
 check: fmt-check vet test
 integration:
 	@test -n "$(TEST_DATABASE_URL)" || (echo 'Set TEST_DATABASE_URL to an isolated test database'; exit 1)
+	@test -n "$(TEST_REDIS_URL)" || (echo 'Set TEST_REDIS_URL for scoped cache integration'; exit 1)
+	@test -n "$(TEST_NATS_URL)" || (echo 'Set TEST_NATS_URL for scoped durable messaging integration'; exit 1)
 	go test -tags=integration -count=1 ./...
 up:
 	@test -f .env || cp .env.example .env
 	docker compose build api web
 	docker compose --profile cache up --no-build -d --wait
 down:
-	docker compose --profile cache down
+	docker compose --profile cache --profile async down
 migrate:
 	go run ./cmd/migrate
 smoke:
@@ -51,6 +54,14 @@ cache-storage-check:
 .PHONY: cache-drill
 cache-drill:
 	python3 scripts/cache_drill.py
+.PHONY: async-up messaging-check publication-drill
+async-up:
+	docker compose --profile async up --no-build -d --wait nats worker
+messaging-check:
+	@test -n "$(TEST_NATS_URL)" || (echo 'Set TEST_NATS_URL to local JetStream'; exit 1)
+	go test -race -tags=integration -count=1 ./internal/platform/messaging
+publication-drill:
+	python3 scripts/publication_drill.py
 management-smoke:
 	python3 scripts/management_smoke.py
 fuzz-smoke:

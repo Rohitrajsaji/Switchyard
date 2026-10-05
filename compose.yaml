@@ -1,7 +1,52 @@
 name: switchyard
 services:
+  nats-init:
+    profiles: [async]
+    image: nats:2.15.0-alpine@sha256:ac8f88a6494bffc2c2a5289a0ca61cb28a9145c11ba5677cf24265d07f46d8d4
+    user: "0:0"
+    entrypoint: [/bin/sh, -c, "mkdir -p /data/jetstream && chown 1000:1000 /data /data/jetstream"]
+    volumes:
+      - nats_data:/data
+    mem_limit: 32m
+  nats:
+    profiles: [async]
+    image: nats:2.15.0-alpine@sha256:ac8f88a6494bffc2c2a5289a0ca61cb28a9145c11ba5677cf24265d07f46d8d4
+    user: "1000:1000"
+    command: [-c, /etc/nats/nats.conf]
+    volumes:
+      - nats_data:/data
+      - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
+    ports:
+      - "127.0.0.1:${NATS_PORT:-42229}:4222"
+      - "127.0.0.1:${NATS_MONITOR_PORT:-18229}:8222"
+    depends_on:
+      nats-init:
+        condition: service_completed_successfully
+    mem_limit: 256m
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8222/healthz?js-enabled-only=true"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  worker:
+    profiles: [async]
+    image: switchyard-api:local
+    pull_policy: never
+    entrypoint: [/app/worker]
+    environment:
+      DATABASE_URL: postgres://switchyard:${POSTGRES_PASSWORD:?required}@postgres:5432/switchyard?sslmode=disable
+      NATS_URL: nats://nats:4222
+      DB_MAX_CONNS: "6"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      nats:
+        condition: service_healthy
+    mem_limit: 384m
+    restart: unless-stopped
   redis:
-    # Opt in while M6 is being built; the MVP remains a three-service stack.
+    # Disposable cache; make up enables this profile.
     profiles: [cache]
     image: redis:8.10.2@sha256:6f81e8915c60b065a524e6967e0ad1c639ba6efa84d669f823683ea04d9150ee
     user: redis:redis
@@ -90,3 +135,4 @@ services:
     restart: unless-stopped
 volumes:
   postgres_data:
+  nats_data:

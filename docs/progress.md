@@ -10,7 +10,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M4 Experiments and measurement | Complete | 5 Oct 2026: lifecycle/ingestion/SQL attribution/statistics gates, race-enabled PostgreSQL fixtures, final Docker measurement journey and API contracts passed. |
 | M5 Dashboard / MVP | Complete | 5 Oct 2026: Go/check/race/API/frontend checks, race-enabled PostgreSQL integration, ARM64 dashboard image, fresh-volume seed idempotence, all production browser journeys and restart persistence passed; local `v0.1.0-mvp` release. |
 | M6 Redis snapshots | Complete | 5 Oct 2026: immutable snapshots, monotonic Redis, bounded coordinator, cached HTTP scope/revocation, race integration, live independent API outage/repair drill, evaluator benchmarks and all three browser journeys passed. |
-| M7 Durable worker | In progress | Transactional event/configuration outbox, bounded lease claims and upgrade/atomicity tests verified; NATS transport and aggregation pending. |
+| M7 Durable worker | In progress | Transactional outbox and durable NATS publisher verified, including server/worker restart recovery; consumer aggregation/replay/retention and final gates pending. |
 | M8 gRPC / Go SDK | Pending | — |
 | M9 Rollout / approval / safety | Pending | — |
 | M10 Telemetry / performance | Pending | — |
@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M7: transactional outbox first, then durable NATS publication and bounded worker processing. M6 is the first completed V2 milestone.
+M7: bounded commit-before-ack consumer processing and idempotent attribution/aggregation next. M6 is the first completed V2 milestone.
 
 ## M6 verified checkpoints
 
@@ -114,3 +114,12 @@ M7: transactional outbox first, then durable NATS publication and bounded worker
 - Real PostgreSQL race tests verify rollback, concurrent disjoint bounded claims, retry delay, stable IDs after ambiguous publication, stale lease fencing and a final-attempt crash becoming inspectable rather than permanently stranded. Upgrade fixtures prove backfill exactly once. Explicit outbox-failure injection rolls back flag revisions and raw facts with no event acknowledgement.
 - `make check race` and full race integration passed for initial outbox code; targeted event/flag/outbox race integration passed after failure-injection additions, and the upgrade test passed. Docker API rebuilt, applied migration 0007 and passed live flag/experiment/measurement/health journeys.
 - No publisher/consumer is running yet. Pending outbox rows intentionally remain durable; reads still use MVP raw SQL. NATS, aggregation, replay/retention, parity, event failure drills and the ingestion trial remain required before M7 completion.
+
+## M7 durable publication checkpoint
+
+- Pinned official NATS Go client 1.54.0 and ARM64-capable NATS 2.15.0 Alpine digest. File-backed JetStream runs non-root with explicit memory/disk/message limits and rejects new publications at capacity. Durable PostgreSQL intent is not marked published until broker acknowledgement. Reconnect buffering is disabled.
+- The Go worker publishes bounded eight-row batches, drains full batches immediately, limits broker/database deadlines within its lease and cancels cleanly. Unit tests cover broker rejection, ambiguous database completion and cancellation. Strict versioned envelopes contain scoped references rather than user attributes/credentials.
+- Real JetStream race integration verifies deduplication, durable pending state across reconnect, redelivery identity, confirmed ack/removal and capacity rejection without discarding retained work. Stream/consumer startup binds and verifies existing settings. An initial duplicate-create restart test failed storage admission and its cleanup panicked; both were fixed, the exact orphaned test stream was removed, and the corrected tests passed.
+- `make check race build api-check` and complete race-enabled PostgreSQL/Redis/NATS integration passed. Docker worker/API built on ARM64 and services started. CI defines NATS startup/health waiting and explicit TEST_NATS_URL; no remote CI execution is claimed.
+- `make publication-drill` passed: NATS restart retained 353 messages, two recovered fixture publications brought retained count to 355, and all three scoped intents were acknowledged with no dead rows. Observed recovery after broker health was 0.1849 s; this is one fixture, not p99/throughput. Worker restart also resumed pending work. The raw report is retained.
+- Publisher-only checkpoint: messages remain in JetStream and results still use raw SQL. The durable consumer API is configured but not running. M7 still requires commit-before-ack processing, idempotent aggregate reconciliation/parity, replay/dead-letter/retention controls, final event drills and the ingestion trial. No consumer-loss/replay/aggregate freshness claim is made yet.

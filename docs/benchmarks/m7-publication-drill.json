@@ -1,0 +1,11 @@
+{
+  "observed_at": "2026-10-05T03:14:59.621168+00:00",
+  "publication_recovery_seconds": 0.1849,
+  "retained_messages_before": 353,
+  "retained_messages_after": 355,
+  "fixture_outbox_counts": [
+    3,
+    3,
+    0
+  ]
+}

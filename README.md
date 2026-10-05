@@ -23,10 +23,10 @@ For host Go development, export `DATABASE_URL` from `.env`, then `make migrate` 
 ```sh
 make check
 make race
-TEST_DATABASE_URL='postgres://switchyard:switchyard-local-only@127.0.0.1:54329/switchyard_test?sslmode=disable' TEST_REDIS_URL='redis://127.0.0.1:63799/0' make integration
+TEST_DATABASE_URL='postgres://switchyard:switchyard-local-only@127.0.0.1:54329/switchyard_test?sslmode=disable' TEST_REDIS_URL='redis://127.0.0.1:63799/0' TEST_NATS_URL='nats://127.0.0.1:42229' make integration
 ```
 
-Integration tests require an isolated test database and create/drop their own schema. See [local development](docs/local-development.md). Local evaluator microbenchmarks are recorded in [the benchmark report](docs/benchmark-report.md); end-to-end load results remain unmeasured.
+For the full current integration gate, run `make async-up` first. Tests require an isolated test database, scoped Redis keys and test-owned JetStream streams. See [local development](docs/local-development.md). Local evaluator microbenchmarks are recorded in [the benchmark report](docs/benchmark-report.md); end-to-end load results remain unmeasured.
 
 Login, projects/environments, boolean/JSON flags, preview, kill, audit, A/B lifecycle/results and a listing demo comprise the MVP. Production configuration stays read-only until M9. M6 adds bounded snapshots and disposable Redis with strict expiry and PostgreSQL repair. Durable workers, SDKs, approved rollouts, telemetry/load testing and the governed agent follow at later V2 milestones.
 
