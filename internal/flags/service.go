@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"switchyard/internal/audit"
 	"switchyard/internal/auth"
+	"switchyard/internal/outbox"
 	"switchyard/internal/platform/identity"
 	"switchyard/pkg/evaluation"
 )
@@ -231,6 +232,9 @@ func saveRevision(ctx context.Context, tx pgx.Tx, actor auth.Actor, d *evaluatio
 	*d = canonical
 	body = normalized
 	if _, err = tx.Exec(ctx, `INSERT INTO flag_revisions(project_id,environment_id,flag_id,revision,definition,created_by) VALUES($1,$2,$3,$4,$5,$6)`, d.ProjectID, d.EnvironmentID, d.FlagID, d.Revision, body, actor.ID); err != nil {
+		return err
+	}
+	if err = outbox.Record(ctx, tx, outbox.Reference{Kind: "configuration", ProjectID: d.ProjectID, EnvironmentID: d.EnvironmentID, ObjectID: d.FlagID, Revision: d.Revision}); err != nil {
 		return err
 	}
 	_, err = tx.Exec(ctx, `INSERT INTO environment_flag_state(project_id,environment_id,flag_id,current_revision) VALUES($1,$2,$3,$4) ON CONFLICT(flag_id,environment_id) DO UPDATE SET current_revision=excluded.current_revision`, d.ProjectID, d.EnvironmentID, d.FlagID, d.Revision)

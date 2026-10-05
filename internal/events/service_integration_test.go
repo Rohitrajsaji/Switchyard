@@ -229,6 +229,20 @@ func TestIngestionIdentityQuarantineConcurrencyAndAtomicity(t *testing.T) {
 	if _, err = pool.Exec(ctx, `UPDATE raw_events SET variant_id='rewritten'`); err == nil {
 		t.Fatal("raw fact mutable")
 	}
+	var rawCount, intentCount int
+	if err = pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM raw_events),(SELECT count(*) FROM outbox WHERE kind='event')`).Scan(&rawCount, &intentCount); err != nil || rawCount != intentCount {
+		t.Fatalf("raw/publication parity=%d/%d %v", rawCount, intentCount, err)
+	}
+	if _, err = pool.Exec(ctx, `CREATE FUNCTION reject_outbox_fixture() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'outbox fixture rejection'; END; $$; CREATE TRIGGER outbox_fixture BEFORE INSERT ON outbox FOR EACH ROW EXECUTE FUNCTION reject_outbox_fixture()`); err != nil {
+		t.Fatal(err)
+	}
+	a.ID = "outbox_rejected"
+	if receipts, err := ingest(key.Token, a); err == nil || receipts != nil {
+		t.Fatal("fact acknowledged without publication intent")
+	}
+	if err = pool.QueryRow(ctx, `SELECT count(*) FROM raw_events WHERE event_id='outbox_rejected'`).Scan(&count); err != nil || count != 0 {
+		t.Fatal("outbox failure retained fact")
+	}
 	if err = ps.RevokeKey(ctx, actor, p.ID, key.ID, "revoke"); err != nil {
 		t.Fatal(err)
 	}

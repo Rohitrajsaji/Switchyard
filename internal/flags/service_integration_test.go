@@ -112,4 +112,17 @@ func TestFlagRevisionConflictScopeAndAtomicity(t *testing.T) {
 	if _, err := pool.Exec(ctx, `UPDATE flag_revisions SET revision=99`); err == nil {
 		t.Fatal("history mutable")
 	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM outbox WHERE kind='configuration'`).Scan(&count); err != nil || count != 2 {
+		t.Fatalf("revision publication intents=%d %v", count, err)
+	}
+	if _, err := pool.Exec(ctx, `CREATE FUNCTION reject_outbox_fixture() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'outbox fixture rejection'; END; $$; CREATE TRIGGER outbox_fixture BEFORE INSERT ON outbox FOR EACH ROW EXECUTE FUNCTION reject_outbox_fixture()`); err != nil {
+		t.Fatal(err)
+	}
+	update.Configuration.Rollout.Salt = "standalone-v1"
+	if _, err := s.Update(ctx, actor, p.ID, "new_listing", update, "outbox-failure"); err == nil {
+		t.Fatal("revision committed without publication intent")
+	}
+	if d, err := s.Get(ctx, p.ID, dev, "new_listing"); err != nil || d.Revision != 2 {
+		t.Fatal("outbox failure did not roll back revision")
+	}
 }

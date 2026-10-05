@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"switchyard/internal/auth"
+	"switchyard/internal/outbox"
 	"switchyard/pkg/evaluation"
 )
 
@@ -224,6 +225,11 @@ func (s *Service) Ingest(ctx context.Context, token string, in Batch) ([]Receipt
 				return nil, auth.ErrConflict
 			}
 			receipt.Duplicate = true
+		}
+		if !receipt.Duplicate {
+			if err = outbox.Record(ctx, tx, outbox.Reference{Kind: "event", ProjectID: in.ProjectID, EnvironmentID: in.EnvironmentID, ObjectID: e.ID, Revision: e.Revision}); err != nil {
+				return nil, err
+			}
 		}
 		result[p.position] = receipt
 	}

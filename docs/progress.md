@@ -10,7 +10,7 @@ The approved M1–M12 plan is authoritative. A row is complete only after its ga
 | M4 Experiments and measurement | Complete | 5 Oct 2026: lifecycle/ingestion/SQL attribution/statistics gates, race-enabled PostgreSQL fixtures, final Docker measurement journey and API contracts passed. |
 | M5 Dashboard / MVP | Complete | 5 Oct 2026: Go/check/race/API/frontend checks, race-enabled PostgreSQL integration, ARM64 dashboard image, fresh-volume seed idempotence, all production browser journeys and restart persistence passed; local `v0.1.0-mvp` release. |
 | M6 Redis snapshots | Complete | 5 Oct 2026: immutable snapshots, monotonic Redis, bounded coordinator, cached HTTP scope/revocation, race integration, live independent API outage/repair drill, evaluator benchmarks and all three browser journeys passed. |
-| M7 Durable worker | Pending | — |
+| M7 Durable worker | In progress | Transactional event/configuration outbox, bounded lease claims and upgrade/atomicity tests verified; NATS transport and aggregation pending. |
 | M8 gRPC / Go SDK | Pending | — |
 | M9 Rollout / approval / safety | Pending | — |
 | M10 Telemetry / performance | Pending | — |
@@ -107,3 +107,10 @@ M7: transactional outbox first, then durable NATS publication and bounded worker
 - An initial integration run overlapped the intentional Redis stop and failed with connection-refused errors. The complete race integration gate was rerun after service recovery and passed. No failure was hidden or counted as a successful gate.
 - Counters distinguish in-memory hits, cold misses, stale hits, source/Redis reads, failures, coalescing, expiry and admission pressure. Periodic structured logging is implemented; Prometheus export waits for M10. `make up` starts Redis with the cache profile; normal shutdown preserves PostgreSQL.
 - Pure evaluator runs remain 40 B/op, two allocations/op; current observations and limits are recorded in the benchmark report. End-to-end evaluation/ingestion targets remain unmeasured. Complete PostgreSQL outage prevents remote authorization; M8 local SDK fallback remains pending.
+
+## M7 transactional outbox checkpoint
+
+- Migration 0007 adds durable, unique scoped event/configuration references and backfills retained MVP facts/revisions. Event and shared flag-revision paths record intent in the same transaction as the source fact; duplicate events do not add new intent.
+- Real PostgreSQL race tests verify rollback, concurrent disjoint bounded claims, retry delay, stable IDs after ambiguous publication, stale lease fencing and a final-attempt crash becoming inspectable rather than permanently stranded. Upgrade fixtures prove backfill exactly once. Explicit outbox-failure injection rolls back flag revisions and raw facts with no event acknowledgement.
+- `make check race` and full race integration passed for initial outbox code; targeted event/flag/outbox race integration passed after failure-injection additions, and the upgrade test passed. Docker API rebuilt, applied migration 0007 and passed live flag/experiment/measurement/health journeys.
+- No publisher/consumer is running yet. Pending outbox rows intentionally remain durable; reads still use MVP raw SQL. NATS, aggregation, replay/retention, parity, event failure drills and the ingestion trial remain required before M7 completion.
