@@ -51,6 +51,19 @@ func FoldWithRetention(ctx context.Context, pool *pgxpool.Pool, now time.Time, d
 		return result, err
 	}
 	defer tx.Rollback(context.Background())
+	// The per-user candidate below probes every metric_user_state row. On the
+	// measured database that probe took 4.6s and always exceeded the worker's
+	// two-second retention budget, even though every fact was newer than the
+	// cutoff. Nothing can match that candidate unless some fact is already old.
+	var oldEnough bool
+	err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM raw_events WHERE received_at<$1)
+ OR EXISTS(SELECT 1 FROM metric_pending_outcomes WHERE received_at<$1)`, cutoff).Scan(&oldEnough)
+	if err != nil {
+		return result, err
+	}
+	if !oldEnough {
+		return result, nil
+	}
 	var project, env, run, user string
 	var historyBody []byte
 	err = tx.QueryRow(ctx, `SELECT s.project_id,s.environment_id,s.run_id,s.user_id,s.historical_contribution
