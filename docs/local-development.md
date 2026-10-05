@@ -178,3 +178,20 @@ NATS binds to localhost:42229; its read-only monitoring endpoint binds to localh
 The Go worker now publishes references, commits durable processing/scheduling receipts before confirmed broker acknowledgements, and reconciles per-user contributions into materialized counters. HTTP results still use the raw SQL oracle until the final M7 gate. Run `make aggregation-parity` to compare all existing experiment runs in coherent database snapshots after pending work drains. It requires at least one experiment fixture. Admission/replay/retention and final failure/load gates remain M7 work; do not purge queues or raw data to hide failures.
 
 Run the publication drill separately from integration tests: it temporarily overrides the worker into publisher-only mode, stops/restarts NATS and the worker, records a new project/configuration fixture, then restores normal processing on exit. It verifies broker acknowledgements, durable pending intent and retained messages across restart; it is not the final consumer/event-failure drill. The complete integration command now requires all three explicit test URLs; messaging tests use small isolated streams and delete only their own stream.
+
+### Bounded local recovery controls
+
+`/app/workctl` in the Go image provides local database-backed operator actions. Supply an existing active administrator ID and explicit project/environment IDs. Roles and membership are reloaded from PostgreSQL; supplying a forged role has no effect. Production write protection remains in force. `inspect` returns IDs/fixed codes without payloads, at most 100 dead publications for that scope and a scan of 100 unresolved processing failures per page. Malformed envelopes appear as `unscoped_invalid_envelope` for administrators because their scope cannot be trusted. Pass the returned cursors as `-after-publication`, `-after-stream` and `-after-sequence` while `more` is true. Processing cursors advance across unrelated scopes so they cannot block inspection of later failures.
+
+```sh
+docker compose --profile async run --rm --no-deps --entrypoint /app/workctl worker \
+  -action inspect -actor ADMIN_ID -project PROJECT_ID -environment ENVIRONMENT_ID
+docker compose --profile async run --rm --no-deps --entrypoint /app/workctl worker \
+  -action replay -actor ADMIN_ID -project PROJECT_ID -environment ENVIRONMENT_ID \
+  -run RUN_ID -from RFC3339_START -until RFC3339_END -reason 'Verify retained attribution'
+make recovery-smoke
+```
+
+Replay timestamps select the inclusive/exclusive **received-at** interval. Keep the interval fixed and pass the returned `cursor` on the next page while `more` is true. Each page schedules at most 100 existing raw facts and their dependent users. The start must be within seven days and the end cannot be in the future. Replay never clears consumer receipts, prior contributions or counters. The live smoke uses existing demo facts and records replay audits without changing source events.
+
+`retry-publication -id ID` resets only a dead, unleased, unpublished intent whose source is still retained; message identity stays unchanged. `retry-dead-letter -stream STREAM -sequence N` validates and applies the exact stored envelope, resolving it atomically with scheduling and audit. Both require an audit `-reason` and reject work older than seven days. Source repair occurs through authorized source operations; the command cannot rewrite malformed payloads or fabricate facts. Unrepairable records remain inspectable. Retention cleanup and backlog admission remain pending; these controls do not delete data.

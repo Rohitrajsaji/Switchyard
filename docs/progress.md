@@ -53,7 +53,7 @@ Approval authorizes local implementation/testing/commits only. No push, publicat
 
 ## Next implementation checkpoint
 
-M7: replay/dead-letter controls and retention preserving older finalized summaries next, then complete event/freshness/load gates and results-read transition. M6 is the first completed V2 milestone.
+M7: retention preserving older finalized summaries next, then complete event/freshness/load gates and results-read transition. M6 is the first completed V2 milestone.
 
 ## M6 verified checkpoints
 
@@ -134,3 +134,10 @@ M7: replay/dead-letter controls and retention preserving older finalized summari
 - M7 remains in progress: operator replay/dead-letter controls, finalized-summary retention, bounded backlog/admission, complete consumer/event failure drills, the ingestion trial and results-read transition still remain. No raw data is purged at this checkpoint.
 
 - Final checkpoint verification: `make check race build api-check` and the complete race-enabled PostgreSQL/Redis/NATS integration suite passed after the clock repair. The rebuilt Docker worker passed the publisher restart drill and restored normal processing. Live evidence records 377 processing receipts, zero dead letters, zero due users, 71 counter rows and raw/materialized parity across 22 runs. Broker recovery was 0.1823 s in this single fixture; evidence is in `docs/benchmarks/m7-processing-checkpoint.json`.
+
+## M7 operator recovery checkpoint
+
+- Local `workctl` checks current administrator role/project membership and production protection. Writes require a reason and audit atomically. Inspect pagination returns identifiers/fixed codes without payloads and advances across unrelated scopes.
+- Retained received-at replay schedules at most 100 facts per page without clearing receipts or contributions. Seven-day/future interval checks reject unsupported replay. Publication retry resets only dead, unleased, unpublished retained work and preserves its original message identity. Stored dead-letter retry reuses source validation and resolves atomically with scheduling/audit; malformed sources remain inspectable.
+- Race-enabled PostgreSQL tests passed for two replay pages (105 facts), forged/scope/age rejection, audit failure rolling back dead-letter receipt/work/resolution, malformed binary-payload inspection, unchanged retry identity, active-lease/missing/expired source rejection, and inspection beyond 100 unrelated scoped failures. Complete PostgreSQL/Redis/NATS race integration passed before the final inspection-pagination addition; targeted processing race integration passed after it.
+- Final `make check race build` passed. Docker API/worker rebuilt and applied migration 0009; live `make recovery-smoke smoke` replayed seven retained facts and retained parity across 22 runs. Evidence is in `docs/benchmarks/m7-recovery-smoke.json`. Raw data and deduplication receipts are preserved; retention/backlog/final consumer-fault/load/read-transition gates remain pending.

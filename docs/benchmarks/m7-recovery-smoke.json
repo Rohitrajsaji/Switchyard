@@ -1,0 +1,7 @@
+{
+  "observed_at": "2026-10-05T04:03:06.293084+00:00",
+  "replayed_events": 7,
+  "pages": 1,
+  "inspected_failures": 0,
+  "parity": "docker compose --profile async run --rm --no-deps --entrypoint /app/check-metrics worker\nAggregate parity passed for 22 runs: cohorts, conversions, requests, histograms and quality"
+}

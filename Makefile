@@ -20,6 +20,7 @@ build:
 	go build -o bin/seed ./cmd/seed
 	go build -o bin/worker ./cmd/worker
 	go build -o bin/check-metrics ./cmd/check-metrics
+	go build -o bin/workctl ./cmd/workctl
 check: fmt-check vet test
 integration:
 	@test -n "$(TEST_DATABASE_URL)" || (echo 'Set TEST_DATABASE_URL to an isolated test database'; exit 1)
@@ -97,3 +98,7 @@ web-check:
 	cd web && npm run format-check && npm run typecheck && npm test && npm run build
 e2e:
 	cd web && PLAYWRIGHT_BROWSERS_PATH="$(CURDIR)/.cache/playwright" npm run e2e
+
+.PHONY: recovery-smoke
+recovery-smoke:
+	python3 scripts/recovery_smoke.py

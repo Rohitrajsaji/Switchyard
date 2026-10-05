@@ -26,6 +26,19 @@ func New(pool *pgxpool.Pool) *Store { return &Store{pool} }
 // duplicate receipt remains valid after raw retention, but cannot change its
 // original reference. Missing new source work is inspectable, never applied.
 func (s *Store) Apply(ctx context.Context, e messaging.Envelope) (bool, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback(context.Background())
+	duplicate, err := applyTx(ctx, tx, e)
+	if err != nil {
+		return false, err
+	}
+	return duplicate, tx.Commit(ctx)
+}
+
+func applyTx(ctx context.Context, tx pgx.Tx, e messaging.Envelope) (bool, error) {
 	if e.Version != 1 || !e.Reference.Valid() {
 		return false, ErrIdentity
 	}
@@ -37,18 +50,13 @@ func (s *Store) Apply(ctx context.Context, e messaging.Envelope) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	tx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return false, err
-	}
-	defer tx.Rollback(context.Background())
 	var equal bool
 	err = tx.QueryRow(ctx, `SELECT reference=$2::jsonb FROM processed_work WHERE message_id=$1`, e.MessageID, body).Scan(&equal)
 	if err == nil {
 		if !equal {
 			return false, ErrIdentity
 		}
-		return true, tx.Commit(ctx)
+		return true, nil
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return false, err
@@ -77,7 +85,7 @@ func (s *Store) Apply(ctx context.Context, e messaging.Envelope) (bool, error) {
 		if !equal {
 			return false, ErrIdentity
 		}
-		return true, tx.Commit(ctx)
+		return true, nil
 	}
 	if r.Kind == "event" {
 		var run, user string
@@ -102,7 +110,7 @@ func (s *Store) Apply(ctx context.Context, e messaging.Envelope) (bool, error) {
 			return false, ErrSourceMissing
 		}
 	}
-	return false, tx.Commit(ctx)
+	return false, nil
 }
 func (s *Store) DeadLetter(ctx context.Context, stream string, sequence uint64, id string, payload []byte, code string) error {
 	if len(stream) < 1 || len(stream) > 128 || sequence == 0 || sequence > uint64(^uint64(0)>>1) || len(id) > 128 || len(payload) > messaging.MaxEnvelopeBytes ||
